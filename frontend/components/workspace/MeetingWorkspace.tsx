@@ -72,6 +72,16 @@ export function MeetingWorkspace({ id }: { id: number }) {
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  // Desktop focus mode: one panel at full width (Fireflies lets you expand notes or transcript).
+  const [focusedPanel, setFocusedPanel] = useState<"notes" | "transcript" | null>(null);
+  const toggleNotes = useCallback(
+    () => setFocusedPanel((panel) => (panel === "notes" ? null : "notes")),
+    [],
+  );
+  const toggleTranscript = useCallback(
+    () => setFocusedPanel((panel) => (panel === "transcript" ? null : "transcript")),
+    [],
+  );
   const actionItemsQuery = useActionItems(id); // shared cache with the notes panel
 
   const segments = transcriptQuery.data?.segments ?? NO_SEGMENTS;
@@ -206,6 +216,8 @@ export function MeetingWorkspace({ id }: { id: number }) {
       activeIndex={activeIndex}
       playing={state.playing}
       onSeek={seekAndPlay}
+      expanded={focusedPanel === "transcript"}
+      onToggleExpand={toggleTranscript}
     />
   );
 
@@ -240,11 +252,19 @@ export function MeetingWorkspace({ id }: { id: number }) {
         ))}
       </div>
 
-      <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(340px,42%)_1fr]">
+      <div
+        className={cn(
+          "grid min-h-0 flex-1",
+          focusedPanel ? "lg:grid-cols-1" : "lg:grid-cols-[minmax(340px,42%)_1fr]",
+        )}
+      >
         <div
+          data-testid="notes-panel"
           className={cn(
-            "min-h-0 border-r border-border bg-surface",
-            mobileTab === "notes" ? "block" : "hidden lg:block",
+            "min-h-0 bg-surface",
+            !focusedPanel && "lg:border-r lg:border-border",
+            mobileTab === "notes" ? "block" : "hidden",
+            focusedPanel === "transcript" ? "lg:hidden" : "lg:block",
           )}
         >
           <NotesPanel
@@ -253,10 +273,17 @@ export function MeetingWorkspace({ id }: { id: number }) {
             summaryLoading={summaryQuery.isPending && summaryQuery.fetchStatus !== "idle"}
             activeTopic={activeTopic}
             onSeek={seekAndPlay}
+            expanded={focusedPanel === "notes"}
+            onToggleExpand={toggleNotes}
           />
         </div>
         <div
-          className={cn("min-h-0 bg-bg", mobileTab === "transcript" ? "block" : "hidden lg:block")}
+          data-testid="transcript-panel"
+          className={cn(
+            "min-h-0 bg-bg",
+            mobileTab === "transcript" ? "block" : "hidden",
+            focusedPanel === "notes" ? "lg:hidden" : "lg:block",
+          )}
         >
           {transcriptArea}
         </div>

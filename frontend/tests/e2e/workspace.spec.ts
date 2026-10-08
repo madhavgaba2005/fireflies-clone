@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { activeLine, playerTimeMs } from "./helpers";
+import { API, activeLine, playerTimeMs } from "./helpers";
 
 test.describe("Meeting workspace", () => {
   test.beforeEach(async ({ page }) => {
@@ -120,6 +120,47 @@ test.describe("Meeting workspace", () => {
     await expect(page.getByRole("button", { name: "Play", exact: true })).toBeVisible();
     await page.keyboard.press("/");
     await expect(page.getByLabel("Find in transcript")).toBeFocused();
+  });
+
+  test("exact boundary: a line becomes active at its start ms, the previous one just before", async ({
+    page,
+  }) => {
+    const id = page.url().match(/meetings\/(\d+)/)![1];
+    const transcript = await (
+      await page.request.get(`${API}/api/meetings/${id}/transcript`)
+    ).json();
+    const segments: { start_ms: number }[] = transcript.segments;
+    const index = 12;
+    const start = segments[index].start_ms;
+    expect(start % 100).toBe(0); // the seek slider moves in 100 ms steps
+    const lines = page.getByTestId("transcript-line");
+    const seek = page.getByRole("slider", { name: "Seek" });
+
+    await seek.fill(String(start - 100)); // paused seek, just before the boundary
+    await expect(lines.nth(index - 1)).toHaveAttribute("data-active", "true");
+    await seek.fill(String(start)); // exactly on the boundary: the next line wins
+    await expect(lines.nth(index)).toHaveAttribute("data-active", "true");
+    await expect(lines.nth(index)).toBeInViewport();
+    await expect(activeLine(page)).toHaveCount(1);
+  });
+
+  test("notes or transcript can be expanded to full width and restored", async ({ page }) => {
+    const notes = page.getByTestId("notes-panel");
+    const transcript = page.getByTestId("transcript-panel");
+    await page.getByRole("button", { name: "Expand transcript" }).click();
+    await expect(notes).toBeHidden();
+    await expect(transcript).toBeVisible();
+    // Sync still works while expanded.
+    await page.getByTestId("transcript-line").nth(3).getByRole("button").click();
+    await expect(page.getByTestId("transcript-line").nth(3)).toHaveAttribute("data-active", "true");
+
+    await page.getByRole("button", { name: "Show both panels" }).click();
+    await expect(notes).toBeVisible();
+    await page.getByRole("button", { name: "Expand notes" }).click();
+    await expect(transcript).toBeHidden();
+    await expect(page.getByTestId("overview")).toBeVisible();
+    await page.getByRole("button", { name: "Show both panels" }).click();
+    await expect(transcript).toBeVisible();
   });
 
   test("unknown meeting shows a not-found state", async ({ page }) => {
