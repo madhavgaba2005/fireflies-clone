@@ -1,8 +1,8 @@
 # Development Guide (study document)
 
 > Living document — the author's primary study material for the evaluation interview.
-> Status: **Phase 2** — every *design* decision below is final; scaffolding is explained in the Phase 2 section; implementation details (file names, code
-> excerpts, real test names) are added in the phase that builds each component, marked _(Phase N)_.
+> Status: **complete for the submission.** Every component described here is implemented and tested. The "Phase 2"
+> section is kept as the record of the scaffolding step; references like _(Phase N)_ name the step that built a part.
 
 Each component answers 13 questions in a fixed order:
 **1 What · 2 Why chosen · 3 Problem solved · 4 How it works · 5 Alternatives · 6 Why rejected · 7 Advantages ·
@@ -274,7 +274,8 @@ Free-first; Kafka where hostable, otherwise the documented HTTP mode; persistenc
 ## Configuration (`app/config.py`)
 `pydantic-settings` reads environment variables (and an optional `.env`), with types and defaults. Each service owns
 its own `Settings` — no shared config package, because services deploy independently. Cross-field rules fail fast:
-`PROCESSING_MODE=http` without `INTERNAL_API_TOKEN`, or `SUMMARY_PROVIDER=llm` without `LLM_API_KEY`, refuses to start.
+`PROCESSING_MODE=http` without `INTERNAL_API_TOKEN` refuses to start, and `SUMMARY_PROVIDER` accepts only `mock`
+(the one provider that ships, ADR-007).
 `.env.example` documents every variable; real `.env` files are git-ignored.
 **30 s:** "Typed settings from the environment; invalid combinations crash at startup instead of failing at 2 a.m."
 **Follow-up:** "Why is `NEXT_PUBLIC_API_URL` not a secret?" → it is compiled into the browser bundle by design.

@@ -209,7 +209,8 @@ The design records behind them are in the [ADRs](adr/) and [DEVELOPMENT_GUIDE.md
   - Duplicates are no-ops.
   - Stale results, where `transcript_revision` doesn't match, are dropped.
   - Results for deleted meetings are ignored safely.
-  - Tests: `test_summary_results.py`.
+  - Tests: `test_summary_results.py`. Against a **real broker**, `tests/kafka/test_duplicates_kafka.py` publishes the
+    same result event twice and checks that it is applied once (no doubled topics or action items).
 - **Trade-off:** `processed_events` grows over time. In production it would be pruned after the broker's retention
   window.
 - **Follow-up:** "Why not exactly-once?" → Kafka's exactly-once covers Kafka-to-Kafka only. With an external
@@ -373,6 +374,39 @@ The design records behind them are in the [ADRs](adr/) and [DEVELOPMENT_GUIDE.md
   a requirement for review.
 
 ---
+
+### 30. How did you test it?
+- **30 s:** I test at three levels, and each requirement maps to a test in
+  [TEST_COVERAGE_MATRIX.md](TEST_COVERAGE_MATRIX.md):
+  - **Pure logic as unit tests:** parser, mock provider, active-segment search, transcript search, export, theme.
+  - **API and database as integration tests:** a real SQLite file, with constraints, cascades and the
+    idempotent consumer.
+  - **Every must-have workflow in a real browser** (Playwright) against both real services.
+  - **Kafka against a real broker.**
+- **Numbers (latest run):**
+  - 183 meeting-service tests (97 % line + branch coverage) and 39 AI-service tests (99 %).
+  - 3 real-Kafka tests.
+  - 75 Vitest tests.
+  - 42 Playwright tests.
+- **Trade-off:** E2E runs the services in HTTP mode, so the browser suite needs no broker; the separate `kafka` job
+  covers the broker. Tests never weaken a check to pass. When a test failed, either the code or a wrong assumption in
+  the test was fixed, and both cases are recorded in PROGRESS.md.
+- **Follow-up:** "What would you add?" → Visual regression snapshots, and a load test on the outbox relay.
+
+### 31. How is it deployed?
+- **30 s:** `deploy/docker-compose.prod.yml` runs everything on one VM. Caddy terminates HTTPS and is the only
+  public port. Behind it run the Next.js standalone server, both FastAPI services and a single-node Kafka. SQLite
+  lives on a named volume.
+- **Deeper:**
+  - One origin means no CORS: Caddy routes `/api` and `/health` to the Meeting Service and everything else to the
+    frontend.
+  - Health checks gate the startup order: Kafka, then the services, then Caddy.
+  - A free VM can host the whole real architecture, including Kafka. The fallback for a platform without Kafka is
+    `PROCESSING_MODE=http` with a persistent volume.
+  - Verified locally: a Kafka summary in about 2 s, and data survived a full restart.
+- **Trade-off:** It's a single VM: simple and free, but not highly available. That's fine for a demo.
+- **Follow-up:** "Zero-downtime deploys?" → Not needed at this scale. Next steps would be blue/green behind Caddy, or
+  moving the stateless services to a container platform with Postgres.
 
 ## Bugs worth telling (each was found by a test)
 1. **Summary silently not saved:** SQLAlchemy 2.x backref cascade. Fixed, and SAWarning is now fatal in tests.

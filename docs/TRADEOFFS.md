@@ -12,7 +12,7 @@ differently.
 | Kafka over a direct function call / background task | Durable, replayable, decoupled hand-off between independently deployable services | A broker to run, more failure modes, harder free hosting | Never needed at this scale — included deliberately and isolated behind `EventPublisher` |
 | Two services over a monolith | A real async seam; AI isolated, replaceable, scalable | Two deployables + a broker; network contract to version | If the AI step were trivial and instant, a monolith is better |
 | Async over synchronous summary generation | Fast `201` on create; AI failures don't fail the request | Eventual consistency → status field, polling, Retry | Never for LLM-backed summaries; sync is fine for a pure mock |
-| Mock AI over a real LLM by default | Free, offline, deterministic tests, demo can't break | Visibly simpler summaries | Set `SUMMARY_PROVIDER=llm` + key — same interface |
+| Mock AI over a real LLM by default | Free, offline, deterministic tests, demo can't break | Visibly simpler summaries | Implement an LLM `SummaryProvider` behind the same interface (ADR-007); nothing else changes |
 | Client-side over server-side transcript search | Instant, no API, highlight logic co-located with rendering | Doesn't scale to very long transcripts / cross-meeting | Global search (bonus) uses server-side SQLite FTS5 |
 | Repository layer over direct ORM queries in routes | Testable services, SQL in one place, consumers reuse services | More files, some pass-through methods | A 3-endpoint toy API wouldn't need it |
 | Simulated playback over real audio | No TTS/media generation; sync logic fully real and testable | No sound | Real `<audio>` plugs into the same `PlaybackClock` interface |
