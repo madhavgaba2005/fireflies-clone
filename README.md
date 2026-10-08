@@ -148,9 +148,14 @@ Real `.env` files are git-ignored.
 `PROCESSING_MODE=http` and `SUMMARY_PROVIDER=llm` refuse to start without their secret — misconfiguration fails fast.
 
 ## Seed Data
-_(pending — Phase 3)_ 6–8 realistic business meetings (product sync, sprint review, client discovery, kickoff,
-design review, hiring, marketing, quarterly planning), each with 3–5 participants, a full transcript, summary,
-topics and action items.
+Seven meetings at a fictional company (Northwind, makers of a route-planning product): product sync, sprint review,
+client discovery call, design review, hiring debrief, marketing strategy and Q1 planning. Each has 3–5 participants
+drawn from 11 recurring people, a full timestamped transcript, an overview, keywords, a chaptered outline and action
+items. Dates are relative to today so the date filters always have something to show.
+```bash
+cd backend/meeting-service && python -m app.seed          # skips if data exists; --reset wipes and reseeds
+```
+Docker / deployments can set `SEED_ON_STARTUP=true` to seed an empty database automatically.
 
 ## Testing
 ```bash

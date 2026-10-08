@@ -111,11 +111,11 @@ Code existing is **not** enough.
 |----|-------------|----------|----------------|------|-------------------|--------|
 | C1 | Frontend: **Next.js (TypeScript)** | CONSTR | `frontend/` Next.js 16 App Router, `strict: true` (Phase 2) | `npm run typecheck` + `npm run build` pass locally; in CI | `npm run dev` → placeholder routes | 🟨 scaffolded |
 | C2 | Backend: **Python with FastAPI** | CONSTR | `backend/meeting-service`, `backend/ai-service` (app factories, health, error envelope — Phase 2) | 36 + 11 pytest tests pass | `/docs` OpenAPI page on :8000 / :8001 | 🟨 scaffolded |
-| C3 | Database: **SQLite (design your own schema)** | CONSTR | Connection layer done (`app/database.py`: pragmas, sessions, ping — Phase 2); models + Alembic in Phase 3 | `tests/integration/test_database.py` (pragmas, dir creation, ping, session); migration test in Phase 3 | `/health/ready` reports database ok | 🟨 connection layer |
+| C3 | Database: **SQLite (design your own schema)** | CONSTR | `app/models/` (SQLAlchemy 2.0), Alembic `0001_initial_schema`, `app/database.py` | `test_schema.py`, `test_migrations.py` (migration ≡ models), `test_database.py` | Fresh DB migrates + seeds; integrity check ok | ✅ |
 | C4 | Real audio transcription **out of scope**; may seed / upload .txt/.vtt/.json / optionally LLM | CONSTR | Parsers for .txt, .vtt, .json; Mock provider default | Parser unit tests | — | ⬜ |
 | C5 | **UI should totally resemble Fireflies's design** — study it first | CONSTR | [UI_DESIGN_SPEC.md](UI_DESIGN_SPEC.md) written before UI phase | Manual review | — | ⬜ |
-| C6 | **Seed several meetings** with full transcripts, summaries, action items | CONSTR | `meeting-service/seed/` — 7 realistic meetings, 3–5 participants each | Seed test (counts, every meeting has summary + items) | Fresh install looks populated | ⬜ |
-| C7 | **Database design will be evaluated** | CONSTR | Normalized schema, FKs, constraints, indexes, documented | Constraint tests (FK cascade, unique, check) | — | ⬜ |
+| C6 | **Seed several meetings** with full transcripts, summaries, action items | CONSTR | `app/seed/` — 7 meetings, 3–5 participants each, 183 segments, 34 chapters, 35 action items | `test_seed.py` (completeness, idempotency, shared people) | `python -m app.seed` → app populated | ✅ |
+| C7 | **Database design will be evaluated** | CONSTR | 3NF schema, CHECK/UNIQUE/FK constraints, explicit ON DELETE, justified indexes, UTC type — [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | `test_schema.py` proves each constraint fires | — | ✅ |
 | C8 | **Original work** — plagiarism ⇒ disqualification | CONSTR | All code written from scratch; Fireflies used only as visual reference; no copied assets/logos | Review | — | ⬜ |
 | C9 | Must understand every line (AI tools allowed) | CONSTR | [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md), [INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.md), ADRs | — | Interview | ⬜ |
 

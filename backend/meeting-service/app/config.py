@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     database_url: str = "sqlite:///./data/meetings.db"
+    run_migrations_on_startup: bool = True
+    # Load the demo meetings when the database is empty (handy for fresh deployments).
+    seed_on_startup: bool = False
     # Comma-separated list, e.g. "http://localhost:3000,https://app.example.com"
     cors_origins: str = "http://localhost:3000"
 
