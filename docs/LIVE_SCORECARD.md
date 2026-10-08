@@ -3,14 +3,14 @@
 Evidence-based status against the PDF's evaluation criteria. No numeric weights exist in the PDF; none are invented.
 Statuses: **NOT STARTED** · **IN PROGRESS** · **VERIFIED** (implemented + tested + demonstrable) · **AT RISK**.
 
-_Last updated: Milestone A (database + seed)._
+_Last updated: Milestone B (meeting API)._
 
 | Criterion | Status | Evidence so far | Open risk |
 |-----------|--------|-----------------|-----------|
-| Functionality | NOT STARTED | Seed data ready (7 meetings) | All user-facing features pending |
+| Functionality | IN PROGRESS | Every CRUD/search/filter capability works at the API level | No UI yet |
 | UI/UX | NOT STARTED | UI spec written | Fireflies fidelity is the largest effort |
 | Database Design | VERIFIED | 3NF schema, constraints enforced in SQLite and tested; migration ≡ models | — |
-| Backend / API Design | IN PROGRESS | Layering, error envelope, health; parser | Endpoints pending (Milestone B) |
+| Backend / API Design | VERIFIED | 14 REST endpoints, router→service→repository, one error envelope, correct status codes, OpenAPI; 144 tests | Async pipeline pending (Milestone C) |
 | Code Quality | IN PROGRESS | ruff + strict mypy clean; ESLint/Prettier/tsc clean | CI not yet run on GitHub |
 | Code Modularity | IN PROGRESS | Publisher abstraction, parser strategy, repositories | — |
 | Code Understanding | IN PROGRESS | ADRs, development guide | Interview guide answers pending |

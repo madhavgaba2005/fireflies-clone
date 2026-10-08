@@ -1,0 +1,13 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:06.500
+<v Noah Williams>Yesterday I finished the progress bar for the import job and opened the pull request.
+
+00:00:07.000 --> 00:00:13.000
+<v David Kim>I reviewed it this morning, looks good. I'll merge it after lunch once CI is green.
+
+00:00:13.500 --> 00:00:21.000
+<v Noah Williams>Today I'm starting on the screen reader fixes for the route list. Should take two days.
+
+00:00:21.500 --> 00:00:28.000
+<v David Kim>I'm on webhook retries. Blocked on nothing, but I need to confirm the backoff schedule with Arjun.

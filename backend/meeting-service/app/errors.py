@@ -28,6 +28,13 @@ class DomainError(Exception):
             self.code = code
 
 
+class UnprocessableError(DomainError):
+    """Well-formed input that breaks a business rule (e.g. assignee is not in the meeting)."""
+
+    status_code = 422
+    code = "unprocessable"
+
+
 class NotFoundError(DomainError):
     status_code = 404
     code = "not_found"

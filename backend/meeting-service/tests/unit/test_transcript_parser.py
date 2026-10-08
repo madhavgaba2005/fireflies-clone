@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import pytest
 
@@ -6,6 +7,7 @@ from app.services.transcript_parser import (
     MAX_SEGMENTS,
     UNKNOWN_SPEAKER,
     ParsedSegment,
+    TranscriptFormat,
     TranscriptParseError,
     parse_transcript,
 )
@@ -131,3 +133,14 @@ def test_json_errors(text: str, message: str) -> None:
 def test_json_missing_speaker_uses_placeholder() -> None:
     (segment,) = parse_transcript('[{"start": 0, "text": "hi"}]', "json")
     assert segment.speaker == UNKNOWN_SPEAKER
+
+
+@pytest.mark.parametrize(
+    ("name", "fmt"),
+    [("customer-onboarding.txt", "txt"), ("standup.vtt", "vtt"), ("retro.json", "json")],
+)
+def test_bundled_sample_files_parse(name: str, fmt: TranscriptFormat) -> None:
+    text = (Path(__file__).parents[2] / "samples" / name).read_text(encoding="utf-8")
+    segments = parse_transcript(text, fmt)
+    assert len(segments) >= 4
+    assert all(s.speaker != UNKNOWN_SPEAKER for s in segments)
