@@ -35,8 +35,14 @@ services:
       CORS_ORIGINS: http://localhost:3000
       PROCESSING_MODE: kafka
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SEED_ON_STARTUP: "true" # demo data on first start (no-op once meetings exist)
     volumes:
       - meeting-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     depends_on:
       kafka:
         condition: service_healthy
@@ -49,6 +55,11 @@ services:
       PROCESSING_MODE: kafka
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SUMMARY_PROVIDER: mock
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     depends_on:
       kafka:
         condition: service_healthy
