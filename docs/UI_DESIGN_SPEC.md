@@ -115,7 +115,7 @@ Player bar also shows a **speaker timeline** (coloured blocks per speaker turn) 
 ## 9. Fidelity checklist (reviewed against screenshots, Milestone K)
 - [x] Left sidebar with active item highlighted in the accent colour
 - [x] Library rows (not a bare table): title, date · duration, participant avatar stack, status chip, row menu
-- [ ] Two-panel notepad, independently scrolling ✅ — *each panel expandable: not implemented* (low value; the mobile tabs cover narrow screens)
+- [x] Two-panel notepad, independently scrolling, each expandable (desktop focus mode; tabs on phones)
 - [x] Notes sections in Fireflies order; sparkle "AI" labels
 - [x] Transcript lines: coloured avatar, speaker name, timestamp, hover "play from here"
 - [x] Docked player bar with speed menu and speaker timeline

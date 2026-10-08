@@ -247,7 +247,7 @@ Built only after every MUST-have was verified; details and tests in [docs/BONUS_
 |---|---|
 | Global search across all meetings | Top-bar search; results deep-link to the exact transcript moment |
 | Export (TXT / Markdown) | Meeting ⋯ menu → **Download**: transcript or AI notes, with timestamp/speaker options |
-| Dark mode | Account menu → **Dark mode** (follows the system setting until you choose) |
+| Dark mode | Settings → **Appearance**: System / Light / Dark (System follows the OS live); quick toggle in the account menu |
 | Tags | AI keywords appear as chips on meetings and in notes; clicking one filters the library |
 
 Deferred on purpose: comments on transcript lines and an "Ask" chat (a convincing chat needs a real LLM; see
@@ -285,5 +285,7 @@ Captured from the running application (seeded data).
 | ![Transcript search](docs/screenshots/transcript-search.png) | ![New meeting](docs/screenshots/new-meeting.png) |
 | **Filters (last 30 days, one participant)** | **Phone width** |
 | ![Filters](docs/screenshots/library-filters.png) | ![Mobile](docs/screenshots/mobile.png) |
-| **Dark mode — library** | **Dark mode — global search over the workspace** |
+| **Dark mode — library** | **Dark mode — transcript expanded, searching** |
 | ![Dark library](docs/screenshots/dark-library.png) | ![Dark workspace](docs/screenshots/dark-workspace.png) |
+| **Settings → Appearance (System / Light / Dark)** | |
+| ![Appearance settings](docs/screenshots/settings-appearance.png) | |
