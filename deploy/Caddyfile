@@ -1,0 +1,10 @@
+# One public origin: the browser talks to a single host, so no CORS and one TLS certificate.
+# SITE_ADDRESS is your domain (Caddy then obtains HTTPS certificates automatically) or ":80" for plain HTTP.
+{$SITE_ADDRESS::80} {
+	encode gzip
+
+	@meetingService path /api/* /health /health/* /docs /openapi.json
+	reverse_proxy @meetingService meeting-service:8000
+
+	reverse_proxy frontend:3000
+}

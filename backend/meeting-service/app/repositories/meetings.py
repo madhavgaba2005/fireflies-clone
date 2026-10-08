@@ -134,7 +134,7 @@ class MeetingRepository:
             .group_by(Participant.id)
             .order_by(spoken.desc())
         )
-        return [(participant, int(total or 0)) for participant, total in rows.tuples()]
+        return [(participant, int(total or 0)) for participant, total in rows]
 
     def get_summary(self, meeting_id: int) -> Summary | None:
         return self.session.scalar(

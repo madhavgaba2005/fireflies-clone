@@ -134,6 +134,9 @@ def seed_database(session: Session, now: datetime, *, reset: bool = False) -> in
     if reset:
         clear_all(session)
         session.commit()
+        # Bulk DELETEs bypass the identity map, and SQLite reuses row ids: drop stale objects so the
+        # reseeded rows can't collide with them.
+        session.expunge_all()
     elif has_meetings(session):
         return 0
     return load_seed(session, now)

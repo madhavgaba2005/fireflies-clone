@@ -81,3 +81,13 @@ default, and a pre-paint script so there is no light flash; themed toasts.
 **Testing:** 3 Vitest tests; E2E `dark-mode.spec.ts` (toggle, reload persistence, system preference).
 **Screenshots:** `docs/screenshots/dark-library.png`, `dark-workspace.png`.
 Closes #18
+
+## #19 chore: production deployment stack and full verification — `feature/19-deployment-prep`
+**What:** `deploy/` (prod compose with Caddy + Kafka, Caddyfile, env example), frontend Dockerfile (standalone),
+DEPLOYMENT guide; fix for a stale-identity-map reseed bug; full test, coverage and CI-in-Linux run recorded.
+**Why:** submission needs a hosted link; this makes any free VM a one-command deploy without choosing the provider.
+**Testing:** prod stack run locally through Caddy: health, create → Kafka summary in ~2 s, restart persistence,
+headless-browser check with no console errors. Backend CI job re-run in `python:3.11-slim`.
+**Known limitations:** no host chosen yet; GitHub Actions not run until the repo is published.
+Closes #19
+

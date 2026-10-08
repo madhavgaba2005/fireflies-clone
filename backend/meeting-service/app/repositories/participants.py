@@ -40,4 +40,4 @@ class ParticipantRepository:
             .group_by(Participant.id)
             .order_by(Participant.name)
         )
-        return [(participant, meetings) for participant, meetings in rows.tuples()]
+        return [(participant, meetings) for participant, meetings in rows]

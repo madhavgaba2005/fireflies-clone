@@ -36,3 +36,4 @@ Thumbs.db
 
 # Local SQLite data directories
 backend/*/data/
+/coverage/
