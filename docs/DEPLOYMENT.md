@@ -63,10 +63,13 @@ docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env exec mee
 ```
 
 **Persistence:**
-- The SQLite file lives in the `meeting-data` named volume. It survives container restarts, rebuilds and
-  redeploys, and is deleted only by `docker compose down -v`.
-- Kafka keeps no state of its own that matters. The transactional outbox in SQLite is the source of truth, and
-  unpublished events are re-sent after a restart (see [EVENT_DRIVEN_ARCHITECTURE.md](EVENT_DRIVEN_ARCHITECTURE.md)).
+- **SQLite** lives in the `meeting-data` named volume. It survives container restarts, rebuilds and redeploys, and
+  is deleted only by `docker compose down -v`.
+- **Kafka** keeps its log in the `kafka-data` volume, so a request already handed to the broker survives a broker
+  restart. Verified: with the AI Service stopped, a new meeting's request sat in Kafka; after the broker restarted
+  and the AI Service started, the meeting completed.
+- **Outbox:** events not yet published stay in the SQLite outbox and are re-sent when Kafka is back (see
+  [EVENT_DRIVEN_ARCHITECTURE.md](EVENT_DRIVEN_ARCHITECTURE.md)).
 
 ### Option B notes (HTTP fallback)
 - Meeting Service settings: `PROCESSING_MODE=http`, `AI_SERVICE_URL=<ai service URL>`, and
@@ -92,13 +95,29 @@ docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env exec mee
 
 ## 5. Post-deploy verification checklist
 
-Last run: **locally**, with `deploy/docker-compose.prod.yml` on `http://localhost:8088`. The results are recorded in
-[PROGRESS.md](PROGRESS.md). The same checklist must be repeated on the real host.
+Run **locally** against `deploy/docker-compose.prod.yml` on `http://localhost:8088`, rebuilt from the final code
+(2026-10-09). **It must be repeated on the real host**: nothing below means a live deployment exists.
 
-- [ ] Frontend loads, and the library shows the seeded meetings
-- [ ] `/health/ready` is OK; both services are healthy
-- [ ] Create a meeting by pasting a transcript; its summary goes from Processing to Ready (through Kafka)
-- [ ] Edit and delete a meeting; add, edit and complete an action item
-- [ ] Refresh: state persists. **Restart the stack: state persists**
-- [ ] Transcript click-to-seek, playback highlight, transcript search
-- [ ] No CORS or console errors
+- [x] Frontend loads, and the library shows the 7 seeded meetings
+- [x] `/health/ready` is OK; all five containers are healthy
+- [x] Create a meeting by pasting a transcript: Processing → Ready through Kafka in about 2 s
+- [x] Edit a meeting; add, edit, complete and delete an action item; delete a meeting (→ 404 afterwards)
+- [x] **Restart the whole stack: the data persists.** Restart Kafka mid-request: the request still completes
+- [x] Transcript click-to-seek, active-line highlight, expanded panels, theme settings (headless browser)
+- [x] No console or CORS errors (same origin through Caddy)
+
+## 6. Readiness review
+
+| Item | Status |
+|------|--------|
+| Environment variables | Documented in §4 and in each `.env.example`; production needs no secrets in Kafka mode |
+| CORS | Same origin through Caddy. `CORS_ORIGINS=${PUBLIC_URL}` is still set for direct API access |
+| Production builds | Next.js standalone image; both Python images non-root; `next build` clean |
+| Health endpoints | `/health` (liveness) and `/health/ready` (database) on the Meeting Service, `/health` on the AI Service; used by compose healthchecks |
+| Startup order | `depends_on: service_healthy`: Kafka → services → Caddy. The services also retry the broker with backoff |
+| Persistence | SQLite and Kafka on named volumes (verified above) |
+| Kafka configuration | KRaft single node, internal listener only, 256 MB heap, auto-created topics with 3 partitions, key = meeting ID |
+| AI service | `SUMMARY_PROVIDER=mock`; no API key needed; no public port |
+| Frontend API URL | Built with `NEXT_PUBLIC_API_URL=""` (same origin), so there are no `localhost` URLs in the bundle |
+| Dev-only assumptions | None in the prod stack: no dev servers, no `--reload`, no hard-coded localhost |
+| Live deployment | **Not done.** The host is the author's decision; nothing has been purchased |
