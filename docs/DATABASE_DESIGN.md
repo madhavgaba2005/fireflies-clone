@@ -172,7 +172,8 @@ auto-adds speakers; removing a participant who has transcript lines returns `409
 | `outbox_events(created_at) WHERE published_at IS NULL` (partial) | Relay polls only unpublished rows |
 
 Title search uses `LIKE '%q%'` (non-sargable, full scan). With tens/hundreds of meetings that is microseconds;
-the scale-up path is SQLite FTS5 (planned for bonus global search B3).
+global search (bonus B3) uses the same escaped `LIKE` over transcript lines. The scale-up path is SQLite FTS5,
+then Postgres full-text search.
 
 ## 5. Normalization
 

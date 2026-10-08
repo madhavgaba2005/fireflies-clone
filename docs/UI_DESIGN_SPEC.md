@@ -1,6 +1,6 @@
 # UI Design Spec
 
-> Status: **Accepted for implementation (Phase 1)** — derived from fireflies.ai and the official help-centre articles
+> Status: **Implemented** (audited in [UI_FIDELITY_AUDIT.md](UI_FIDELITY_AUDIT.md)) — derived from fireflies.ai and the official help-centre articles
 > ("Learn about the Fireflies Notepad", "Fireflies AI Meeting Summaries"), reviewed 2026-10-08. The logged-in app
 > could not be inspected directly. Implemented in Milestones D–F — see §11 for what was built and README for screenshots. Fireflies is a **visual/UX reference only** —
 > no Fireflies code, logos, illustrations or proprietary assets are used. Our product name/logo is original.

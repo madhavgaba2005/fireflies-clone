@@ -27,7 +27,7 @@ Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = 
 | Create (upload .txt/.vtt/.json, paste, form), edit, delete | dialogs | R4.1–R4.5 | ✅ |
 | Add / edit / complete / uncomplete / delete action items | action items section | R4.6–R4.8 | ✅ |
 | Everything survives a refresh and a server restart | any | R4.9 | ✅ |
-| **Proof:** 39 Playwright tests drive all of the above against the real stack | `fe/tests/e2e/` | all | ✅ |
+| **Proof:** 42 Playwright tests drive all of the above against the real stack | `fe/tests/e2e/` | all | ✅ |
 
 ## 2. UI/UX
 
@@ -37,15 +37,16 @@ Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = 
 |----------|-------|--------|
 | Design spec written from the Fireflies product site and help-centre guides before any UI code | [UI_DESIGN_SPEC.md](UI_DESIGN_SPEC.md) | ✅ |
 | Left sidebar (active state, Workspace section, live-assistant card), top bar with search, "Add to live meeting", purple "New meeting", avatar menu | `fe/components/layout/` | ✅ |
-| Two-panel notepad (notes left, transcript right) with a docked player bar | `fe/components/workspace/MeetingWorkspace.tsx` | ✅ |
+| Two-panel notepad (notes left, transcript right) with a docked player bar; either panel can be expanded to full width | `fe/components/workspace/MeetingWorkspace.tsx` | ✅ |
 | Notes in Fireflies' order: keywords → overview → outline → action items (by assignee) → talk time | `fe/components/summary/NotesPanel.tsx` | ✅ |
 | Consistent per-person colours across avatars, speaker names, speaker timeline and talk-time bars | `fe/lib/colors.ts` | ✅ |
 | Loading skeletons, empty states (no meetings / no matches / no transcript / no action items), error states with Retry, not-found page | `fe/components/ui/States.tsx` | ✅ |
 | Toasts for every mutation and failure; "Coming soon" dialogs for out-of-scope features | sonner, `ComingSoon.tsx` | ✅ |
 | Keyboard: Space play/pause, ←/→ seek, `/` find, Enter/Shift+Enter matches, Esc closes dialogs | `MeetingWorkspace.tsx`, Radix | ✅ |
 | Responsive: sidebar → drawer, panels → tabs, no horizontal scroll at 390 px (E2E-tested) | `responsive.spec.ts` | ✅ |
-| Screenshots of the real app in the README | [README#screenshots](../README.md#screenshots) | ✅ |
-| Dark mode (bonus) | — | see [BONUS_FEATURES.md](BONUS_FEATURES.md) |
+| Screenshots of the real app in the README (light, dark, phone) | [README#screenshots](../README.md#screenshots) | ✅ |
+| Two visual QA passes: findings and fixes recorded | [UI_FIDELITY_AUDIT.md](UI_FIDELITY_AUDIT.md) | ✅ |
+| Theme: Settings → Appearance with System / Light / Dark (bonus) | `fe/components/settings/SettingsPage.tsx`, `fe/lib/theme.ts` | ✅ |
 
 ## 3. Database Design
 
@@ -70,14 +71,14 @@ Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = 
 
 | Evidence | Where | Status |
 |----------|-------|--------|
-| 14 resource-oriented endpoints, nested only where ownership is real | [API.md](API.md), `/docs` | ✅ |
+| 15 resource-oriented operations + 2 health endpoints, nested only where ownership is real | [API.md](API.md), `/docs` | ✅ |
 | Router → Service → Repository: routers have no SQL, services no HTTP, repositories no rules | `ms/app/routers`, `services`, `repositories` | ✅ |
 | Separate Create / Update / Read schemas with field limits; 422 with field details | `ms/app/schemas` | ✅ |
 | One error envelope `{error: {code, message, details}}` for domain, validation, routing and unexpected errors | `ms/app/errors.py`, `test_errors.py` | ✅ |
 | Correct status codes (200/201/202/204/400/404/405/409/422/500), each tested | `test_meetings_api.py`, `test_action_items_api.py` | ✅ |
 | Pagination (`limit`/`offset` + `total`), N+1-free list query | `ms/app/repositories/meetings.py` | ✅ |
 | OpenAPI at `/docs` with documented error responses | FastAPI | ✅ |
-| Async processing: transactional outbox, Kafka, idempotent consumer, visible `processing_status`; CRUD stays synchronous | [EVENT_DRIVEN_ARCHITECTURE.md](EVENT_DRIVEN_ARCHITECTURE.md) | ✅ (real broker test) |
+| Async processing: transactional outbox, Kafka, idempotent consumer, visible `processing_status`; CRUD stays synchronous | [EVENT_DRIVEN_ARCHITECTURE.md](EVENT_DRIVEN_ARCHITECTURE.md) | ✅ (3 real-broker tests incl. duplicate delivery) |
 | `/health` (liveness) and `/health/ready` (database) on both services; compose healthchecks | `routers/health.py` | ✅ |
 | Environment-based config, fail-fast validation, `.env.example` files | `app/config.py` ×2 | ✅ |
 
@@ -89,7 +90,7 @@ Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = 
 |----------|-------|--------|
 | ruff (lint + format) and `mypy --strict` clean on both services; ESLint, Prettier, `tsc --strict` clean on the frontend | local runs; CI workflow | ✅ (CI not yet run on GitHub) |
 | SQLAlchemy warnings turned into test failures (caught a real silent-data-loss bug) | `ms/pyproject.toml` | ✅ |
-| Backend coverage gate 90 % (actual: see [TESTING.md](TESTING.md)) | CI | ✅ |
+| Backend coverage gate 90 % (measured: 97.45 % meeting-service, 98.84 % ai-service, line + branch) | CI, [TESTING.md](TESTING.md) | ✅ |
 | Small focused modules; comments explain *why*, not *what* | review | ✅ |
 | No secrets in the repository; only `.env.example` files tracked | `git ls-files` check | ✅ |
 | Conventional commits on feature branches merged with `--no-ff`; PR descriptions archived | `git log --graph`, [PULL_REQUESTS.md](PULL_REQUESTS.md) | ✅ |
@@ -105,7 +106,7 @@ Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = 
 | `SummaryProvider` interface (mock today; LLM = one class) and one `MeetingProcessor` shared by Kafka and HTTP | `ai/app/providers`, `ai/app/processors` | ✅ |
 | Transcript parser module per format (txt / vtt / json) behind one function | `ms/app/services/transcript_parser.py` | ✅ |
 | `PlaybackClock` interface: simulated clock now, a media-element clock later — sync code unchanged | `fe/lib/playback.ts` | ✅ |
-| Pure, unit-tested logic outside JSX: active segment, search, filters, formatting | `fe/lib/*.ts` (74 Vitest tests) | ✅ |
+| Pure, unit-tested logic outside JSX: active segment, search, filters, formatting | `fe/lib/*.ts` (75 Vitest tests) | ✅ |
 | Reusable components: `Modal`, `Menu`, `Avatar(Stack)`, `StatusChip`, `EmptyState/ErrorState`, `ParticipantsInput`, `ActionItemEditor` (add + edit) | `fe/components/ui`, … | ✅ |
 | Server state in one place (TanStack Query hooks, targeted invalidation) | `fe/hooks/queries.ts` | ✅ |
 
@@ -118,7 +119,8 @@ Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = 
 | Architecture: request, event, failure and data flows; why two services | [ARCHITECTURE.md](ARCHITECTURE.md) | ✅ |
 | ADRs (context / decision / alternatives / trade-offs / consequences) with implementation notes | [adr/](adr/) | ✅ |
 | Development guide: what / why / how / alternatives / failure modes / 30-second answers | [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md) | ✅ |
-| Interview guide with answers that cite real files | [INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.md) | 🟨 Milestone L |
+| Interview guide: 31 answers that cite real files and tests | [INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.md) | ✅ |
+| 8-minute demo script using the exact UI labels | [FINAL_DEMO_SCRIPT.md](FINAL_DEMO_SCRIPT.md) | ✅ |
 | Deliberately small architecture, honest trade-offs and limitations | [TRADEOFFS.md](TRADEOFFS.md) | ✅ |
 
 ## 8. Inspection, risks and score maximization

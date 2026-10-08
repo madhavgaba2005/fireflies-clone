@@ -31,6 +31,8 @@ locally run `docker compose up -d` plus `npm run dev` (README "Local Setup").
    them.
 7. Click an **Outline** chapter timestamp, then an action-item timestamp. Both seek the player.
 8. Show the speaker timeline in the player bar and talk time in the notes.
+9. Click the **expand** icon in the transcript header: the transcript takes the full width and sync keeps working.
+   Click it again (**Show both panels**) to restore the side-by-side layout.
 
 ## 3. AI notes and action items (≈1.5 min)
 1. Walk through the notes: keywords, overview, outline/chapters, action items grouped by assignee.
@@ -61,15 +63,16 @@ locally run `docker compose up -d` plus `npm run dev` (README "Local Setup").
 1. **Global search** in the top bar: type `geocoding`. Results are grouped by meeting with highlighted snippets.
    Clicking one deep-links to that moment, with the player seeked and the transcript search pre-filled.
 2. **⋯ → Download**: export the transcript as TXT (with timestamps and speakers) or the notes as Markdown.
-3. **Account menu → Dark mode**. Reload to show it persists.
+3. **Settings → Appearance**: pick Dark, reload to show it persists, then pick System (it follows the OS).
+   The account menu has a quick light/dark toggle too.
 
 ## 7. Engineering, if there's time (≈1 min)
 - Swagger at `/docs`: 15 REST operations, one error envelope.
 - Mention the test suites:
   - 183 + 39 backend tests (97 % / 99 % coverage).
-  - 2 tests against a real Kafka broker.
-  - 74 Vitest tests.
-  - 39 Playwright tests against the real services.
+  - 3 tests against a real Kafka broker (incl. duplicate delivery applied once).
+  - 75 Vitest tests.
+  - 42 Playwright tests against the real services.
 - Repo tour: `backend/meeting-service/app/{routers,services,repositories,events}`, `backend/ai-service`,
   `frontend/{app,components,hooks,lib}`, `docs/adr/`.
 

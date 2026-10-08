@@ -1,6 +1,7 @@
 # Architecture
 
-> Status: **Accepted (Phase 1)**. Sections marked *(Phase N)* are finalized when that phase lands.
+> Status: **Accepted and implemented.** The system matches this document. Deployment is described in §12 and
+> [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## 1. Goals that shaped the architecture
 

@@ -189,11 +189,11 @@ Docker / deployments can set `SEED_ON_STARTUP=true` to seed an empty database au
 ## Testing
 | Suite | What it covers | Result (latest local run) |
 |-------|----------------|---------------------------|
-| Meeting Service — pytest | API, schema constraints, migrations, parser, seed, outbox relay, consumer, idempotent results | 171 passed |
-| Meeting Service — `pytest -m kafka` | Real broker: round trip + full pipeline through the AI service container | 2 passed |
-| AI service — pytest | Mock provider heuristics, retries/failures, Kafka loop, HTTP endpoint auth | 39 passed |
-| Frontend — Vitest | Active-segment search, playback clock, transcript search, filters, formatting | 65 passed |
-| Frontend — Playwright | Every must-have workflow in a real browser against the real stack | 33 passed |
+| Meeting Service — pytest | API, schema constraints, migrations, parser, seed, outbox relay, consumer, idempotent results | 183 passed · 97 % coverage |
+| Meeting Service — `pytest -m kafka` | Real broker: round trip, full pipeline through the AI service container, duplicate delivery applied once | 3 passed |
+| AI service — pytest | Mock provider heuristics, retries/failures, Kafka loop, HTTP endpoint auth | 39 passed · 99 % coverage |
+| Frontend — Vitest | Active-segment search, playback clock, transcript search, filters, formatting, export, theme | 75 passed |
+| Frontend — Playwright | Every must-have workflow plus bonuses in a real browser against the real stack | 42 passed |
 
 ```bash
 cd backend/meeting-service && pytest --cov            # + `pytest -m kafka` (needs: docker compose up -d --wait kafka ai-service)
