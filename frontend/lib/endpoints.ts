@@ -9,6 +9,7 @@ import type {
   MeetingQuery,
   MeetingUpdateInput,
   ParticipantWithCount,
+  SearchResponse,
   Summary,
   Transcript,
 } from "./types";
@@ -52,4 +53,5 @@ export const api = {
     apiFetch<ActionItem>(`/api/action-items/${id}`, { method: "PATCH", body: json(input) }),
   deleteActionItem: (id: number) => apiFetch<void>(`/api/action-items/${id}`, { method: "DELETE" }),
   listParticipants: () => apiFetch<ParticipantWithCount[]>("/api/participants"),
+  search: (q: string) => apiFetch<SearchResponse>(`/api/search?q=${encodeURIComponent(q)}`),
 };

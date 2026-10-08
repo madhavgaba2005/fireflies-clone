@@ -1,8 +1,7 @@
 "use client";
 
-import { LogOut, Menu as MenuIcon, Plus, Radio, Search, Settings, User } from "lucide-react";
+import { LogOut, Menu as MenuIcon, Plus, Radio, Settings, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { toast } from "sonner";
 
 import { Avatar } from "@/components/ui/Avatar";
@@ -11,6 +10,7 @@ import { useComingSoon } from "@/components/ui/ComingSoon";
 import { Menu, MenuItem, MenuSeparator } from "@/components/ui/Menu";
 
 import { useOpenCreateMeeting } from "./CreateMeetingContext";
+import { GlobalSearch } from "./GlobalSearch";
 
 // Authentication is out of scope (PDF): a default user is always "signed in".
 export const DEFAULT_USER = { id: 101, name: "Alex Morgan", email: "alex.morgan@northwind.io" };
@@ -19,14 +19,6 @@ export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
   const router = useRouter();
   const openCreate = useOpenCreateMeeting();
   const comingSoon = useComingSoon();
-  const [query, setQuery] = useState("");
-
-  const search = (event: React.FormEvent) => {
-    event.preventDefault();
-    const q = query.trim();
-    router.push(q ? `/meetings?q=${encodeURIComponent(q)}` : "/meetings");
-  };
-
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-4">
       <Button
@@ -38,19 +30,7 @@ export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
       >
         <MenuIcon size={18} />
       </Button>
-      <form onSubmit={search} role="search" className="relative max-w-md flex-1">
-        <Search
-          size={15}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-subtle"
-        />
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search meetings"
-          aria-label="Search meetings"
-          className="h-9 w-full rounded-lg border border-border bg-surface-muted pl-9 pr-3 text-[13px] outline-none transition focus:border-primary focus:bg-surface focus:ring-2 focus:ring-primary-ring"
-        />
-      </form>
+      <GlobalSearch />
       <div className="ml-auto flex items-center gap-2">
         {/* Wrapper controls visibility: a class on Button itself would fight its own inline-flex. */}
         <div className="hidden md:block">

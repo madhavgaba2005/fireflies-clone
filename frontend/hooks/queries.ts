@@ -21,6 +21,7 @@ export const keys = {
   summary: (id: number) => ["summary", id] as const,
   actionItems: (id: number) => ["action-items", id] as const,
   participants: ["participants"] as const,
+  search: (q: string) => ["search", q] as const,
 };
 
 export const POLL_INTERVAL_MS = 2000;
@@ -33,6 +34,17 @@ export function isProcessing(
 
 export function useMeetings(query: MeetingQuery) {
   return useQuery({ queryKey: keys.meetings(query), queryFn: () => api.listMeetings(query) });
+}
+
+/** Global search (bonus): runs once the query has 2+ characters. */
+export function useGlobalSearch(q: string) {
+  const query = q.trim();
+  return useQuery({
+    queryKey: keys.search(query),
+    queryFn: () => api.search(query),
+    enabled: query.length >= 2,
+    staleTime: 30_000,
+  });
 }
 
 export function useParticipants() {
