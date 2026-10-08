@@ -61,19 +61,23 @@ export function MeetingHeader({
         <ArrowLeft size={18} />
       </Link>
       <div className="min-w-0 flex-1">
-        <h1 className="truncate text-[19px] font-semibold tracking-tight">{meeting.title}</h1>
+        <h1 className="line-clamp-2 text-[19px] font-semibold tracking-tight sm:truncate">
+          {meeting.title}
+        </h1>
         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-muted">
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
             <CalendarDays size={13} /> {formatDate(meeting.meeting_date)} ·{" "}
             {formatTime(meeting.meeting_date)}
           </span>
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
             <Clock size={13} /> {formatDuration(meeting.duration_seconds)}
           </span>
           {meeting.participants.length > 0 && (
             <span className="inline-flex items-center gap-2">
               <AvatarStack people={meeting.participants} max={5} />
-              <span>{meeting.participants.length} participants</span>
+              <span className="hidden whitespace-nowrap sm:inline">
+                {meeting.participants.length} participants
+              </span>
             </span>
           )}
         </div>
@@ -81,6 +85,7 @@ export function MeetingHeader({
       <div className="flex items-center gap-1.5">
         <Button
           size="sm"
+          aria-label="Share"
           onClick={() =>
             comingSoon({
               name: "Share meeting",
@@ -88,7 +93,7 @@ export function MeetingHeader({
             })
           }
         >
-          <Share2 size={14} /> Share
+          <Share2 size={14} /> <span className="hidden sm:inline">Share</span>
         </Button>
         <Button size="icon" variant="ghost" onClick={copyLink} aria-label="Copy link">
           <Link2 size={16} />
