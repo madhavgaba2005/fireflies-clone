@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import { AppShell } from "@/components/layout/AppShell";
+import { NO_FLASH_SCRIPT } from "@/lib/theme";
 
 import { Providers } from "./providers";
 import "./globals.css";
@@ -15,7 +16,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} antialiased`}>
+    // suppressHydrationWarning: the no-flash script may add the "dark" class before React hydrates.
+    <html lang="en" className={`${inter.variable} antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH_SCRIPT }} />
+      </head>
       <body className="font-sans">
         <Providers>
           <AppShell>{children}</AppShell>

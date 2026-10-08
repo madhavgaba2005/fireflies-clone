@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Design tokens — docs/UI_DESIGN_SPEC.md §3. Components use these through Tailwind colour names
    (bg-surface, text-muted, border-border…), so a theme is just another set of values. */
 :root {
@@ -22,6 +24,31 @@
   --success-soft: #f0fdf4;
   --warning: #b45309;
   --warning-soft: #fffbeb;
+  color-scheme: light;
+}
+
+/* Bonus B6 — dark theme: same tokens, new values (contrast checked against WCAG AA for text). */
+.dark {
+  --primary: #8b5cf6;
+  --primary-hover: #7c3aed;
+  --primary-soft: #2a2140;
+  --primary-ring: #6d28d9;
+  --bg: #0f1017;
+  --surface: #171823;
+  --surface-muted: #1f2130;
+  --border: #2c2e40;
+  --text: #e8e8f0;
+  --text-muted: #a3a6b8;
+  --text-subtle: #7a7d90;
+  --mark: #854d0e;
+  --mark-current: #d97706;
+  --danger: #f87171;
+  --danger-soft: #3a1717;
+  --success: #4ade80;
+  --success-soft: #12301d;
+  --warning: #fbbf24;
+  --warning-soft: #36280c;
+  color-scheme: dark;
 }
 
 @theme inline {

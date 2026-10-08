@@ -248,7 +248,7 @@ export const TranscriptPanel = memo(
                 setAwayFromActive(false);
                 scrollToLine(activeIndex);
               }}
-              className="absolute bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-text px-3 py-1.5 text-[12px] font-medium text-white shadow-lg"
+              className="absolute bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-text px-3 py-1.5 text-[12px] font-medium text-bg shadow-lg"
             >
               <LocateFixed size={13} /> Back to current
             </button>

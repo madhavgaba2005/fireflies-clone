@@ -5,6 +5,7 @@ import { useState, type ReactNode } from "react";
 import { Toaster } from "sonner";
 
 import { ApiError } from "@/lib/api";
+import { useTheme } from "@/hooks/useTheme";
 
 function shouldRetry(failureCount: number, error: unknown): boolean {
   // Retrying a 4xx can't help (e.g. "meeting not found"); network blips get one retry.
@@ -21,10 +22,11 @@ export function Providers({ children }: { children: ReactNode }) {
         },
       }),
   );
+  const theme = useTheme();
   return (
     <QueryClientProvider client={client}>
       {children}
-      <Toaster position="bottom-right" richColors closeButton duration={3500} />
+      <Toaster theme={theme} position="bottom-right" richColors closeButton duration={3500} />
     </QueryClientProvider>
   );
 }
