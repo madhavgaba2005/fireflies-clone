@@ -17,5 +17,9 @@ Kafka (single-node KRaft) with topics `meeting.events` and `ai.events`, keyed by
 + Durable, replayable, ordered per meeting; services deploy independently.
 − Heaviest piece of infrastructure in the project; free hosting may not run a broker, hence the `PROCESSING_MODE=http` fallback that reuses the same envelope, processor and idempotent apply path.
 
+## Implementation notes (Milestone C)
+Verified end-to-end against a real broker and the real AI service (`pytest -m kafka`, also a CI job). Topics are
+auto-created by the broker in this single-node setup; production would create them explicitly with replication 3.
+
 ## Consequences
 The UI must model eventual consistency (`processing_status` + polling). See EVENT_DRIVEN_ARCHITECTURE.md.

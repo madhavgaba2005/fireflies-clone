@@ -135,9 +135,11 @@ of AI results. **30 s:** "Everything the user reads or writes goes through it; i
 _(Phases 3–5: file map, key functions.)_
 
 ## AI Processing Service
-Stateless worker: consume `meeting.created`/`transcript.updated`/`summary.requested` → `SummaryProvider.generate()`
-→ publish `summary.generated` or `summary.failed` after retries. Also exposes `POST /internal/process` in HTTP mode.
-**30 s:** "Transcript in, notes out, no database — so it can be restarted, swapped or scaled freely." _(Phase 6.)_
+Stateless worker: consume `meeting.created`/`transcript.updated`/`summary.requested` → `MeetingProcessor` →
+`SummaryProvider.generate()` (in a worker thread, retried with backoff) → publish `summary.generated` or
+`summary.failed`. The processor never raises, so one bad message can't block a partition. In HTTP mode the same
+processor answers `POST /internal/process`. **30 s:** "Transcript in, notes out, no database — so it can be restarted,
+swapped or scaled freely; Kafka and HTTP are just two doors into the same processor."
 
 ## Kafka
 1. **What:** Distributed, durable, partitioned log. 2. **Why:** Durable, decoupled hand-off between the two services.
@@ -154,10 +156,49 @@ detection; `transcript_revision` to discard stale results; processing state mach
 **30 s:** "Events are written in the same transaction as the data, published at-least-once, and applied idempotently."
 Details: [EVENT_DRIVEN_ARCHITECTURE.md](EVENT_DRIVEN_ARCHITECTURE.md).
 
+## Transactional outbox
+1. **What:** a table (`outbox_events`) that stores events in the **same transaction** as the data change they describe.
+2. **Why:** a request can't atomically write to SQLite *and* Kafka. Publishing inside the request either loses the event
+   (commit succeeded, publish failed) or announces data that never committed (publish before commit).
+3. **Problem solved:** "the meeting exists but its summary request was lost" can't happen.
+4. **How:** `queue_processing()` adds the envelope to `outbox_events` in the create/regenerate transaction.
+   `OutboxRelay` (a background task) reads unpublished rows oldest-first, publishes, and sets `published_at`.
+   Failure → `attempts`/`last_error` recorded, exponential backoff, the row is retried. At-least-once.
+5–6. **Alternatives:** publish after commit (loses events on crash/outage); CDC with Debezium (production-grade but far
+   too heavy for SQLite); Kafka transactions (don't cover the SQLite write).
+7. **Advantages:** no lost events; the API works even when Kafka is down. 8. **Disadvantages:** ~1 s extra latency,
+   an extra table, duplicates possible (handled by the idempotent consumer).
+9. **Failure modes:** relay crash → rows stay unpublished until restart; poison row → retried forever with backoff
+   (visible in `last_error`). 10. **Scaling:** multiple relays would need row claiming (`SELECT … FOR UPDATE SKIP LOCKED`
+   in Postgres). 11. **Place:** inside the Meeting Service, between the services and the publisher.
+12. **30 s:** "The request only writes to the database — the event goes into an outbox table in the same transaction.
+   A background relay publishes it to Kafka, retrying until it succeeds, so an event can be duplicated but never lost."
+13. **Follow-ups:** What if the relay publishes and crashes before marking the row? (published again → the consumer
+   de-duplicates by event id) · Why stop the batch at the first failure? (keeps events for one meeting in order).
+
+## Eventual consistency
+1. **What:** the summary isn't available the moment a meeting is created; it becomes consistent a few seconds later.
+2. **Why:** AI work is slow and can fail; the user shouldn't wait for it or lose their meeting because of it.
+3. **How:** `processing_status` makes the gap explicit — `pending` (in the outbox) → `processing` (handed to Kafka) →
+   `completed` / `failed`. The UI polls the meeting every 2 s only while pending/processing, shows "Generating notes…",
+   then a toast; `failed` shows the reason and a Retry button (`POST /summary/regenerate`).
+4. **Safety rules:** results are applied idempotently (`processed_events`), results for an older `transcript_revision`
+   are discarded (`stale`), results for deleted meetings are dropped, and regeneration replaces only AI-sourced action
+   items — never what the user created or edited.
+5. **Strong consistency where it matters:** every user write (CRUD) is a single synchronous SQLite transaction.
+12. **30 s:** "CRUD is strongly consistent; only AI output is eventually consistent, and the UI shows that state honestly
+   with a processing status instead of pretending it's instant."
+13. **Follow-ups:** Why poll instead of WebSockets? (one page needs it, works through every proxy) · What if the result
+   arrives before the relay marks `processing`? (the relay only moves `pending → processing`, so a completed meeting
+   stays completed — tested).
+
 ## Summary generation
 `SummaryProvider` interface; `MockSummaryProvider` (default, deterministic heuristics); optional LLM provider.
-Seeded meetings use hand-written summaries. **30 s:** "A pluggable provider: mock by default so the demo is free and
-tests are deterministic; an LLM drops in behind the same interface." → [ADR-007](adr/007-mock-summary-provider.md) _(Phase 6.)_
+Seeded meetings use hand-written summaries. **How the mock works:** keywords = frequent meaningful words (stop-words,
+numbers and names removed); chapters = equal runs of segments titled by their own keywords and summarized by their
+most informative sentence; action items = commitment phrases ("I'll …" → the speaker, "Sarah, can you …" → Sarah,
+"we need to … by Friday" → unassigned). **30 s:** "A pluggable provider: a deterministic mock by default so the demo is
+free and tests are exact; an LLM drops in behind the same interface." → [ADR-007](adr/007-mock-summary-provider.md)
 
 ## Transcript synchronization
 1. **What:** Two-way link between player position and transcript. 2. **Why:** PDF must-have R2.3/R2.4 and the core Fireflies interaction.

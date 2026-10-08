@@ -1,6 +1,6 @@
 # Event-Driven Architecture
 
-> Status: **Accepted (Phase 1)** — implemented in Phases 5–6.
+> Status: **Implemented and verified (Milestone C)** — see §11 for the file map and the evidence.
 
 ## 1. Why Kafka here — and only here
 
@@ -139,3 +139,34 @@ internal: protected by a shared `INTERNAL_API_TOKEN` header and not exposed to t
 ## 10. What production would add
 DLQ topic, schema registry (Avro/Protobuf) instead of duplicated Pydantic contracts, consumer lag alerts,
 multiple brokers with replication factor 3, outbox via CDC (Debezium) instead of polling.
+
+## 11. Implementation map and evidence (Milestone C)
+
+| Piece | File | Behaviour |
+|-------|------|-----------|
+| Envelope + typed payloads | `meeting-service/app/events/envelope.py`, `payloads.py` (identical copies in `ai-service`) | Pinned by `tests/contract/*.schema.json`; CI fails if the two services' files differ |
+| Outbox write | `app/services/processing.py` (`queue_processing`) | Same transaction as the meeting/segments; status → `pending` |
+| Outbox relay | `app/events/relay.py` | Polls every `OUTBOX_POLL_INTERVAL` (1 s), publishes oldest first, stops a batch at the first failure (keeps per-meeting order), records `attempts`/`last_error`, exponential backoff up to 30 s; on success `pending → processing` (only if still pending) |
+| Result consumer | `app/events/consumer.py` | `ai.events`, manual offset commit **after** the DB commit, malformed messages logged and skipped, 3 apply attempts, reconnect with backoff |
+| Idempotent apply | `app/services/summaries.py` | Outcomes `applied · duplicate · stale · meeting_missing · invalid · ignored`; `processed_events` row in the same transaction |
+| AI processor | `ai-service/app/processors/meeting_processor.py` | Shared by Kafka and HTTP paths; retries with backoff 1 s, 2 s…; never raises — always answers `summary.generated` or `summary.failed` |
+| AI Kafka loop | `ai-service/app/consumers/kafka_consumer.py` | Consume → process → produce (key = meeting id) → commit |
+| HTTP fallback | `ai-service/app/routers/internal.py` + `meeting-service/app/events/http_publisher.py` | Mounted only in `http` mode; `X-Internal-Token` checked with `secrets.compare_digest` |
+| Lifespan wiring | `meeting-service/app/main.py` (`background_workers`) | kafka: relay + consumer · http: relay · inline-test: none |
+
+**Evidence**
+- `pytest -m kafka` against a real broker + the real AI service container: a meeting created through the API reaches
+  `completed` with a stored summary and assigned action items (`tests/kafka/test_pipeline_kafka.py`, ~5 s).
+- Full `docker compose` stack: meeting created with `curl` → `completed` in ~1 s; survives a container restart.
+- In-process tests: ordering, retry after broker failure, duplicate delivery applied once, stale revision ignored,
+  results for deleted meetings, failure → `failed` + Retry, HTTP-mode race (result applied before the relay marks
+  `processing`), consumer reconnect, manual items survive regeneration.
+
+**A bug the tests caught:** creating the summary as `Summary(meeting=meeting)` silently didn't save — SQLAlchemy 2.x no
+longer cascades new objects into the session through a backref (it only warns). Fixed by assigning from the parent
+(`meeting.summary = summary`), and the test suite now turns every SQLAlchemy warning into an error.
+
+**Simplifications (documented, deliberate)**
+- No dead-letter topic: malformed messages are logged and skipped; applies that fail 3 times are logged and committed.
+- The relay is a polling loop (≈1 s latency), not CDC.
+- One relay instance is assumed (SQLite = one Meeting Service instance); multiple relays would need row claiming.
