@@ -1,32 +1,89 @@
 @import "tailwindcss";
 
-/* Design tokens — see docs/UI_DESIGN_SPEC.md §3. Dark values are added with the dark-mode bonus. */
+/* Design tokens — docs/UI_DESIGN_SPEC.md §3. Components use these through Tailwind colour names
+   (bg-surface, text-muted, border-border…), so a theme is just another set of values. */
 :root {
   --primary: #6d28d9;
+  --primary-hover: #5b21b6;
   --primary-soft: #f3eeff;
+  --primary-ring: #c4b5fd;
   --bg: #f7f7fb;
   --surface: #ffffff;
+  --surface-muted: #f3f3f8;
   --border: #e6e6ef;
   --text: #1f2033;
   --text-muted: #6b6f80;
+  --text-subtle: #9a9db0;
   --mark: #fde68a;
   --mark-current: #f59e0b;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --success: #16a34a;
+  --success-soft: #f0fdf4;
+  --warning: #b45309;
+  --warning-soft: #fffbeb;
 }
 
 @theme inline {
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
+  --color-primary-ring: var(--primary-ring);
   --color-bg: var(--bg);
   --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
   --color-border: var(--border);
   --color-text: var(--text);
-  --color-text-muted: var(--text-muted);
+  --color-muted: var(--text-muted);
+  --color-subtle: var(--text-subtle);
   --color-mark: var(--mark);
   --color-mark-current: var(--mark-current);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
   --font-sans: var(--font-inter);
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
+  font-size: 14px;
+}
+
+/* Tabular numbers keep timestamps from jittering while the player runs. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-muted) 0%,
+    var(--border) 50%,
+    var(--surface-muted) 100%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 6px;
+}
+
+input[type="range"].seek {
+  accent-color: var(--primary);
 }
