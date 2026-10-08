@@ -16,13 +16,21 @@ import {
   type TranscriptPanelHandle,
 } from "@/components/transcript/TranscriptPanel";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/States";
-import { isProcessing, keys, useMeeting, useSummary, useTranscript } from "@/hooks/queries";
+import {
+  isProcessing,
+  keys,
+  useActionItems,
+  useMeeting,
+  useSummary,
+  useTranscript,
+} from "@/hooks/queries";
 import { usePlaybackClock } from "@/hooks/usePlaybackClock";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/colors";
 import { findActiveSegmentIndex, playbackDurationMs } from "@/lib/transcript";
 import type { ProcessingStatus, Segment } from "@/lib/types";
 
+import { ExportDialog } from "./ExportDialog";
 import { MeetingHeader } from "./MeetingHeader";
 
 const NO_SEGMENTS: Segment[] = [];
@@ -63,6 +71,8 @@ export function MeetingWorkspace({ id }: { id: number }) {
   const [mobileTab, setMobileTab] = useState<"notes" | "transcript">("transcript");
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const actionItemsQuery = useActionItems(id); // shared cache with the notes panel
 
   const segments = transcriptQuery.data?.segments ?? NO_SEGMENTS;
   const durationMs = playbackDurationMs(meeting?.duration_seconds ?? 0, segments);
@@ -203,6 +213,7 @@ export function MeetingWorkspace({ id }: { id: number }) {
     <div className="flex h-full flex-col">
       <MeetingHeader
         meeting={loaded}
+        onDownload={() => setDownloading(true)}
         onEdit={() => setEditing(true)}
         onDelete={() => setDeleting(true)}
       />
@@ -253,6 +264,15 @@ export function MeetingWorkspace({ id }: { id: number }) {
 
       <PlayerBar state={state} clock={clock} segments={segments} />
 
+      {downloading && (
+        <ExportDialog
+          meeting={loaded}
+          segments={segments}
+          summary={summaryQuery.data}
+          actionItems={actionItemsQuery.data ?? []}
+          onClose={() => setDownloading(false)}
+        />
+      )}
       {editing && <EditMeetingModal meeting={loaded} onClose={() => setEditing(false)} />}
       {deleting && (
         <DeleteMeetingDialog

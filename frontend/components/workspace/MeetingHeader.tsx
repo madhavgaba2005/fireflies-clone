@@ -2,6 +2,7 @@
 
 import {
   ArrowLeft,
+  Download,
   CalendarDays,
   Clock,
   Link2,
@@ -27,12 +28,12 @@ export function MeetingHeader({
   meeting,
   onEdit,
   onDelete,
-  extraMenuItems,
+  onDownload,
 }: {
   meeting: MeetingDetail;
   onEdit: () => void;
   onDelete: () => void;
-  extraMenuItems?: React.ReactNode;
+  onDownload: () => void;
 }) {
   const comingSoon = useComingSoon();
   const regenerate = useRegenerateSummary(meeting.id);
@@ -121,7 +122,9 @@ export function MeetingHeader({
               Regenerate notes
             </MenuItem>
           )}
-          {extraMenuItems}
+          <MenuItem icon={<Download size={15} />} onSelect={onDownload}>
+            Download
+          </MenuItem>
           <MenuSeparator />
           <MenuItem icon={<Trash2 size={15} />} onSelect={onDelete} danger>
             Delete meeting

@@ -57,3 +57,19 @@ item management, E2E for sync, search, CRUD, action items and error states, resp
 **Testing:** 65 Vitest tests; 33 Playwright tests (all MUST workflows) against the real stack.
 **Known limitations:** playback is simulated (no audio file); date filters use UTC days.
 Closes #10, #11, #12, #13, #14
+
+## #16 feat: global search (bonus B3) — `feature/16-global-search`
+**What:** `GET /api/search` over titles and transcript lines (escaped LIKE, grouped per meeting, snippets); top-bar
+combobox with highlighted snippets that deep-links to `/meetings/{id}?t=ms&find=q`.
+**Why:** highest-priority bonus; Fireflies' global search is a core navigation feature.
+**Testing:** `test_search_api.py` (12); E2E `global-search.spec.ts` (2).
+**Known limitations:** LIKE instead of FTS5 (fine at this data size; see BONUS_FEATURES).
+Closes #16
+
+## #17 feat: export transcripts and notes (bonus B2) — `feature/17-export`
+**What:** Download dialog (⋯ menu) exporting the transcript or AI notes as TXT or Markdown, with timestamp and
+speaker toggles; pure formatters in `lib/export.ts`.
+**Why:** Fireflies' Download flow; generated client-side from cached data, so no new endpoint is needed.
+**Testing:** 6 Vitest tests; E2E `export.spec.ts` verifies real downloaded file names and contents.
+**Known limitations:** no PDF/DOCX formats.
+Closes #17
