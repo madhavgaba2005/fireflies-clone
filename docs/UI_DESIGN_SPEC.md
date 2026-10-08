@@ -2,7 +2,7 @@
 
 > Status: **Accepted for implementation (Phase 1)** — derived from fireflies.ai and the official help-centre articles
 > ("Learn about the Fireflies Notepad", "Fireflies AI Meeting Summaries"), reviewed 2026-10-08. The logged-in app
-> could not be inspected directly; details are refined at the start of Phase 7 against current screenshots. Fireflies is a **visual/UX reference only** —
+> could not be inspected directly. Implemented in Milestones D–F — see §11 for what was built and README for screenshots. Fireflies is a **visual/UX reference only** —
 > no Fireflies code, logos, illustrations or proprietary assets are used. Our product name/logo is original.
 
 ## 1. Observed Fireflies patterns we will recreate
@@ -126,3 +126,21 @@ Player bar also shows a **speaker timeline** (coloured blocks per speaker turn) 
 - https://fireflies.ai/
 - https://guide.fireflies.ai/articles/6653885315-learn-about-the-fireflies-notepad
 - https://guide.fireflies.ai/articles/9547055509-learn-about-the-fireflies-ai-meeting-summaries
+
+## 11. Implementation notes (Milestones D–F)
+- **Product name and logo:** "Lumen" with an original sparkle mark — Fireflies is a UX reference, not a brand to copy.
+- **Library:** day groups ("Today", "Yesterday", "Mon, Oct 5") with sticky headers; rows show time, duration, open
+  action items, processing chip (hidden when ready), two keyword chips (click → tag filter), avatar stack, ⋯ menu.
+- **Notes panel order:** Keywords → Overview → Outline (timestamped, clickable, current chapter highlighted) →
+  Action items (grouped by assignee, AI badge, due date / overdue, jump-to-moment) → Talk time. A separate bullet
+  "Notes" section was folded into the outline chapters (each chapter carries its own summary).
+- **Transcript:** consecutive lines by one speaker are grouped under one avatar/name; each line has a timestamp with a
+  hover "play" affordance; the active line gets a violet tint and left bar.
+- **Auto-follow rule:** the active line scrolls into view on playback *and* on seeks, except for 4 s after the user
+  scrolls or navigates search results — then a "Back to current" pill appears.
+- **Player:** speaker timeline painted under the seek bar; speaker legend; speed menu; an info icon states that playback
+  is simulated.
+- **Responsive (tested):** < 1024 px the sidebar becomes a drawer and the workspace panels become Notes / Transcript
+  tabs; no horizontal scroll at 390 px.
+- **Not implemented (by design):** the Fireflies "tool rail" (Soundbites / Comments / Bookmarks) — those are bonus or
+  out-of-scope features; the AskFred panel (bonus B5).

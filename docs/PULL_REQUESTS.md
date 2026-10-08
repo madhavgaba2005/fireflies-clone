@@ -43,3 +43,17 @@ processor, Kafka loop and HTTP fallback; compose healthchecks; CI Kafka job runs
 restart persistence.
 **Known limitations:** no DLQ; polling relay; single relay instance (see EVENT_DRIVEN_ARCHITECTURE §11).
 Closes #6, closes #7
+
+## #9 feat: app shell, meetings dashboard and meeting CRUD dialogs — `feature/9-meetings-dashboard`
+**What:** typed API client, URL-synced filters, Fireflies-style shell, library with search/filters/sort/tags, create /
+edit / delete dialogs, settings placeholders, Playwright harness running the real stack.
+**Testing:** 26 Vitest tests; library E2E specs. **Screenshots:** README.
+Closes #9; part of #13
+
+## #10 feat: meeting workspace with synchronized transcript — `feature/10-meeting-workspace`
+**What:** playback clock + active-segment search, transcript search, workspace (notes, transcript, player), action
+item management, E2E for sync, search, CRUD, action items and error states, responsive fix.
+**Why:** the interactive transcript and summary views are called out explicitly in the Functionality criterion.
+**Testing:** 65 Vitest tests; 33 Playwright tests (all MUST workflows) against the real stack.
+**Known limitations:** playback is simulated (no audio file); date filters use UTC days.
+Closes #10, #11, #12, #13, #14

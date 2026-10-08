@@ -9,6 +9,8 @@ One entry per milestone: what was built, how it was verified, what's left. Newes
 | A Database + seed | `feature/3-database-schema` | ✅ merged |
 | B Meeting API | `feature/4-meeting-api` | ✅ merged |
 | C Kafka + AI service | `feature/6-kafka-events` | ✅ merged |
+| D Frontend shell + dashboard + CRUD dialogs | `feature/9-meetings-dashboard` | ✅ merged |
+| E–F Workspace, transcript sync, search, action items | `feature/10-meeting-workspace` | ✅ merged |
 
 ---
 
@@ -64,3 +66,22 @@ effects; persistence via a fresh session). ruff + strict mypy clean.
 are now test errors; keyword de-duplication kept the last spelling instead of the first.
 
 **Decision:** no LLM provider ships (no key, no tests ⇒ it would be decorative); the extension point is documented in ADR-007.
+
+## D–F — Frontend: dashboard, workspace, transcript sync, CRUD, search (#9–#14)
+
+**Built**
+- App shell (sidebar, top bar, avatar menu, coming-soon dialogs, settings tabs), UI kit, TanStack Query hooks.
+- Library: day groups, debounced search, date presets/custom range, participant filter, sort, tags — URL-synced.
+- Create (upload/paste/form), edit and delete dialogs with toasts and inline server errors.
+- Workspace: notes panel (keywords, overview, outline, action items by assignee, talk time), transcript with search,
+  player with speaker timeline; simulated `PlaybackClock`; binary-search active segment; auto-follow with manual-scroll
+  grace; keyboard shortcuts; polling + "notes ready" toast; responsive tabs and drawer.
+
+**Verified**
+- 65 Vitest tests; 33 Playwright tests against the real stack (both services + production build), all passing,
+  including repeated runs of the timing-sensitive specs.
+- Visual review of every screen via screenshots (README) — no console errors.
+
+**Bugs found and fixed:** seek while paused didn't scroll the active line into view; optimistic checkbox flickered
+(update ran after an await); success toasts skipped when a row unmounted (`mutate` callbacks); top bar overflowed at
+phone width (utility-class conflict).

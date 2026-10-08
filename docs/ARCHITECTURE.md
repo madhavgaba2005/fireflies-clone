@@ -149,17 +149,16 @@ fireflies-clone/
 │       ├── requirements.txt · requirements-dev.txt · pyproject.toml
 │       └── Dockerfile
 └── frontend/
-    ├── app/                      # meetings/, meetings/[id]/, settings/, integrations/, layout.tsx
-    ├── components/               # layout/, meetings/, transcript/, summary/, action-items/, audio/, ui/
-    ├── hooks/                    # usePlaybackClock, useActiveSegment, useTranscriptSearch, useMeetingPolling
-    ├── lib/                      # api.ts, types.ts, format.ts, highlight.ts, transcript.ts, playback/ (PlaybackClock, SimulatedClock)
+    ├── app/                      # meetings/, meetings/[id]/, settings/, layout.tsx, providers.tsx
+    ├── components/               # layout/, meetings/, workspace/, transcript/, audio/, summary/, action-items/, settings/, ui/
+    ├── hooks/                    # queries.ts (TanStack Query hooks incl. polling), usePlaybackClock.ts
+    ├── lib/                      # api.ts, endpoints.ts, types.ts, playback.ts, transcript.ts, search.ts, filters.ts, format.ts, colors.ts
     ├── tests/e2e/                # Playwright
     ├── vitest.config.ts · playwright.config.ts · eslint.config.mjs · .prettierrc.json
     └── package.json
 ```
 
-**Phase 2 status:** everything above exists as a runnable skeleton except `alembic/`, `seed/`, `samples/` (Phase 3–4),
-`components/` and `hooks/` (Phase 7+). Both services are built with an app factory (`create_app(settings)`), run as
+**Status:** everything above is implemented (`seed/` lives at `app/seed/`). Both services are built with an app factory (`create_app(settings)`), run as
 `uvicorn app.main:create_app --factory`, so tests construct isolated apps without import-time side effects.
 
 Event schemas are defined once per service in `events/envelope.py`. They are intentionally duplicated (two small

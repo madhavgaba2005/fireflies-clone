@@ -104,7 +104,21 @@ jobs:
         run: npm test
       - name: Production build
         run: npm run build
-      - name: E2E smoke (Playwright)
+      # E2E runs against the real stack: Playwright starts both FastAPI services (HTTP
+      # processing mode, freshly seeded SQLite) and a production build of the frontend.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/*/requirements*.txt
+      - name: Install backend services for E2E
+        working-directory: .
+        run: |
+          pip install -r backend/meeting-service/requirements.txt
+          pip install -r backend/ai-service/requirements.txt
+      - name: E2E (Playwright, critical workflows)
+        env:
+          E2E_PYTHON: python
         run: |
           npx playwright install --with-deps chromium
           npm run test:e2e
