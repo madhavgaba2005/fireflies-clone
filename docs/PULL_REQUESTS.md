@@ -73,3 +73,11 @@ speaker toggles; pure formatters in `lib/export.ts`.
 **Testing:** 6 Vitest tests; E2E `export.spec.ts` verifies real downloaded file names and contents.
 **Known limitations:** no PDF/DOCX formats.
 Closes #17
+
+## #18 feat: dark mode (bonus B6) — `feature/18-dark-mode`
+**What:** dark values for every design token, account-menu toggle, localStorage persistence with a system-preference
+default, and a pre-paint script so there is no light flash; themed toasts.
+**Why:** visible polish at low cost, because all colours were already CSS variables.
+**Testing:** 3 Vitest tests; E2E `dark-mode.spec.ts` (toggle, reload persistence, system preference).
+**Screenshots:** `docs/screenshots/dark-library.png`, `dark-workspace.png`.
+Closes #18

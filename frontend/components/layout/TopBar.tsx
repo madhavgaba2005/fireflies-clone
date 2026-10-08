@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Menu as MenuIcon, Plus, Radio, Settings, User } from "lucide-react";
+import { LogOut, Menu as MenuIcon, Moon, Plus, Radio, Settings, Sun, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -8,6 +8,8 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { useComingSoon } from "@/components/ui/ComingSoon";
 import { Menu, MenuItem, MenuSeparator } from "@/components/ui/Menu";
+import { useTheme } from "@/hooks/useTheme";
+import { setTheme } from "@/lib/theme";
 
 import { useOpenCreateMeeting } from "./CreateMeetingContext";
 import { GlobalSearch } from "./GlobalSearch";
@@ -16,6 +18,7 @@ import { GlobalSearch } from "./GlobalSearch";
 export const DEFAULT_USER = { id: 101, name: "Alex Morgan", email: "alex.morgan@northwind.io" };
 
 export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
+  const theme = useTheme();
   const router = useRouter();
   const openCreate = useOpenCreateMeeting();
   const comingSoon = useComingSoon();
@@ -76,6 +79,12 @@ export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
           </MenuItem>
           <MenuItem icon={<Settings size={15} />} onSelect={() => router.push("/settings")}>
             Settings
+          </MenuItem>
+          <MenuItem
+            icon={theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+            onSelect={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            {theme === "dark" ? "Light mode" : "Dark mode"}
           </MenuItem>
           <MenuSeparator />
           <MenuItem

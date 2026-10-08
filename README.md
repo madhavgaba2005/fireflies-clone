@@ -227,7 +227,17 @@ Live meeting bot · real speech-to-text · Zoom/Meet/calendar/CRM integrations �
 each shown as a "Coming soon" placeholder.
 
 ## Bonus Features
-See [docs/BONUS_FEATURES.md](docs/BONUS_FEATURES.md).
+Built only after every MUST-have was verified; details and tests in [docs/BONUS_FEATURES.md](docs/BONUS_FEATURES.md).
+
+| Bonus | Where to find it |
+|---|---|
+| Global search across all meetings | Top-bar search; results deep-link to the exact transcript moment |
+| Export (TXT / Markdown) | Meeting ⋯ menu → **Download**: transcript or AI notes, with timestamp/speaker options |
+| Dark mode | Account menu → **Dark mode** (follows the system setting until you choose) |
+| Tags | AI keywords appear as chips on meetings and in notes; clicking one filters the library |
+
+Deferred on purpose: comments on transcript lines and an "Ask" chat (a convincing chat needs a real LLM; see
+BONUS_FEATURES).
 
 ## Design Trade-offs
 See [docs/TRADEOFFS.md](docs/TRADEOFFS.md) and [docs/adr/](docs/adr/).
@@ -250,3 +260,5 @@ Captured from the running application (seeded data).
 | ![Transcript search](docs/screenshots/transcript-search.png) | ![New meeting](docs/screenshots/new-meeting.png) |
 | **Filters (last 30 days, one participant)** | **Phone width** |
 | ![Filters](docs/screenshots/library-filters.png) | ![Mobile](docs/screenshots/mobile.png) |
+| **Dark mode — library** | **Dark mode — global search over the workspace** |
+| ![Dark library](docs/screenshots/dark-library.png) | ![Dark workspace](docs/screenshots/dark-workspace.png) |
