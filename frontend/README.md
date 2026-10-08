@@ -12,9 +12,11 @@ lib/
   *.test.ts          Vitest unit tests (pure logic)
 tests/e2e/           Playwright critical-workflow tests
 ```
+
 `components/` and `hooks/` are added with the features that need them (Phase 7+).
 
 ## Run locally
+
 ```bash
 npm install
 cp .env.example .env.local
@@ -22,6 +24,7 @@ npm run dev                      # http://localhost:3000
 ```
 
 ## Checks
+
 ```bash
 npm run lint && npm run format:check && npm run typecheck
 npm test                         # Vitest unit tests

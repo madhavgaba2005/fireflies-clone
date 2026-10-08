@@ -8,3 +8,7 @@ tests/
 htmlcov/
 .env
 **/__pycache__/
+e2e.db
+e2e.db-*
+dev.db
+dev.db-*
