@@ -1,52 +1,62 @@
 # Test Coverage Matrix
 
-Every MUST-have needs ≥ 1 automated verification. **P** = planned, **✓** = test exists and passes. Test file names are filled in as written.
+Every MUST-have requirement maps to at least one automated test that **exists and passes** (✓). File references are
+relative to each project: `ms/` = `backend/meeting-service/tests`, `ai/` = `backend/ai-service/tests`,
+`fe/` = `frontend` (Vitest `lib/*.test.ts`, Playwright `tests/e2e/*.spec.ts`).
 
-| Req | Requirement | Unit | Integration | E2E | Manual |
-|-----|-------------|------|-------------|-----|--------|
-| R1.1 | Meeting list fields | | P | P | |
-| R1.2 | Title search | P (repo filter) | P | P | |
-| R1.3 | Date filter | | P (inclusive bounds, 422 on inverted range) | P | |
-| R1.4 | Participant filter | | P | P | |
-| R1.5 | Sort by recency | | P | P | |
-| R1.6 | Navbar profile/settings | | | P | |
-| R2.1 | Transcript with speakers + timestamps | | P (ordering) | P | |
-| R2.2 | Player + seek bar | | | P | |
-| R2.3 | Transcript → player | | | P | |
-| R2.4 | Player → transcript highlight/scroll | P (`findActiveSegmentIndex`) | | P | |
-| R2.5 | Transcript search + highlight | P (`splitByQuery`, regex chars) | | P | |
-| R3.1 | Overview | P (provider) | P (consumer persists) | P | |
-| R3.2 | Action items extracted | P (extraction heuristics) | P | P | |
-| R3.3 | Topics / chapters | P | P | P (click chapter seeks) | |
-| R3.4 | Async generation for new meetings | | P (memory-bus pipeline) + P (`kafka`) | P | |
-| R4.1 | Create via upload | P (txt/vtt/json parsers, malformed) | P (413/415/400) | P | |
-| R4.2 | Create via paste | P | P | P | |
-| R4.3 | Create via form | | P | P | |
-| R4.4 | Edit metadata | P (participant diff, 409 rule) | P | P (+ reload) | |
-| R4.5 | Delete meeting | | P (cascade, 404 after) | P (+ reload) | |
-| R4.6–4.8 | Action item add / edit / complete | P (`completed_at` rule) | P | P (+ reload) | |
-| R4.9 | Persistence | | P (new session reads) | P (reload in every CRUD spec) | |
-| R5.1–5.6 | Fireflies experience, modals, toasts, settings | | | P (toast/modal assertions) | P (visual checklist) |
-| M1–M5 | Placeholders | | | P | |
-| C3/C7 | Schema constraints & migrations | | P (`test_schema.py`, migration up/down) | | |
-| X2 | Idempotency & stale results | P | P (duplicate event_id ignored; older revision ignored) | | |
-| X2a | Processing state machine | P (transitions, result accepted from pending and processing) | P | P (Processing → Ready) | |
-| X2b | HTTP fallback mode | | P (relay → fake AI endpoint → apply) | | P (deployed) |
+E2E tests run against the real stack (both FastAPI services + production frontend build), not mocks.
 
-## Edge cases (each must have a named test before its phase is ✅)
+## Must-have requirements
 
-| Edge case | Layer | Phase |
-|-----------|-------|-------|
-| Empty library / no filter matches | E2E | 8 |
-| Meeting not found (API 404, UI page) | Integration, E2E | 4, 9 |
-| Empty transcript (form-created meeting) | Integration, E2E | 4, 9 |
-| Transcript search: no matches / multiple matches / regex characters / case | Unit, E2E | 13 |
-| Playback time exactly on a segment boundary; between segments; before first; at/after end | Unit | 10 |
-| Duplicate action-item submit (double click) | E2E (button disabled while pending) | 12 |
-| Delete failure / API unavailable → error toast, UI rolled back | E2E (route mocked) | 11, 12 |
-| Summary processing failure → `failed` + Retry | Integration, E2E | 5, 6 |
-| Duplicate Kafka event | Integration | 5 |
-| Malformed transcript (bad timestamps, empty file, wrong type, too large) | Unit, Integration | 4 |
-| Missing participant data / unknown speaker | Unit | 4 |
-| Invalid payloads (empty title, inverted date range, bad ids) | Integration | 4 |
-| Stale UI after mutation (cache invalidated) | E2E (+ reload) | 11, 12 |
+| Req | Requirement | Unit | Integration (API / DB) | E2E (browser) |
+|-----|-------------|------|------------------------|---------------|
+| R1.1 | List with title, date, duration, participants | — | ✓ `ms/integration/test_meetings_api.py::test_list_returns_required_fields_newest_first` | ✓ `library.spec` "lists meetings with title, date, duration and participants" |
+| R1.2 | Search by title | ✓ `fe/lib/format.test.ts` (URL round-trip) | ✓ `test_search_by_title_is_case_insensitive`, `test_search_treats_like_wildcards_literally` | ✓ "search by title narrows the list and survives a reload", "top-bar search…" |
+| R1.3 | Filter by date | ✓ `format.test.ts` "turns presets into inclusive day ranges" | ✓ `test_filter_by_date_range_is_inclusive`, `test_inverted_date_range_is_rejected` | ✓ "filter by date range" |
+| R1.4 | Filter by participant | — | ✓ `test_filter_by_participant_any_of`, `test_filters_combine` | ✓ "filter by participant" |
+| R1.5 | Sort by recency | — | ✓ `test_sort_oldest_first` (+ default order) | ✓ "sort by recency toggles newest/oldest first" |
+| R1.6 | Navbar with profile/settings placeholders | — | — | ✓ "navbar: profile and settings placeholders, coming-soon features" |
+| R2.1 | Transcript with speakers + timestamps | — | ✓ `test_transcript_is_ordered_with_speaker_and_times` | ✓ `workspace.spec` "shows speaker-labelled, timestamped transcript and AI notes" |
+| R2.2 | Player with seek bar | ✓ `fe/lib/playback.test.ts` (13 tests: play, pause, seek, clamp, rate, end, restart) | — | ✓ "moving the seek bar…", "keyboard: space plays and pauses" |
+| R2.3 | Transcript line → seeks player | — | — | ✓ "clicking a transcript line seeks the player there and plays", "outline chapters … seek the player" |
+| R2.4 | Player → active line highlighted + scrolled | ✓ `fe/lib/transcript.test.ts` (boundaries, gaps, before first, after end, binary ≡ linear) | — | ✓ "moving the seek bar highlights and scrolls to the matching line", "playback highlights the active line and keeps it in view" |
+| R2.5 | Transcript search with highlights | ✓ `fe/lib/search.test.ts` (case, regex chars, overlaps, wrap-around) | — | ✓ "search within the transcript highlights matches and navigates", "search with no matches says so" |
+| R3.1 | AI summary | ✓ `ai/unit/test_mock_provider.py` | ✓ `test_summary_has_overview_topics_and_keywords`, `ms/integration/test_summary_results.py` | ✓ workspace overview; crud "create by pasting… notes are generated asynchronously" |
+| R3.2 | Action items extracted | ✓ `test_action_items_detect_commitments_requests_and_deadlines`, `…skip_vague_statements` | ✓ `test_assignee_is_kept_only_if_they_attend` | ✓ crud (AI item appears), `action-items.spec` "seeded AI action items are grouped by assignee" |
+| R3.3 | Topics / outline / chapters | ✓ `test_chapters_start_at_their_first_segment…` | ✓ summary topics ordered with `start_ms` | ✓ outline shown; chapter click seeks |
+| R3.4 | Seeded / mocked / generated summaries | ✓ processor retries & failures (`ai/unit/test_processor.py`) | ✓ `ms/integration/test_outbox_pipeline.py`; **real Kafka** `ms/kafka/test_pipeline_kafka.py` | ✓ crud: "Notes ready" appears without reload |
+| R4.1 | Create by upload | ✓ parser txt/vtt/json + sample files | ✓ `test_create_from_uploaded_vtt_and_json` | ✓ "create by uploading a WebVTT file" |
+| R4.2 | Create by paste | ✓ parser | ✓ `test_create_with_pasted_transcript_queues_processing` | ✓ "create by pasting a transcript…" |
+| R4.3 | Create via form | — | ✓ `test_create_via_form_without_transcript` | ✓ "create via the manual form, without a transcript" |
+| R4.4 | Edit title, participants | — | ✓ `test_update_title_date_and_participants_persists`, `test_removing_a_speaker_is_a_conflict` | ✓ "edit title and participants; changes persist after reload" |
+| R4.5 | Delete meeting | — | ✓ `test_delete_removes_meeting_and_children`, `test_schema.py` cascade | ✓ "delete a meeting from the library…", "delete from the workspace…" |
+| R4.6–R4.8 | Add / edit / complete action items | — | ✓ `ms/integration/test_action_items_api.py` (10 tests, 14 cases) | ✓ `action-items.spec` "add, edit, complete, uncomplete and delete — all persisted" |
+| R4.9 | Everything persists | — | ✓ `test_changes_persist_for_a_new_session`; Docker restart check (PROGRESS.md, Milestone C) | ✓ reloads in crud and action-items specs |
+| R5.1–R5.2 | Fireflies layout, transcript + summary panels | — | — | ✓ workspace spec; manual visual review (screenshots in README) |
+| R5.3 | Forms, modals, search, filters | — | — | ✓ create/edit/delete dialogs, filters, transcript search |
+| R5.4 | Toasts | — | — | ✓ "Meeting created", "Meeting updated", "Meeting deleted", "Action item added/deleted", error toasts |
+| R5.5 | Settings placeholders | — | — | ✓ navbar spec (profile + integrations tabs) |
+| M1–M5 | Coming-soon placeholders | — | — | ✓ navbar spec (Analytics, Add to live meeting) |
+
+## Edge cases
+
+| Edge case | Covered by |
+|-----------|-----------|
+| Empty library / no filter matches | ✓ `test_empty_library`; E2E "no matches shows an empty state" |
+| Meeting not found | ✓ `test_missing_meeting_is_404_everywhere`; E2E "unknown meeting shows a not-found state" |
+| Empty transcript (form-created meeting) | ✓ `test_create_via_form_without_transcript`; E2E manual-form test ("No transcript") |
+| Transcript search: no matches / many matches / regex characters / case | ✓ `search.test.ts`; E2E search specs |
+| Timestamp exactly on a boundary, in a gap, before first, after end | ✓ `transcript.test.ts` (9 parametrized cases) |
+| Duplicate action-item submission | ✓ submit button disabled while saving (`ActionItemEditor`); create guarded by `saving` |
+| Delete failure → error toast, item kept | ✓ E2E "failed delete shows an error toast and keeps the meeting" |
+| API unavailable → error state + retry | ✓ E2E "API unavailable: the library shows an error with a working retry" |
+| Failed optimistic toggle rolls back | ✓ E2E "failed action-item toggle rolls back the optimistic checkbox" |
+| Summary processing failure → reason + retry | ✓ `test_failure_marks_meeting_failed_with_reason`, `test_retry_after_failure_succeeds`; E2E failure state |
+| Duplicate Kafka event | ✓ `test_duplicate_delivery_is_applied_once`, consumer test with a duplicated message |
+| Stale result (older transcript revision) | ✓ `test_stale_result_for_an_older_revision_is_ignored` |
+| Malformed transcript | ✓ parser tests (txt/vtt/json); `test_malformed_transcript_is_400_with_line_number`; E2E inline error |
+| Malformed event on Kafka | ✓ `test_handle_message_outcomes`, AI `test_requests_are_processed…` (garbage skipped) |
+| Missing participant data | ✓ `test_unknown_participant_id_is_422`, JSON parser "missing speaker uses placeholder" |
+| Invalid payloads | ✓ `test_invalid_create_payloads_are_422` (9 cases), action-item `test_invalid_payloads` (5 cases) |
+| Stale UI after mutation | ✓ cache invalidation per mutation (`hooks/queries.ts`); every E2E CRUD test reloads |
+| Phone-width layout | ✓ E2E `responsive.spec` (no horizontal scroll, drawer, tabs) |

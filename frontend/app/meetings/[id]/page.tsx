@@ -1,9 +1,15 @@
-// Placeholder route — the meeting workspace is built in Phase 9.
-export default function MeetingPage() {
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+
+import { MeetingWorkspace } from "@/components/workspace/MeetingWorkspace";
+
+export default async function MeetingPage({ params }: PageProps<"/meetings/[id]">) {
+  const { id } = await params;
+  const meetingId = Number(id);
+  if (!Number.isInteger(meetingId) || meetingId < 1) notFound();
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-semibold">Meeting</h1>
-      <p className="mt-2 text-text-muted">The meeting workspace is under construction.</p>
-    </main>
+    <Suspense>
+      <MeetingWorkspace id={meetingId} />
+    </Suspense>
   );
 }

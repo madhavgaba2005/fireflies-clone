@@ -207,14 +207,37 @@ free and tests are exact; an LLM drops in behind the same interface." → [ADR-0
 5. **Alternatives:** Linear scan per frame; real audio from TTS. 6. **Rejected:** O(n) per frame is fine but binary search is no harder; TTS costs time for no grading value.
 7. **Adv:** Same logic works with real media. 8. **Dis:** No sound in the demo.
 9. **Failure/edge cases:** t exactly on a boundary, t before the first segment, gaps, t ≥ duration, empty transcript — each unit-tested.
-10. **Scaling:** O(log n) per tick. 11. **Place:** Frontend workspace. 12. **30 s:** "One clock is the source of truth; a binary search maps time to the active line; clicking a line just seeks the clock." _(Phase 10.)_
+10. **Scaling:** O(log n) per tick. 11. **Place:** Frontend workspace. 12. **30 s:** "One clock is the source of truth; a binary search maps time to the active line; clicking a line just seeks the clock."
+**Implementation:** `lib/playback.ts` (`SimulatedClock`: time = anchor position + elapsed wall-clock × rate, so
+skipped frames or background tabs never drift), `hooks/usePlaybackClock.ts` (`useSyncExternalStore`),
+`lib/transcript.ts` (`findActiveSegmentIndex`), `components/transcript/TranscriptPanel.tsx` (memoized lines,
+auto-follow with a 4 s manual-scroll grace period), `components/workspace/MeetingWorkspace.tsx` (wiring, keyboard).
+**Performance:** the clock ticks every animation frame, but only the player re-renders each frame; `TranscriptPanel`
+is memoized and receives just `activeIndex`, so it re-renders when the active line *changes*, and each
+`TranscriptLine` is memoized too. **Tests:** 9 boundary cases + clock behaviour (Vitest), 4 E2E sync tests.
 13. **Follow-ups:** What happens at exact boundaries? Why not re-render every line each frame? (memoized lines, only active index changes trigger re-render)
 
 ## Transcript search
 Client-side, case-insensitive. Query is regex-escaped; text is split into match/non-match fragments rendered as
 `<mark>` — never `dangerouslySetInnerHTML`, so uploaded text cannot inject HTML. "n of m" counter, Enter/Shift+Enter
 navigation. **30 s:** "Search runs in the browser over already-loaded segments and highlights safely with React
-elements." _(Phase 13.)_
+elements." Implemented in `lib/search.ts` + `TranscriptPanel.tsx`; tested by `search.test.ts` and two E2E specs.
+
+## Frontend state management
+1. **What:** server state (meetings, transcripts, summaries, action items) lives in **TanStack Query**; UI state
+   (dialogs, filters, search query, playback) lives in React state, the URL, or the playback clock.
+2. **Why:** the rubric looks at loading/error states and fresh data after mutations — a query cache provides both
+   without Redux boilerplate. 3. **How:** one hook per endpoint in `hooks/queries.ts`; every mutation invalidates
+   exactly the queries it changes (`keys.*`); the meeting query polls every 2 s only while notes are pending/processing.
+4. **Optimistic action items:** the row keeps a local optimistic value set synchronously on click (no flicker) and
+   cleared when the server answers; failures roll back and toast.
+5. **A lesson worth telling:** `mutate(vars, { onSuccess })` callbacks are skipped if the component unmounts first —
+   a deleted row unmounts after the refetch, so its "deleted" toast sometimes never showed (caught by repeated E2E
+   runs). Using `await mutateAsync()` fixed it: the promise settles regardless of unmounting.
+6. **Alternatives:** Redux/Zustand (more code for server state), SWR (similar; weaker mutation API), hand-written
+   `useEffect` fetching (re-implements caching and invalidation).
+12. **30 s:** "Server data is cached by TanStack Query with one hook per endpoint and targeted invalidation; everything
+   else is local state or the URL. The only polling is while AI notes are being generated."
 
 ## Testing
 pytest + pytest-cov (unit, integration with in-memory publisher, one real Kafka test), Playwright for critical

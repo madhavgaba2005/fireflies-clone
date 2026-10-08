@@ -2,9 +2,11 @@
 
 Maps each of the PDF's seven evaluation criteria to **concrete, checkable evidence** in this repository.
 An evaluator should be able to verify every "Evidence" cell in under a minute.
-Status uses the same legend as [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md).
-The PDF gives seven criteria and **no numeric weights**; none are invented here. §8 lists, per criterion, what an
-evaluator is likely to inspect, the main risks to the score, and what we do about them.
+Status uses the same legend as [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md): ✅ verified by passing tests or a
+documented run · 🟨 in progress · ⬜ not started. The PDF gives seven criteria and **no numeric weights**; none are
+invented here. §8 lists what an evaluator is likely to inspect, the main risks, and what we did about them.
+
+Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = `frontend`.
 
 ---
 
@@ -14,18 +16,18 @@ evaluator is likely to inspect, the main risks to the score, and what we do abou
 
 | Evidence | Where | Req IDs | Status |
 |----------|-------|---------|--------|
-| Dashboard lists seeded meetings with title, date, duration, participants | `/meetings` | R1.1 | ⬜ |
-| Title search, date-range filter, participant filter, sort toggle (combinable, URL-synced so refresh keeps them) | `/meetings?q=…&participant=…` | R1.2–R1.5 | ⬜ |
-| Transcript with speaker + timestamp per line | `/meetings/{id}` right panel | R2.1 | ⬜ |
-| Player with seek bar, speed, ±15 s | bottom player bar | R2.2 | ⬜ |
-| Click line → player seeks; playback → active line highlighted + auto-scrolled | detail page | R2.3, R2.4 | ⬜ |
-| In-transcript search with highlights, "n of m", next/prev | transcript search box | R2.5 | ⬜ |
-| Overview, outline/chapters (timestamped, clickable), action items | left panel | R3.1–R3.3 | ⬜ |
-| New meeting → async AI summary appears without reload ("Processing…" → ready toast) | create flow | R3.4, X2 | ⬜ |
-| Create (upload / paste / form), edit, delete meetings | modals | R4.1–R4.5 | ⬜ |
-| Add / edit / complete / delete action items | action items tab | R4.6–R4.8 | ⬜ |
-| Everything survives a hard refresh and a server restart | any | R4.9 | ⬜ |
-| **Proof:** Playwright suite exercises every row above against a real backend | `frontend/tests/e2e/` | all | ⬜ |
+| Library lists meetings with title, date, duration, participants, grouped by day | `/meetings` — `fe/components/meetings/` | R1.1 | ✅ |
+| Title search, date presets + custom range, participant filter, sort, keyword tags — combinable and URL-synced | `/meetings?q=…&participant=…&date=7d` | R1.2–R1.5 | ✅ |
+| Transcript with speaker, avatar and timestamp per line | `/meetings/{id}` right panel | R2.1 | ✅ |
+| Player: play/pause, ±15 s, seek bar with speaker timeline, speed 0.75–2× | bottom player bar | R2.2 | ✅ |
+| Click a line/chapter/action-item timestamp → player seeks and plays; playback and seeking → active line highlighted and scrolled into view | workspace | R2.3, R2.4 | ✅ |
+| In-transcript search: highlighted matches, "n / m", ↑/↓, Enter / Shift+Enter, "No matches" | transcript header | R2.5 | ✅ |
+| Keywords, overview, timestamped outline, action items grouped by assignee, talk time | left panel | R3.1–R3.3 | ✅ |
+| New meeting → "Generating notes…" → notes appear without reload + toast | create flow | R3.4, X2 | ✅ |
+| Create (upload .txt/.vtt/.json, paste, form), edit, delete | dialogs | R4.1–R4.5 | ✅ |
+| Add / edit / complete / uncomplete / delete action items | action items section | R4.6–R4.8 | ✅ |
+| Everything survives a refresh and a server restart | any | R4.9 | ✅ |
+| **Proof:** 33 Playwright tests drive all of the above against the real stack | `fe/tests/e2e/` | all | ✅ |
 
 ## 2. UI/UX
 
@@ -33,16 +35,17 @@ evaluator is likely to inspect, the main risks to the score, and what we do abou
 
 | Evidence | Where | Status |
 |----------|-------|--------|
-| Written design spec derived from studying Fireflies before coding UI | [UI_DESIGN_SPEC.md](UI_DESIGN_SPEC.md) | 🟨 |
-| Fireflies-style collapsible left sidebar, top search bar, purple primary CTA | `components/layout/` | ⬜ |
-| Two-panel meeting workspace (summary left, transcript right) + bottom player bar | `app/meetings/[id]` | ⬜ |
-| Speaker avatars with consistent per-speaker colours, talk-time bar | `TranscriptLine`, `SpeakerStats` | ⬜ |
-| Loading skeletons, empty states (no meetings / no matches / no action items), error states with retry, 404 page | `components/ui/` | ⬜ |
-| Toasts for every mutation; "Coming soon" modals for out-of-scope features | `sonner` | ⬜ |
-| Keyboard: `/` focuses search, `Space` play/pause, `Esc` closes modals, Enter/Shift+Enter next/prev match | hooks | ⬜ |
-| Responsive: panels stack < 1024 px; sidebar collapses to icons/drawer | CSS breakpoints | ⬜ |
-| Dark mode (bonus) | theme toggle | ⬜ |
-| Screenshots in README side-by-side with intent | `README.md#screenshots` | ⬜ |
+| Design spec written from the Fireflies product site and help-centre guides before any UI code | [UI_DESIGN_SPEC.md](UI_DESIGN_SPEC.md) | ✅ |
+| Left sidebar (active state, Workspace section, live-assistant card), top bar with search, "Add to live meeting", purple "New meeting", avatar menu | `fe/components/layout/` | ✅ |
+| Two-panel notepad (notes left, transcript right) with a docked player bar | `fe/components/workspace/MeetingWorkspace.tsx` | ✅ |
+| Notes in Fireflies' order: keywords → overview → outline → action items (by assignee) → talk time | `fe/components/summary/NotesPanel.tsx` | ✅ |
+| Consistent per-person colours across avatars, speaker names, speaker timeline and talk-time bars | `fe/lib/colors.ts` | ✅ |
+| Loading skeletons, empty states (no meetings / no matches / no transcript / no action items), error states with Retry, not-found page | `fe/components/ui/States.tsx` | ✅ |
+| Toasts for every mutation and failure; "Coming soon" dialogs for out-of-scope features | sonner, `ComingSoon.tsx` | ✅ |
+| Keyboard: Space play/pause, ←/→ seek, `/` find, Enter/Shift+Enter matches, Esc closes dialogs | `MeetingWorkspace.tsx`, Radix | ✅ |
+| Responsive: sidebar → drawer, panels → tabs, no horizontal scroll at 390 px (E2E-tested) | `responsive.spec.ts` | ✅ |
+| Screenshots of the real app in the README | [README#screenshots](../README.md#screenshots) | ✅ |
+| Dark mode (bonus) | — | see [BONUS_FEATURES.md](BONUS_FEATURES.md) |
 
 ## 3. Database Design
 
@@ -50,16 +53,16 @@ evaluator is likely to inspect, the main risks to the score, and what we do abou
 
 | Evidence | Where | Status |
 |----------|-------|--------|
-| ER diagram + per-table rationale + normalization argument (3NF) | [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | 🟨 |
-| Many-to-many `meetings ↔ participants` through `meeting_participants` (composite PK) | `models/` | ⬜ |
-| Speakers are FKs to `participants` (no repeated name strings per line) | `transcript_segments.speaker_id` | ⬜ |
-| One-to-one `meetings → summaries` enforced by `UNIQUE(meeting_id)` | `summaries` | ⬜ |
-| Integer-millisecond timestamps with `CHECK (end_ms >= start_ms AND start_ms >= 0)` | `transcript_segments` | ⬜ |
-| `UNIQUE(meeting_id, sequence)` ordering guarantees; justified indexes only | migrations | ⬜ |
-| Explicit `ON DELETE` behaviour (CASCADE for owned children, SET NULL for assignee) and `PRAGMA foreign_keys=ON` | `database.py` | ⬜ |
-| Idempotency table (`processed_events`) + transactional outbox (`outbox_events`) | schema | ⬜ |
-| Alembic migrations — fresh install reproducible with one command | `alembic/` | ⬜ |
-| Tests proving constraints (cascade, unique, check) actually fire | `tests/test_schema.py` | ⬜ |
+| ER diagram, per-table rationale, 3NF argument, deviations from the brief explained | [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | ✅ |
+| M:N `meetings ↔ participants` via `meeting_participants` (composite PK + reverse index) | `ms/app/models/meeting.py` | ✅ |
+| Speakers and assignees are FKs to `participants` — no repeated name strings | `transcript_segments.speaker_id`, `action_items.assignee_id` | ✅ |
+| 1:1 `meetings → summaries` enforced by `UNIQUE(meeting_id)`; topics and keywords as child tables | `summaries`, `summary_topics`, `summary_keywords` | ✅ |
+| Integer-ms times with `CHECK (start_ms >= 0)`, `CHECK (end_ms >= start_ms)`; `UNIQUE(meeting_id, sequence)` | `transcript_segments` | ✅ |
+| Explicit `ON DELETE`: CASCADE (owned children), RESTRICT (speakers), SET NULL (assignee); FKs enforced per connection | models + `ms/app/database.py` | ✅ |
+| UTC-only datetime type; NOCASE-unique names | `ms/app/models/types.py` | ✅ |
+| Outbox + processed-events tables for reliable, idempotent events | `ms/app/models/events.py` | ✅ |
+| Alembic migration, run on startup; test proves migration ≡ models | `ms/alembic/`, `test_migrations.py` | ✅ |
+| Tests prove every constraint fires (cascade, RESTRICT, SET NULL, UNIQUE, CHECK) | `ms/tests/integration/test_schema.py` | ✅ |
 
 ## 4. Backend / API Design
 
@@ -67,16 +70,16 @@ evaluator is likely to inspect, the main risks to the score, and what we do abou
 
 | Evidence | Where | Status |
 |----------|-------|--------|
-| RESTful resource design, nested only where ownership is real | [API.md](API.md) | 🟨 |
-| Router → Service → Repository layering; routers contain no SQL, repositories contain no HTTP | `app/routers`, `app/services`, `app/repositories` | ⬜ |
-| Pydantic request/response schemas with field limits; `422` on bad input | `app/schemas` | ⬜ |
-| Uniform error envelope `{ "error": { "code", "message", "details" } }` | `meeting-service/app/errors.py`, `tests/integration/test_errors.py` | 🟨 handlers + tests done; applied to feature routes from Phase 4 |
-| Correct status codes: 200/201/204/400/404/409/413/415/422 | tests | ⬜ |
-| Pagination (`limit`/`offset` + `total`) on list endpoint | `GET /api/meetings` | ⬜ |
-| Auto-generated OpenAPI at `/docs` | FastAPI | 🟨 served by both services (verified); endpoints arrive from Phase 4 |
-| Async processing via Kafka with outbox + idempotent consumer; CRUD stays synchronous; visible `processing_status` | [EVENT_DRIVEN_ARCHITECTURE.md](EVENT_DRIVEN_ARCHITECTURE.md) | 🟨 |
-| Health endpoints `/health` (liveness) and `/health/ready` (DB; broker check added with the consumer in Phase 5) | both services | 🟨 liveness ✅, readiness DB ✅ |
-| Environment-based config (`pydantic-settings`), `.env.example` | `app/config.py` ×2, three `.env.example` files, fail-fast validation | ✅ |
+| 14 resource-oriented endpoints, nested only where ownership is real | [API.md](API.md), `/docs` | ✅ |
+| Router → Service → Repository: routers have no SQL, services no HTTP, repositories no rules | `ms/app/routers`, `services`, `repositories` | ✅ |
+| Separate Create / Update / Read schemas with field limits; 422 with field details | `ms/app/schemas` | ✅ |
+| One error envelope `{error: {code, message, details}}` for domain, validation, routing and unexpected errors | `ms/app/errors.py`, `test_errors.py` | ✅ |
+| Correct status codes (200/201/202/204/400/404/405/409/422/500), each tested | `test_meetings_api.py`, `test_action_items_api.py` | ✅ |
+| Pagination (`limit`/`offset` + `total`), N+1-free list query | `ms/app/repositories/meetings.py` | ✅ |
+| OpenAPI at `/docs` with documented error responses | FastAPI | ✅ |
+| Async processing: transactional outbox, Kafka, idempotent consumer, visible `processing_status`; CRUD stays synchronous | [EVENT_DRIVEN_ARCHITECTURE.md](EVENT_DRIVEN_ARCHITECTURE.md) | ✅ (real broker test) |
+| `/health` (liveness) and `/health/ready` (database) on both services; compose healthchecks | `routers/health.py` | ✅ |
+| Environment-based config, fail-fast validation, `.env.example` files | `app/config.py` ×2 | ✅ |
 
 ## 5. Code Quality
 
@@ -84,11 +87,12 @@ evaluator is likely to inspect, the main risks to the score, and what we do abou
 
 | Evidence | Where | Status |
 |----------|-------|--------|
-| `ruff` lint + format (backend), `eslint` + `prettier` + `tsc --strict` (frontend) enforced in CI | `.github/workflows/ci.yml` | 🟨 configured and passing locally; first GitHub run pending |
-| Typed everywhere: Python type hints + `mypy` on services; shared TS types mirroring API schemas | `mypy --strict` passes on both services; `tsc` strict | 🟨 |
-| Backend coverage report with threshold gate | `pytest --cov`, CI `--cov-fail-under=90` | 🟨 gate in place (98 % / 99 % on scaffolding) |
-| No dead code, no magic numbers (named constants), no secrets in repo | review | ⬜ |
-| Conventional commits, small PRs linked to issues | Git history | ⬜ |
+| ruff (lint + format) and `mypy --strict` clean on both services; ESLint, Prettier, `tsc --strict` clean on the frontend | local runs; CI workflow | ✅ (CI not yet run on GitHub) |
+| SQLAlchemy warnings turned into test failures (caught a real silent-data-loss bug) | `ms/pyproject.toml` | ✅ |
+| Backend coverage gate 90 % (actual: see [TESTING.md](TESTING.md)) | CI | ✅ |
+| Small focused modules; comments explain *why*, not *what* | review | ✅ |
+| No secrets in the repository; only `.env.example` files tracked | `git ls-files` check | ✅ |
+| Conventional commits on feature branches merged with `--no-ff`; PR descriptions archived | `git log --graph`, [PULL_REQUESTS.md](PULL_REQUESTS.md) | ✅ |
 
 ## 6. Code Modularity
 
@@ -96,13 +100,14 @@ evaluator is likely to inspect, the main risks to the score, and what we do abou
 
 | Evidence | Where | Status |
 |----------|-------|--------|
-| Two independently runnable/testable services with a single documented contract (event schemas) | `backend/*`, `tests/contract/envelope_v1.schema.json` ×2, CI `event-contract` job | 🟨 |
-| `SummaryProvider` interface with `MockSummaryProvider` (default) and optional `LLMSummaryProvider` | `ai-service/app/providers` | ⬜ |
-| Transcript parsers as pluggable strategy per format (`txt`, `vtt`, `json`) | `meeting-service/app/services/transcript_parsers` | ⬜ |
-| `EventPublisher` interface: `KafkaEventPublisher`, `HttpEventPublisher` (fallback), `InMemoryEventPublisher` (tests) | `meeting-service/app/events`, `tests/unit/test_publishers.py`, `tests/kafka/` | 🟨 built + tested; wired to the outbox in Phase 5 |
-| `PlaybackClock` interface: simulated clock now, `<audio>` later — transcript sync code unchanged | `frontend/lib/playback` | ⬜ |
-| Reusable FE components: `AudioPlayer`, `TranscriptPanel`, `TranscriptLine`, `TranscriptSearch`, `SummaryPanel`, `Topics`, `ActionItems`, `Modal`, `EmptyState` | `frontend/components` | ⬜ |
-| Logic in hooks / pure functions (`usePlaybackClock`, `useActiveSegment`, `splitByQuery`) — unit-testable, not buried in JSX | `frontend/hooks`, `frontend/lib` | ⬜ |
+| Two independently runnable/testable services; the only contract is a versioned envelope + payloads, pinned on both sides | `*/tests/contract/`, CI `event-contract` | ✅ |
+| `EventPublisher` (Kafka / HTTP fallback / in-memory) — business code never knows the transport | `ms/app/events/` | ✅ |
+| `SummaryProvider` interface (mock today; LLM = one class) and one `MeetingProcessor` shared by Kafka and HTTP | `ai/app/providers`, `ai/app/processors` | ✅ |
+| Transcript parser module per format (txt / vtt / json) behind one function | `ms/app/services/transcript_parser.py` | ✅ |
+| `PlaybackClock` interface: simulated clock now, a media-element clock later — sync code unchanged | `fe/lib/playback.ts` | ✅ |
+| Pure, unit-tested logic outside JSX: active segment, search, filters, formatting | `fe/lib/*.ts` (65 Vitest tests) | ✅ |
+| Reusable components: `Modal`, `Menu`, `Avatar(Stack)`, `StatusChip`, `EmptyState/ErrorState`, `ParticipantsInput`, `ActionItemEditor` (add + edit) | `fe/components/ui`, … | ✅ |
+| Server state in one place (TanStack Query hooks, targeted invalidation) | `fe/hooks/queries.ts` | ✅ |
 
 ## 7. Code Understanding
 
@@ -110,11 +115,11 @@ evaluator is likely to inspect, the main risks to the score, and what we do abou
 
 | Evidence | Where | Status |
 |----------|-------|--------|
-| Architecture doc with request, event and failure flows | [ARCHITECTURE.md](ARCHITECTURE.md) | 🟨 |
-| ADRs: context / decision / alternatives / consequences for each major choice | [adr/](adr/) | 🟨 |
-| Development guide covering every technology & pattern, with "how to explain it" | [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md) | 🟨 |
-| Interview guide: 30-second / detailed / trade-off answers + follow-ups | [INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.md) | ⬜ |
-| Deliberately small architecture — every moving part justified, nothing decorative | [TRADEOFFS.md](TRADEOFFS.md) | 🟨 |
+| Architecture: request, event, failure and data flows; why two services | [ARCHITECTURE.md](ARCHITECTURE.md) | ✅ |
+| ADRs (context / decision / alternatives / trade-offs / consequences) with implementation notes | [adr/](adr/) | ✅ |
+| Development guide: what / why / how / alternatives / failure modes / 30-second answers | [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md) | ✅ |
+| Interview guide with answers that cite real files | [INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.md) | 🟨 Milestone L |
+| Deliberately small architecture, honest trade-offs and limitations | [TRADEOFFS.md](TRADEOFFS.md) | ✅ |
 
 ## 8. Inspection, risks and score maximization
 

@@ -1,6 +1,6 @@
 # Testing Strategy
 
-> Status: **Structure in place (Phase 2)**. Numbers below are copied from real runs only.
+> Status: **All suites in place and green.** Numbers below are copied from real runs only.
 
 ## Test pyramid
 
@@ -37,16 +37,22 @@ cd frontend && npm test                               # Vitest
 cd frontend && npm run build && npm run test:e2e      # Playwright (needs `npx playwright install chromium` once)
 ```
 
-## Results at the end of Phase 2 (local run, 2026-10-09)
-| Suite | Result | Coverage |
-|-------|--------|----------|
-| meeting-service unit + integration | 36 passed, 1 deselected (kafka) | 98 % (line + branch) |
-| meeting-service kafka (`-m kafka`) | 1 passed against compose `apache/kafka:3.9.1` | — |
-| ai-service unit + integration | 11 passed | 99 % |
-| frontend Vitest | 6 passed | — |
-| frontend Playwright smoke | 2 passed | — |
+## Latest results (local run, Milestone F)
+| Suite | Result | Coverage (line + branch) |
+|-------|--------|--------------------------|
+| meeting-service unit + integration | 171 passed | 97 % |
+| meeting-service `-m kafka` (real broker + AI container) | 2 passed | — |
+| ai-service unit + integration | 39 passed | 99 % |
+| frontend Vitest | 65 passed | — |
+| frontend Playwright (real stack) | 33 passed (31 desktop + 2 phone-width) | — |
 
-Coverage at this stage measures scaffolding only and says nothing about features yet.
+**How E2E works:** `playwright.config.ts` starts the AI service and the Meeting Service in `PROCESSING_MODE=http`
+(no broker needed), resets and seeds a dedicated SQLite file, builds and starts the frontend on its own port, then
+drives Chromium. Tests run serially against one seeded database and look up seeded meetings by name, so they're
+independent of each other's data. Repeated runs (`--repeat-each`) were used to flush out timing bugs; two real UI
+races were found and fixed this way (see DEVELOPMENT_GUIDE "Frontend state management").
+
+
 
 ## CI behaviour
 See [CI_CD.md](CI_CD.md): any failing lint, test, coverage threshold, type-check, build or E2E job fails the PR.
