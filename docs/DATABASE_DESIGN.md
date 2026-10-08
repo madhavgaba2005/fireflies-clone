@@ -1,6 +1,6 @@
 # Database Design
 
-> Status: **Proposed (Phase 0)** — finalized in Phase 4 (models + Alembic migration).
+> Status: **Accepted (Phase 1)** — implemented in Phase 3 (models + Alembic migration + seed).
 > Engine: SQLite 3 via SQLAlchemy 2.0 (ORM, typed `Mapped[]` models). Owned exclusively by the Meeting Service.
 
 ## 1. ER diagram
@@ -23,7 +23,7 @@ erDiagram
         datetime meeting_date "NOT NULL, UTC"
         int duration_seconds "NOT NULL, >= 0"
         string source "seed|upload|paste|form"
-        string processing_status "not_requested|pending|completed|failed"
+        string processing_status "not_requested|pending|processing|completed|failed"
         string processing_error "nullable"
         int transcript_revision "NOT NULL default 0"
         string media_url "nullable"
@@ -186,7 +186,20 @@ the scale-up path is SQLite FTS5 (planned for bonus global search B3).
 * Uploading a new transcript replaces segments, bumps `transcript_revision`, sets `processing_status='pending'`,
   and writes a `transcript.updated` outbox row — all in one transaction.
 
-## 7. Migration strategy
+## 7. Differences from the baseline schema in the project brief (and why)
+
+| Brief baseline | Our design | Reason |
+|----------------|-----------|--------|
+| `transcript_segments.speaker` (text) + nullable `speaker_id` | `speaker_id` NOT NULL FK only; name read via join | 3NF: the name lives in one place; parsing always resolves a speaker (unknown → "Speaker 1") |
+| `start_time` / `end_time` | `start_ms` / `end_ms` integers | Exact comparisons at segment boundaries; no float drift |
+| `summaries` without provenance | + `provider`, `transcript_revision`, `generated_at` | Explains where a summary came from; stale-result protection |
+| `action_items.assignee` (text) | `assignee_id` FK → participants, `ON DELETE SET NULL` | Same normalization argument; assignee picker uses real participants |
+| — | + `action_items.source`, `completed_at`, `start_ms` | AI vs manual items (regeneration never deletes user work); audit; jump-to-moment |
+| — | + `summary_keywords` | Fireflies shows keywords first; 1NF instead of a CSV column; reusable for tags bonus |
+| — | + `outbox_events`, `processed_events` | Reliable publishing and idempotent consumption (infrastructure, not domain) |
+| `processing_status` PENDING/PROCESSING/COMPLETED/FAILED | same + `not_requested` | A form-created meeting with no transcript has nothing to process |
+
+## 8. Migration strategy
 
 * **Alembic** owns the schema. `alembic upgrade head` on a fresh file builds everything; the service runs it on startup
   (`RUN_MIGRATIONS_ON_STARTUP=true`) so a fresh deploy just works.

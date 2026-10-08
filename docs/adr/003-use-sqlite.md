@@ -1,4 +1,4 @@
-# ADR-002: SQLite via SQLAlchemy 2.0 + Alembic
+# ADR-003: SQLite via SQLAlchemy 2.0 + Alembic
 
 **Status:** Accepted (Phase 0)
 

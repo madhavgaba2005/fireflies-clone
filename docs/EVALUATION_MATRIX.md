@@ -3,10 +3,14 @@
 Maps each of the PDF's seven evaluation criteria to **concrete, checkable evidence** in this repository.
 An evaluator should be able to verify every "Evidence" cell in under a minute.
 Status uses the same legend as [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md).
+The PDF gives seven criteria and **no numeric weights**; none are invented here. §8 lists, per criterion, what an
+evaluator is likely to inspect, the main risks to the score, and what we do about them.
 
 ---
 
-## 1. Functionality — "All core features working correctly, including the interactive transcript and summary views"
+## 1. Functionality
+
+> PDF: *"All core features working correctly, including the interactive transcript and summary views"*
 
 | Evidence | Where | Req IDs | Status |
 |----------|-------|---------|--------|
@@ -23,7 +27,9 @@ Status uses the same legend as [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md).
 | Everything survives a hard refresh and a server restart | any | R4.9 | ⬜ |
 | **Proof:** Playwright suite exercises every row above against a real backend | `frontend/tests/e2e/` | all | ⬜ |
 
-## 2. UI/UX — "Visual similarity to the original app's design and UX patterns"
+## 2. UI/UX
+
+> PDF: *"Visual similarity to the original app's design and UX patterns"*
 
 | Evidence | Where | Status |
 |----------|-------|--------|
@@ -38,7 +44,9 @@ Status uses the same legend as [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md).
 | Dark mode (bonus) | theme toggle | ⬜ |
 | Screenshots in README side-by-side with intent | `README.md#screenshots` | ⬜ |
 
-## 3. Database Design — "Well-structured schema with proper relationships"
+## 3. Database Design
+
+> PDF: *"Well-structured schema with proper relationships"*
 
 | Evidence | Where | Status |
 |----------|-------|--------|
@@ -53,7 +61,9 @@ Status uses the same legend as [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md).
 | Alembic migrations — fresh install reproducible with one command | `alembic/` | ⬜ |
 | Tests proving constraints (cascade, unique, check) actually fire | `tests/test_schema.py` | ⬜ |
 
-## 4. Backend / API Design — "Clean, sensible API design and architecture"
+## 4. Backend / API Design
+
+> PDF: *"Clean, sensible API design and architecture"*
 
 | Evidence | Where | Status |
 |----------|-------|--------|
@@ -64,11 +74,13 @@ Status uses the same legend as [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md).
 | Correct status codes: 200/201/204/400/404/409/413/415/422 | tests | ⬜ |
 | Pagination (`limit`/`offset` + `total`) on list endpoint | `GET /api/meetings` | ⬜ |
 | Auto-generated OpenAPI at `/docs` | FastAPI | ⬜ |
-| Async processing via Kafka with outbox + idempotent consumer; CRUD stays synchronous | [EVENT_DRIVEN_ARCHITECTURE.md](EVENT_DRIVEN_ARCHITECTURE.md) | 🟨 |
+| Async processing via Kafka with outbox + idempotent consumer; CRUD stays synchronous; visible `processing_status` | [EVENT_DRIVEN_ARCHITECTURE.md](EVENT_DRIVEN_ARCHITECTURE.md) | 🟨 |
 | Health endpoints `/health` (liveness) and `/health/ready` (DB + broker) | both services | ⬜ |
 | Environment-based config (`pydantic-settings`), `.env.example` | `config.py` | ⬜ |
 
-## 5. Code Quality — "Clean, readable, and well-organized code"
+## 5. Code Quality
+
+> PDF: *"Clean, readable, and well-organized code"*
 
 | Evidence | Where | Status |
 |----------|-------|--------|
@@ -78,18 +90,23 @@ Status uses the same legend as [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md).
 | No dead code, no magic numbers (named constants), no secrets in repo | review | ⬜ |
 | Conventional commits, small PRs linked to issues | Git history | ⬜ |
 
-## 6. Code Modularity — "Proper separation of concerns, reusable components"
+## 6. Code Modularity
+
+> PDF: *"Proper separation of concerns, reusable components"*
 
 | Evidence | Where | Status |
 |----------|-------|--------|
 | Two independently runnable/testable services with a single documented contract (event schemas) | `backend/*` | ⬜ |
 | `SummaryProvider` interface with `MockSummaryProvider` (default) and optional `LLMSummaryProvider` | `ai-service/app/providers` | ⬜ |
 | Transcript parsers as pluggable strategy per format (`txt`, `vtt`, `json`) | `meeting-service/app/services/transcript_parsers` | ⬜ |
-| `EventBus` interface: Kafka implementation + in-memory implementation for tests | `app/events` | ⬜ |
+| `EventPublisher` interface: `KafkaEventPublisher`, `HttpEventPublisher` (fallback), `InMemoryEventPublisher` (tests) | `meeting-service/app/events` | ⬜ |
+| `PlaybackClock` interface: simulated clock now, `<audio>` later — transcript sync code unchanged | `frontend/lib/playback` | ⬜ |
 | Reusable FE components: `AudioPlayer`, `TranscriptPanel`, `TranscriptLine`, `TranscriptSearch`, `SummaryPanel`, `Topics`, `ActionItems`, `Modal`, `EmptyState` | `frontend/components` | ⬜ |
-| Logic in hooks / pure functions (`useMediaClock`, `useActiveSegment`, `splitByQuery`) — unit-testable, not buried in JSX | `frontend/hooks`, `frontend/lib` | ⬜ |
+| Logic in hooks / pure functions (`usePlaybackClock`, `useActiveSegment`, `splitByQuery`) — unit-testable, not buried in JSX | `frontend/hooks`, `frontend/lib` | ⬜ |
 
-## 7. Code Understanding — "Ability to explain your code during evaluation"
+## 7. Code Understanding
+
+> PDF: *"Ability to explain your code during evaluation"*
 
 | Evidence | Where | Status |
 |----------|-------|--------|
@@ -98,3 +115,18 @@ Status uses the same legend as [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md).
 | Development guide covering every technology & pattern, with "how to explain it" | [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md) | 🟨 |
 | Interview guide: 30-second / detailed / trade-off answers + follow-ups | [INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.md) | ⬜ |
 | Deliberately small architecture — every moving part justified, nothing decorative | [TRADEOFFS.md](TRADEOFFS.md) | 🟨 |
+
+## 8. Inspection, risks and score maximization
+
+| Criterion | Evaluator will likely… | Biggest risks | How we maximize |
+|-----------|------------------------|---------------|-----------------|
+| Functionality | Open the live link, click through the library, open a meeting, click transcript lines, drag the seek bar, search, create/edit/delete, refresh | Live demo down or empty; sync glitches at segment boundaries; CRUD lost on restart (ephemeral disk); summary stuck in "Processing" | Seeded data on startup; boundary unit tests (`start ≤ t < end`, gaps, t = 0, t = duration); persistence verified on the real host; processing fallback mode + Retry button; post-deploy smoke script |
+| UI/UX | Compare side-by-side with Fireflies: sidebar, meeting rows, two-panel notepad, player bar, summary sections order, toasts | "Generic CRUD table" look; missing loading/empty/error states; janky auto-scroll fighting the user | UI spec derived from the Fireflies Notepad guide (section order Keywords → Overview → Notes → Outline → Action items); state matrix per screen; auto-scroll pause after manual scroll; polish phase with a checklist |
+| Database Design | Read the models/migration and ER diagram; ask "why this table?", "what happens on delete?" | Free-text speaker strings; JSON blobs instead of tables; missing FKs/cascade; FKs silently off in SQLite | 3NF schema with M:N join, speaker FK, 1:1 summary, CHECK/UNIQUE constraints, `PRAGMA foreign_keys=ON` + tests proving cascades |
+| Backend / API | Read `/docs`, try a 404 and an invalid payload, look at router/service/repository files | Fat routers with SQL; inconsistent status codes; stack traces leaked | Layering enforced; one error envelope; status-code tests; generic 500 |
+| Code Quality | Skim files for size, naming, typing, dead code; look at CI | Huge generated files; inconsistent style; failing CI | ruff/eslint/prettier/tsc in CI; small focused modules; code review pass every phase |
+| Code Modularity | Look for reusable components and pure logic separated from UI | Logic buried in components; copy-pasted fetch code | Hooks + pure functions; typed API client; strategy interfaces (parsers, providers, publishers, playback clock) |
+| Code Understanding | Ask "why Kafka?", "walk me through clicking a line", "what if Kafka is down?" | Author can't defend generated architecture; over-engineering | Only two services; every decision has an ADR; DEVELOPMENT_GUIDE + INTERVIEW_GUIDE written as study material; demo script |
+
+**Single biggest score risk:** the extras (Kafka, two services) are worth nothing if a MUST-have is broken.
+Rule: no EXTRA/BONUS work is merged while any MUST row is red.

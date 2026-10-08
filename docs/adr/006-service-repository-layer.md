@@ -1,4 +1,4 @@
-# ADR-005: Router → Service → Repository layering
+# ADR-006: Router → Service → Repository layering
 
 **Status:** Accepted (Phase 0)
 

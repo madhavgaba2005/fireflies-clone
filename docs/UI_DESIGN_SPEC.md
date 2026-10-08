@@ -1,7 +1,8 @@
 # UI Design Spec
 
-> Status: **Draft (Phase 0)** from the Fireflies product site and help-centre articles (Notepad, Download).
-> To be refined at the start of Phase 8 with a closer screen-by-screen study. Fireflies is a **visual/UX reference only** —
+> Status: **Accepted for implementation (Phase 1)** — derived from fireflies.ai and the official help-centre articles
+> ("Learn about the Fireflies Notepad", "Fireflies AI Meeting Summaries"), reviewed 2026-10-08. The logged-in app
+> could not be inspected directly; details are refined at the start of Phase 7 against current screenshots. Fireflies is a **visual/UX reference only** —
 > no Fireflies code, logos, illustrations or proprietary assets are used. Our product name/logo is original.
 
 ## 1. Observed Fireflies patterns we will recreate
@@ -11,8 +12,8 @@
 | Left navigation menu with "Meetings" entry, collapsible | `Sidebar`: Home · Meetings · Uploads · Integrations · Analytics (soon) · Team (soon) · Settings; collapses to icon rail |
 | Meeting page = **two-panel Notepad**: summary/notes left, transcript right; panels can expand | `MeetingWorkspace`: resizable split, "expand" toggle per panel |
 | Summary header with "General Summary" template dropdown and copy button | `SummaryPanel` header: template label (only "General" active, others Coming soon) + Copy |
-| Summary sections: Overview, Bullet points/Outline, Action items, Keywords | Tabs/sections: Overview · Outline (timestamped chapters) · Action items · Keywords chips |
-| Transcript: Find bar, speaker labels, timestamps, playback synced, adjustable speed | `TranscriptPanel` with `TranscriptSearch` ("n of m", ↑/↓), speaker filter chips, `TranscriptLine` |
+| "General Summary" sections, **in this order**: Keywords → Overview → Notes (bullet points) → Time-stamped notes (chapters linked to the transcript) → Action items (associated with speakers) | Same order in one scrollable notes panel: Keywords chips · Overview · Notes · Outline (click a chapter → seek) · Action items **grouped by assignee** |
+| Transcript: Find bar, speaker labels, timestamps, playback synced, adjustable speed (Fireflies also has Replace/edit mode — out of scope) | `TranscriptPanel` with `TranscriptSearch` ("n of m", ↑/↓), speaker filter chips, `TranscriptLine` |
 | Collapsible tool rail on the meeting page (Search, Index, Soundbites, Comments, Bookmarks) | Narrow icon rail: Index (jump to sections) active; Soundbites/Comments/Bookmarks Coming soon (or bonus B1) |
 | Top bar: Share, link copy, ⋯ menu (rename, regenerate notes, meeting info, download) | Meeting header: Share (soon) · Copy link · ⋯ menu → Edit details · Regenerate notes · Download (bonus B2) · Delete |
 | Download at bottom centre; options for timestamps & speaker labels | Export modal with the same two toggles (bonus B2) |
@@ -75,7 +76,7 @@ AppShell
                       MeetingWorkspace
                        ├─ SummaryPanel → Keywords, Overview, Topics, ActionItems (ActionItemRow, ActionItemComposer)
                        └─ TranscriptPanel → TranscriptSearch, SpeakerFilter, TranscriptLine*
-                      AudioPlayer (SeekBar, SpeedMenu)  ← state from useMediaClock
+                      AudioPlayer (SeekBar, SpeedMenu)  ← state from usePlaybackClock(PlaybackClock)
 ui/: Button, IconButton, Input, Modal, DropdownMenu, Tabs, Avatar, AvatarStack, Badge, Skeleton, EmptyState, ErrorState, ComingSoon
 ```
 
@@ -87,7 +88,16 @@ ui/: Button, IconButton, Input, Modal, DropdownMenu, Tabs, Avatar, AvatarStack, 
 * Destructive actions always confirm (dialog names the meeting).
 * All modals: focus-trapped, Esc closes, return focus to trigger.
 
-## 6. States
+## 6. Media player design
+```
+PlaybackClock (interface)            usePlaybackClock(clock) → { currentMs, playing, rate, play, pause, seek, setRate }
+ ├─ SimulatedClock   rAF-driven, no media (now)
+ └─ HtmlMediaClock   wraps <audio>/<video> (later, if a sample file is added)
+```
+`AudioPlayer`, `TranscriptPanel` and `Outline` only see the hook — swapping the clock changes no UI or sync code.
+Player bar also shows a **speaker timeline** (coloured blocks per speaker turn) — a recognizable Fireflies cue.
+
+## 7. States
 | Screen | Loading | Empty | Error |
 |--------|---------|-------|-------|
 | Library | 6 skeleton rows | "No meetings yet" + Upload CTA; "No meetings match your filters" + Clear filters | Error card + Retry |
@@ -96,8 +106,23 @@ ui/: Button, IconButton, Input, Modal, DropdownMenu, Tabs, Avatar, AvatarStack, 
 | Action items | — | "No action items" + Add | Toast on failed mutation |
 | Transcript search | — | "No matches for ‘x’" | — |
 
-## 7. Responsive
+## 8. Responsive
 * ≥ 1280: sidebar expanded, two panels side by side.
 * 1024–1279: sidebar icon rail.
 * < 1024: panels become tabs (Notes | Transcript), player stays docked at bottom; sidebar becomes a drawer.
 * No horizontal page scroll at 360 px.
+
+## 9. Fidelity checklist (used in Phase 16 polish)
+- [ ] Left sidebar with active item highlighted in the accent colour
+- [ ] Library rows (not a bare table): title, date · duration, participant avatar stack, status chip, row menu
+- [ ] Two-panel notepad, independently scrolling, each expandable
+- [ ] Notes sections in Fireflies order; sparkle "AI" labels
+- [ ] Transcript lines: coloured avatar, speaker name, timestamp, hover "play from here"
+- [ ] Docked player bar with speed menu and speaker timeline
+- [ ] Toasts for every mutation; Coming-soon modals for out-of-scope features
+- [ ] Loading skeletons, empty and error states on every screen
+
+## 10. References (visual/UX only — no code or assets copied)
+- https://fireflies.ai/
+- https://guide.fireflies.ai/articles/6653885315-learn-about-the-fireflies-notepad
+- https://guide.fireflies.ai/articles/9547055509-learn-about-the-fireflies-ai-meeting-summaries

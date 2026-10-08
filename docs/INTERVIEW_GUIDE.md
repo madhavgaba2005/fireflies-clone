@@ -1,35 +1,60 @@
 # Interview Guide
 
-> Status: **Skeleton (Phase 0)**. Each answer is written once the corresponding code exists, so answers cite real files.
-> Format per question: **30-second answer · Detailed answer · Trade-off answer · Likely follow-up.**
+> Status: **Skeleton (Phase 1)** — answers are completed in Phase 20 so they can cite real files and real test names.
+> Format per question: **30-second answer · Deeper answer · Trade-off · Likely follow-up.**
+> Short versions of most answers already exist in [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md) and the [ADRs](adr/).
 
-## Technology choices
-1. Why FastAPI? 2. Why Next.js? 3. Why SQLite? 4. Why Kafka? 5. Why microservices? 6. Why only two services?
-7. Why not Kafka for CRUD? 8. Why is the Meeting Service the system of record?
+## Questions
 
-## Architecture & consistency
-9. How do you handle eventual consistency? 10. What happens if Kafka is unavailable? 11. How do you prevent duplicate events?
-12. How would you implement idempotency? 13. What happens if AI processing fails? 14. How would retries work?
+### Technology choices
+1. Why Next.js? — [ADR-001](adr/001-use-nextjs.md)
+2. Why TypeScript?
+3. Why FastAPI? — [ADR-002](adr/002-use-fastapi.md)
+4. Why SQLite? — [ADR-003](adr/003-use-sqlite.md)
+5. Why SQLAlchemy?
 
-## Backend design
-15. Why repository pattern? 16. Why service layer? 17. How is the schema normalized? 18. Why many-to-many participants?
+### Backend design
+6. Why the repository pattern? — [ADR-006](adr/006-service-repository-layer.md)
+7. Why a service layer?
+8. How is the schema normalized? Why a many-to-many for participants? — [DATABASE_DESIGN.md](DATABASE_DESIGN.md)
 
-## Frontend
+### Architecture
+9. Why microservices? — [ADR-004](adr/004-two-service-architecture.md)
+10. Why only two services?
+11. Why Kafka? — [ADR-005](adr/005-use-kafka-for-async-processing.md)
+12. Why not Kafka for CRUD? *(answered below)*
+13. Why asynchronous processing?
+14. How is eventual consistency handled?
+15. What if Kafka is down? — [ADR-008](adr/008-transactional-outbox.md)
+16. How do you prevent duplicate events?
+17. What happens if AI processing fails?
+18. How would retry work?
+
+### Frontend
 19. How does transcript synchronization work?
+20. Why simulated audio?
 
-## AI
-20. Why mocked AI? 21. How would you add a real LLM?
+### AI
+21. Why mock AI? — [ADR-007](adr/007-mock-summary-provider.md)
+22. How would you add a real LLM?
 
-## Scaling & security
-22. How would this scale beyond SQLite? 23. How would you migrate to PostgreSQL? 24. How would you scale transcript search?
-25. How would you implement authentication? 26. How would you secure the APIs?
+### Scaling, security, operations
+23. How would you scale the system?
+24. How would you migrate from SQLite?
+25. How would you introduce authentication?
+26. How would you secure the APIs?
+27. How would search scale?
+28. How does CI work?
+29. Why this Git branching strategy?
 
 ---
 
-### Example (filled now because the design is settled)
+## Answers
 
-#### 7. Why not Kafka for CRUD?
+### 12. Why not Kafka for CRUD?
 - **30 s:** CRUD is a request the user waits on and must immediately see reflected. One SQLite transaction already gives that. Kafka would add latency and eventual consistency for no benefit.
-- **Detailed:** Kafka shines for work that is slow, retryable and can complete later — summary generation. Edits to a title or ticking an action item need read-your-own-writes; routing them through a broker means the response can't confirm the write happened, the UI would need reconciliation, and failure modes multiply.
-- **Trade-off:** If many downstream systems needed to react to meeting edits (search index, analytics), we'd *also* emit events for them via the same outbox — but the write itself stays synchronous.
-- **Follow-up:** "So how do other services learn about edits?" → outbox events like `transcript.updated`, published after commit.
+- **Deeper:** Kafka shines for work that is slow, retryable and can complete later — summary generation. Renaming a meeting or ticking an action item needs read-your-own-writes; routing it through a broker means the response can't confirm the write happened, the UI would need reconciliation, and failure modes multiply.
+- **Trade-off:** If many downstream systems needed to react to edits (search index, analytics), we would *also* emit events via the same outbox — but the write itself stays synchronous.
+- **Follow-up:** "So how do other services learn about edits?" → outbox events such as `transcript.updated`, published after commit.
+
+*(Remaining answers: Phase 20.)*

@@ -1,6 +1,6 @@
 # Architecture
 
-> Status: **Proposed (Phase 0)** — awaiting approval. Sections marked *(Phase N)* get finalized in that phase.
+> Status: **Accepted (Phase 1)**. Sections marked *(Phase N)* are finalized when that phase lands.
 
 ## 1. Goals that shaped the architecture
 
@@ -59,7 +59,7 @@ sequenceDiagram
     loop every ~1s
         MS->>DB: read unpublished outbox rows
         MS->>K: produce to meeting.events (key = meeting_id)
-        MS->>DB: mark outbox row published
+        MS->>DB: mark outbox row published; status=processing
     end
     K->>AI: meeting.created (transcript snapshot, transcript_revision)
     AI->>AI: SummaryProvider.generate()
@@ -70,14 +70,16 @@ sequenceDiagram
     MS-->>FE: status=completed → toast "Summary ready"
 ```
 
-The frontend polls (every 2 s, only while a summary is pending, stops after completion/failure).
+The frontend polls (every 2 s, only while status is `pending` or `processing`, stops after completion/failure).
 Polling was chosen over WebSockets/SSE: one page needs it, it is trivially explainable, and it works through every hosting proxy.
 
 ## 5. Consistency model
 
 * **Strong consistency** for everything the user writes directly (CRUD is a single SQLite transaction).
 * **Eventual consistency** only for AI output. The UI models this explicitly with `processing_status`
-  (`pending → processing → completed | failed`) instead of pretending it is instant.
+  instead of pretending it is instant:
+  `not_requested` (no transcript) → `pending` (request committed to the outbox) → `processing` (request handed to
+  Kafka / the AI service) → `completed` | `failed`.
 * **Stale-result protection:** each meeting has a `transcript_revision`. Events carry it; a `summary.generated`
   for an older revision is discarded, so a slow result can never overwrite a newer one.
 
@@ -98,7 +100,7 @@ Polling was chosen over WebSockets/SSE: one page needs it, it is trivially expla
 
 * Two services, not five: the only real seam is "slow, replaceable AI work" vs "system of record".
 * Kafka over a simple background task: the PDF does not need it; it is included as a deliberate, documented
-  demonstration of async decoupling. The `EventBus` interface keeps an in-memory implementation for tests
+  demonstration of async decoupling. The `EventPublisher` interface keeps an in-memory implementation for tests
   so the core app never *depends* on Kafka to be understood or tested.
 * SQLite: required by the PDF; fine for single-instance. Limits horizontal scaling of the Meeting Service
   (documented migration path to PostgreSQL).
@@ -123,28 +125,31 @@ fireflies-clone/
 │   │   │   ├── routers/          # meetings, transcript, summary, action_items, participants, health
 │   │   │   ├── services/         # business logic; transcript_parsers/ (txt, vtt, json)
 │   │   │   ├── repositories/     # all SQL lives here
-│   │   │   └── events/           # envelope, event_bus (kafka | memory), outbox relay, ai result consumer
+│   │   │   └── events/           # envelope, publishers (kafka | http | in-memory), outbox relay, ai result consumer
 │   │   ├── alembic/              # migrations
 │   │   ├── seed/                 # seed.py + meetings/*.json (realistic data)
+│   │   ├── samples/              # example .txt / .vtt / .json transcripts for upload demos
 │   │   ├── tests/                # unit/, integration/
-│   │   ├── pyproject.toml        # deps, ruff, pytest, coverage config
+│   │   ├── requirements.txt      # runtime deps (pinned)
+│   │   ├── requirements-dev.txt  # pytest, pytest-cov, ruff, mypy
+│   │   ├── pyproject.toml        # tool config only (ruff, pytest, coverage)
 │   │   └── Dockerfile
 │   └── ai-service/
 │       ├── app/
-│       │   ├── main.py           # lifespan starts consumer; /health
+│       │   ├── main.py           # lifespan starts consumer (kafka mode); /health; POST /internal/process (http mode)
 │       │   ├── config.py
 │       │   ├── consumers/        # meeting.events consumer + retry policy
 │       │   ├── processors/       # orchestrates provider → result event
 │       │   ├── providers/        # SummaryProvider, MockSummaryProvider, LLMSummaryProvider
 │       │   └── events/           # envelope + producer
 │       ├── tests/
-│       ├── pyproject.toml
+│       ├── requirements.txt · requirements-dev.txt · pyproject.toml
 │       └── Dockerfile
 └── frontend/
     ├── app/                      # meetings/, meetings/[id]/, settings/, integrations/, layout.tsx
     ├── components/               # layout/, meetings/, transcript/, summary/, action-items/, audio/, ui/
-    ├── hooks/                    # useMediaClock, useActiveSegment, useTranscriptSearch, useMeetingPolling
-    ├── lib/                      # api.ts (typed client), types.ts, format.ts, highlight.ts
+    ├── hooks/                    # usePlaybackClock, useActiveSegment, useTranscriptSearch, useMeetingPolling
+    ├── lib/                      # api.ts, types.ts, format.ts, highlight.ts, transcript.ts, playback/ (PlaybackClock, SimulatedClock)
     ├── tests/e2e/                # Playwright
     └── package.json
 ```
@@ -153,4 +158,57 @@ Event schemas are defined once per service in `events/envelope.py`. They are int
 Pydantic models) rather than shared through a common package: independent deployability beats DRY across service
 boundaries, and a contract test in each service pins the shape.
 
-## 9. Deployment topology — *see [DEPLOYMENT.md](DEPLOYMENT.md); pending decision D1*
+## 9. Why exactly two services (and not one, and not ten)
+
+| Option | Verdict | Reason |
+|--------|---------|--------|
+| One monolith | Fully adequate for the PDF — rejected only because we want to demonstrate async decoupling | Summarization would run in-process; a slow or failing LLM call would share fate with the API |
+| **Two services** | **Chosen** | The one seam with genuinely different runtime characteristics: CRUD is fast, transactional and user-facing; AI work is slow, failure-prone, replaceable and horizontally scalable |
+| Many services (meeting / transcript / action-item / participant / search …) | Rejected | These entities share one transactional boundary (deleting a meeting cascades to all). Splitting them forces distributed transactions, network joins and N deployables — complexity with no benefit |
+
+**System of record:** only the Meeting Service owns and writes data. **AI Processing Service:** stateless — event
+in, result event out, no database — so it can be restarted, replaced (mock → LLM) or scaled without migrations.
+**Coupling:** the services share no code and no database; the only contract is the versioned event envelope,
+pinned by a contract test on each side. The browser never talks to the AI service.
+
+**Honest SQLite caveat:** SQLite is mandated and is a single-writer, single-host database. That is acceptable
+because only one service owns data. In a larger system each service would own its own (server) database; the AI
+service already has none, so nothing about the boundary would change.
+
+## 10. Processing modes (keeping Kafka real when free hosting can't run a broker)
+
+The Meeting Service publishes through one interface, chosen by `PROCESSING_MODE`:
+
+| Mode | Publisher | Transport to the AI service | Used for |
+|------|-----------|-----------------------------|----------|
+| `kafka` (default locally) | `KafkaEventPublisher` | `meeting.events` → AI consumer → `ai.events` → MS consumer | `docker compose up`, the CI Kafka test, any host that can run a broker |
+| `http` (documented fallback) | `HttpEventPublisher` | Outbox relay POSTs the **same envelope** to the AI service's `/internal/process`; the response is the **same** `summary.generated` / `summary.failed` envelope, applied by the **same** idempotent handler | Free hosting without a broker |
+| `inline-test` | `InMemoryEventPublisher` | In-process call into a fake processor | Unit/integration tests (no broker, deterministic) |
+
+Unchanged across modes: outbox, envelope, `SummaryProvider`, processing state machine, idempotent apply
+(`processed_events` + `transcript_revision`). Only the transport differs, so the fallback is a deployment choice,
+not a fork of the architecture. Kafka stays the reference implementation and is exercised in CI.
+
+## 11. Data flow summary
+
+| Data | Produced by | Stored in | Read by |
+|------|-------------|-----------|---------|
+| Meeting metadata, participants | User (form / upload / paste) or seed | SQLite (MS) | Library, workspace header |
+| Transcript segments | Transcript parser in MS | SQLite | Transcript panel; copied into `meeting.created` events |
+| Summary, topics, keywords | AI service (or seed) | SQLite, via `summary.generated` | Notes panel |
+| Action items | AI service (`source=ai`) and user (`source=manual`) | SQLite | Notes panel; edited via REST |
+| Playback position, transcript search query | Browser only | React state (`?t=` for deep links) | Player + transcript |
+
+## 12. Deployment architecture — *finalized in Phase 18, see [DEPLOYMENT.md](DEPLOYMENT.md)*
+
+```
+Local (docker compose)                         Hosted (free-first; target decided in Phase 18)
+┌──────────┐  ┌───────────────┐  ┌───────┐    ┌──────────┐   ┌─────────────────────────────┐
+│ frontend │→ │ meeting-svc   │↔ │ kafka │    │ frontend │ → │ meeting-svc + SQLite volume │
+│  :3000   │  │ :8000 + .db   │  └───┬───┘    │ (Vercel) │   └──────────────┬──────────────┘
+└──────────┘  └───────────────┘      │        └──────────┘    kafka or http │
+                                ┌────┴─────┐                         ┌──────┴──────┐
+                                │ ai-svc   │                         │ ai-service  │
+                                │ :8001    │                         └─────────────┘
+                                └──────────┘
+```

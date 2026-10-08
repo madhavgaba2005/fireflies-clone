@@ -1,13 +1,13 @@
 # Testing Strategy
 
-> Status: **Planned (Phase 0)**. Commands and real numbers are added as suites land.
+> Status: **Planned (Phase 1)**. Commands and real numbers are added as suites land.
 
 ## Test pyramid
 
 | Layer | Tool | Scope | Runs against |
 |-------|------|-------|--------------|
 | Unit (many) | pytest | Transcript parsers, MockSummaryProvider heuristics, envelope validation, service rules, `findActiveSegmentIndex`, `splitByQuery` | Pure functions / in-memory SQLite |
-| Integration (some) | pytest + FastAPI `TestClient` | Every endpoint incl. validation & error codes; schema constraints (cascade, unique, check); outbox → in-memory bus → AI processor → consumer pipeline | Temp SQLite file, `EVENT_BUS=memory` |
+| Integration (some) | pytest + FastAPI `TestClient` | Every endpoint incl. validation & error codes; schema constraints (cascade, unique, check); outbox → `InMemoryEventPublisher` → AI processor → consumer pipeline | Temp SQLite file, `PROCESSING_MODE=inline-test` |
 | Contract | pytest | Event envelope/payload shape pinned identically in both services | — |
 | Kafka integration (one) | pytest, marker `kafka` | Real broker: create meeting → summary persisted | Kafka service container in CI / compose locally |
 | E2E (critical flows) | Playwright | Dashboard filters, transcript sync, transcript search, all CRUD + reload persistence, error toasts | Real backend (memory bus) + seeded DB + Next.js build |

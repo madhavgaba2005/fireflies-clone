@@ -1,6 +1,6 @@
 # CI / CD
 
-> Status: **Planned (Phase 0)** — workflow added right after the schema phase so all later PRs are gated.
+> Status: **Planned (Phase 1)** — workflow added right after the schema phase so all later PRs are gated.
 
 ## Why CI
 Every PR proves it doesn't break lint, types, tests, coverage or the build. With a one-person team it is the "reviewer

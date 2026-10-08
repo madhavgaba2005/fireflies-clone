@@ -1,4 +1,4 @@
-# ADR-006: Pluggable SummaryProvider with a deterministic mock default
+# ADR-007: Pluggable SummaryProvider with a deterministic mock default
 
 **Status:** Accepted (Phase 0)
 

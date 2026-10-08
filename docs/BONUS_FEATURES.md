@@ -10,3 +10,14 @@ Rule: no bonus work starts until every MUST row in [REQUIREMENTS_MATRIX.md](REQU
 | 4 | B4 | Tags / topics + filtering | AI keywords → tags (`tags`, `meeting_tags`); tag filter on dashboard | Integration; E2E | ⬜ |
 | 5 | B1 | Comments / highlights on segments | `segment_comments` table; hover action on transcript line | Integration; E2E | ⏸ |
 | 6 | B5 | Ask-a-question chat | Keyword retrieval over segments → answer with cited timestamps; LLM if key configured | Unit | ⏸ |
+
+## Evaluation value (why this order)
+
+| ID | Value | Reasoning |
+|----|-------|-----------|
+| B3 | High | The PDF description itself says "search across transcripts"; strong Fireflies signature feature |
+| B2 | Medium | Fireflies has a prominent Download flow; cheap once formatters exist |
+| B6 | Medium | Visible polish; design tokens already planned as CSS variables |
+| B4 | Medium | Reuses AI keywords; extends an existing filter UI |
+| B1 | Low–Medium | New table + UI; nice but not core |
+| B5 | Low without a real LLM | A heuristic "Ask" risks looking fake; only with an LLM key |

@@ -1,6 +1,6 @@
 # Event-Driven Architecture
 
-> Status: **Proposed (Phase 0)** — implemented in Phases 6–7.
+> Status: **Accepted (Phase 1)** — implemented in Phases 5–6.
 
 ## 1. Why Kafka here — and only here
 
@@ -15,8 +15,9 @@ may rate-limit). Running it inside the request would make `POST /api/meetings` s
 latency and eventual consistency to operations that a single SQLite transaction already does correctly.
 
 **Honest framing:** at this scale a background task queue would suffice. Kafka is chosen to demonstrate a decoupled,
-durable, replayable pipeline between two independently deployable services, and is hidden behind an `EventBus`
-interface so tests (and, if needed, a constrained deployment) can run with an in-memory bus.
+durable, replayable pipeline between two independently deployable services, and is hidden behind an
+`EventPublisher` interface so tests run with an in-memory publisher and a constrained deployment can use the HTTP
+fallback (§9) without changing anything else.
 
 ## 2. Topics
 
@@ -91,21 +92,50 @@ Offsets are committed **after** successful handling (manual commit), never befor
 ## 5. Processing status state machine (Meeting Service)
 
 ```
-not_requested ──create/upload with transcript──▶ pending
-pending ──summary.generated (current rev)──▶ completed
-pending ──summary.failed (current rev)──▶ failed
+not_requested ──create/upload with transcript──▶ pending          (request row committed to outbox)
+pending ──relay hands event to Kafka / AI service──▶ processing
+pending | processing ──summary.generated (current rev)──▶ completed
+pending | processing ──summary.failed (current rev)──▶ failed
 completed | failed ──regenerate / transcript.updated──▶ pending
 ```
+| State | Meaning | UI |
+|-------|---------|----|
+| `not_requested` | No transcript yet (form-created meeting) | "Add a transcript to generate notes" |
+| `pending` | Request durably queued in the outbox, not yet delivered | "✨ Generating notes…" |
+| `processing` | Delivered to Kafka / AI service; waiting for result | "✨ Generating notes…" |
+| `completed` | Summary persisted | Notes rendered, toast "Notes ready" |
+| `failed` | `summary.failed` received (reason stored) | Error card + **Retry** |
+
+`pending → processing` is set by the Meeting Service itself when the relay confirms the hand-off, so no extra
+"started" event is needed. Results are accepted from both `pending` and `processing` because at-least-once delivery
+means the result can race the relay's status update.
 
 ## 6. Eventual consistency in the UI
-Detail page polls `GET /api/meetings/{id}` every 2 s **only while** status is `pending`, shows a skeleton with
+Detail page polls `GET /api/meetings/{id}` every 2 s **only while** status is `pending` or `processing`, shows a skeleton with
 "Fireflies AI is generating notes…", and fires a toast when it flips to `completed`/`failed`.
 
 ## 7. Local & test setup
 * `docker compose up` → single-node Kafka (KRaft) + both services + frontend.
-* `EVENT_BUS=memory` → in-process bus; used by the unit/integration test suites so they need no broker.
+* `PROCESSING_MODE=inline-test` → `InMemoryEventPublisher`; used by the unit/integration test suites so they need no broker.
 * CI runs one end-to-end Kafka test with a Kafka service container: create meeting → assert summary persisted.
 
-## 8. What production would add
+## 8. Publisher abstraction
+```
+EventPublisher (protocol: publish(envelope) -> None)
+ ├─ KafkaEventPublisher     aiokafka producer, acks=all, key=meeting_id      PROCESSING_MODE=kafka
+ ├─ HttpEventPublisher      POST envelope → AI /internal/process; applies    PROCESSING_MODE=http
+ │                          the returned result envelope via the same handler
+ └─ InMemoryEventPublisher  records envelopes; tests drive a fake processor  PROCESSING_MODE=inline-test
+```
+The outbox relay depends only on `EventPublisher`; the result handler (`SummaryService.apply_result`) depends only on
+the envelope. Both are therefore identical in every mode.
+
+## 9. HTTP fallback mode (free hosting without a broker)
+Same envelope, same outbox, same `MeetingProcessor` in the AI service (called by the Kafka consumer **or** the HTTP
+endpoint), same idempotent apply. Differences, stated honestly: no broker-level durability between services (the
+outbox still guarantees the request is retried until the AI service answers), and no replay. The endpoint is
+internal: protected by a shared `INTERNAL_API_TOKEN` header and not exposed to the browser.
+
+## 10. What production would add
 DLQ topic, schema registry (Avro/Protobuf) instead of duplicated Pydantic contracts, consumer lag alerts,
 multiple brokers with replication factor 3, outbox via CDC (Debezium) instead of polling.

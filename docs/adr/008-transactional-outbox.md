@@ -1,4 +1,4 @@
-# ADR-007: Transactional outbox for publishing events
+# ADR-008: Transactional outbox for publishing events
 
 **Status:** Accepted (Phase 0)
 
@@ -6,7 +6,7 @@
 Creating a meeting must both commit to SQLite and publish an event. Two separate systems cannot be updated atomically; naive "commit then publish" loses events on a crash or broker outage.
 
 ## Decision
-Write an `outbox_events` row in the same transaction as the domain change. A relay loop publishes unpublished rows and marks them published (at-least-once). Consumers are idempotent (ADR-003).
+Write an `outbox_events` row in the same transaction as the domain change. A relay loop publishes unpublished rows and marks them published (at-least-once). Consumers are idempotent (ADR-005).
 
 ## Alternatives
 - **Publish inside the request after commit:** simple, but loses events on failure, and the request fails or hangs when Kafka is down.

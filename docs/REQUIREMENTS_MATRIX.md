@@ -11,6 +11,22 @@ Every bullet in the PDF has a row below. Rows prefixed `X-` are **self-imposed e
 
 Implementation paths refer to the planned structure in [ARCHITECTURE.md](ARCHITECTURE.md). `MS` = meeting-service, `AI` = ai-service, `FE` = frontend.
 
+**Definition of Done for ✅:** implemented · integrated end-to-end · UI states (loading/empty/error) handled ·
+persistence verified after reload · tests written and passing · docs/README/matrices updated · committed · CI green.
+Code existing is **not** enough.
+
+### Section map (assignment PDF → this file)
+| PDF section | Matrix section |
+|-------------|----------------|
+| A. Core Features (Must Have) 1–5 | §1–§5 |
+| B. Mocked / Placeholder Sections | §6 |
+| C. Bonus (Optional) | §7 |
+| F. Important Notes + Technical Stack | §8 |
+| D. Deliverables + Submission | §9 |
+| E. Evaluation Criteria | §10 (and [EVALUATION_MATRIX.md](EVALUATION_MATRIX.md)) |
+| G. Timeline / constraints | §12 |
+| Interpretations of ambiguous wording | §13 |
+
 ---
 
 ## 1. Meetings Library / Dashboard
@@ -29,7 +45,7 @@ Implementation paths refer to the planned structure in [ARCHITECTURE.md](ARCHITE
 | ID | Requirement | Priority | Implementation | Test | Demo Verification | Status |
 |----|-------------|----------|----------------|------|-------------------|--------|
 | R2.1 | **Interactive transcript** with **speaker labels** and **timestamps** | MUST | MS `GET /api/meetings/{id}/transcript` → FE `TranscriptPanel`, `TranscriptLine` (avatar, speaker, `mm:ss`, text) | MS integration (ordered by `sequence`); E2E lines visible | Open a meeting; each line shows speaker + timestamp | ⬜ |
-| R2.2 | **Media player area with seek bar** (placeholder or sample file) | MUST | FE `components/audio/AudioPlayer` (play/pause, seek bar, ±15 s, speed 1×–2×, time display) over a `useMediaClock` hook | Unit (hook logic via Playwright component/E2E); E2E drag/click seek bar | Play → time advances; drag seek bar → time jumps | ⬜ |
+| R2.2 | **Media player area with seek bar** (placeholder or sample file) | MUST | FE `components/audio/AudioPlayer` (play/pause, seek bar, ±15 s, speed 1×–2×, time display) over a `usePlaybackClock` hook (`PlaybackClock` interface; `SimulatedClock` now, `<audio>` later) | Unit (hook logic via Playwright component/E2E); E2E drag/click seek bar | Play → time advances; drag seek bar → time jumps | ⬜ |
 | R2.3 | **Clicking a transcript line seeks the player** to that timestamp | MUST | `TranscriptLine.onClick → player.seek(segment.start_ms)` | E2E: click line at 02:15 → player time 02:15 | Click any line → player jumps, starts playing | ⬜ |
 | R2.4 | **…and vice versa** (player position highlights the active line) | MUST | `useActiveSegment(segments, currentMs)` (binary search) → active style + `scrollIntoView` (only if user isn't manually scrolling) | Unit test of `findActiveSegmentIndex`; E2E: seek bar → active line changes | Drag seek bar → highlighted line follows and auto-scrolls | ⬜ |
 | R2.5 | **Search within the transcript** with **highlighted matches** | MUST | FE `TranscriptSearch` (case-insensitive, `<mark>` via safe text splitting, match count "3 of 12", ↑/↓ navigation) | Unit test of `splitByQuery` (incl. regex chars); E2E search highlights | Type "budget" → matches highlighted, count shown, Enter jumps to next | ⬜ |
@@ -117,7 +133,17 @@ Implementation paths refer to the planned structure in [ARCHITECTURE.md](ARCHITE
 | D8 | **Hosted, working demo link** | DELIV | See [DEPLOYMENT.md](DEPLOYMENT.md) (target pending decision) | Smoke test script against deployed URL | Link opens populated app; CRUD persists | ⬜ |
 | D9 | Submit repo link + deployed link | DELIV | Final checklist in `FINAL_EVALUATION_REPORT.md` | — | — | ⬜ |
 
-## 10. Evaluation Criteria → see [EVALUATION_MATRIX.md](EVALUATION_MATRIX.md)
+## 10. Evaluation Criteria (exact PDF wording — no numeric weights are given, none are invented)
+
+| ID | Criterion | What the PDF says they look for | Evidence plan |
+|----|-----------|---------------------------------|---------------|
+| E1 | Functionality | All core features working correctly, **including the interactive transcript and summary views** | [EVALUATION_MATRIX §1](EVALUATION_MATRIX.md#1-functionality) |
+| E2 | UI/UX | Visual similarity to the original app's design and UX patterns | [§2](EVALUATION_MATRIX.md#2-uiux) |
+| E3 | Database Design | Well-structured schema with proper relationships | [§3](EVALUATION_MATRIX.md#3-database-design) |
+| E4 | Backend / API Design | Clean, sensible API design and architecture | [§4](EVALUATION_MATRIX.md#4-backend--api-design) |
+| E5 | Code Quality | Clean, readable, and well-organized code | [§5](EVALUATION_MATRIX.md#5-code-quality) |
+| E6 | Code Modularity | Proper separation of concerns, reusable components | [§6](EVALUATION_MATRIX.md#6-code-modularity) |
+| E7 | Code Understanding | Ability to explain your code during evaluation | [§7](EVALUATION_MATRIX.md#7-code-understanding) |
 
 ## 11. Self-imposed engineering goals (not in the PDF)
 
@@ -125,9 +151,33 @@ Implementation paths refer to the planned structure in [ARCHITECTURE.md](ARCHITE
 |----|------|----------|----------------|------|--------------|--------|
 | X1 | Two services: Meeting Service (system of record) + stateless AI Processing Service | EXTRA | `backend/meeting-service`, `backend/ai-service` | Each service has its own test suite | docker compose up | ⬜ |
 | X2 | Kafka for async processing only (never CRUD) | EXTRA | Topics `meeting.events`, `ai.events`; transactional outbox; idempotent consumers | Kafka integration test in CI (service container) | Upload → summary arrives via Kafka | ⬜ |
+| X2a | Visible processing state `not_requested → pending → processing → completed / failed` | EXTRA (supports R3.4) | `meetings.processing_status`; FE `SummaryStatus` ("Generating notes…" / Ready / Failed + Retry) | Service unit (state transitions); integration; E2E | New meeting shows Processing… then Ready | ⬜ |
+| X2b | `PROCESSING_MODE=kafka\|http\|inline-test` — free-hosting fallback reusing the same envelope, processor and idempotent apply path | EXTRA (supports D8) | `EventPublisher` implementations in MS; AI `POST /internal/process` | Tests run the pipeline through `InMemoryEventPublisher`; HTTP mode integration test | Deployed demo generates summaries even without a broker | ⬜ |
 | X3 | Backend coverage ~90%+ (where practical) | EXTRA | pytest-cov, `--cov-fail-under` | CI gate | Coverage badge/report | ⬜ |
 | X4 | Playwright E2E for critical flows | EXTRA | `frontend/tests/e2e` | CI job | — | ⬜ |
 | X5 | GitHub Actions CI on PR + push to main | EXTRA | `.github/workflows/ci.yml` | Pipeline fails on red | Green checks on PRs | ⬜ |
 | X6 | Professional Git workflow: issues → branches → PRs | EXTRA | [PROJECT_PLAN.md](PROJECT_PLAN.md) | — | GitHub history | ⬜ |
 | X7 | Loading / empty / error states on every screen | EXTRA (supports R5) | Shared `ui/EmptyState`, `ui/ErrorState`, skeletons | E2E with mocked API failure | — | ⬜ |
 | X8 | Security basics: validation, CORS, env config, no secrets, safe rendering of uploads | EXTRA | Pydantic limits, upload size/type checks, React escaping (no `dangerouslySetInnerHTML`) | Validation tests | — | ⬜ |
+
+## 12. Timeline & constraints (PDF "Timeline", "AI Tools Usage")
+
+| ID | Constraint | Consequence for this project |
+|----|-----------|------------------------------|
+| G1 | Estimated effort ≈ **24 hours** | Must-haves first; Kafka/CI/extra docs are budgeted on top and are the first thing cut if time runs short (never a MUST row) |
+| G2 | Submission deadline "as communicated" | Deployment (Phase 18) must be stable **before** the deadline, not on it — the hosted link is a deliverable |
+| G3 | AI tools allowed, but **every line must be understood** | DEVELOPMENT_GUIDE, ADRs, INTERVIEW_GUIDE; small architecture; no unexplained generated code |
+| G4 | Plagiarism ⇒ disqualification | No Fireflies-clone repos consulted; Fireflies only as a visual/UX reference; original name & logo |
+
+## 13. Interpretations of ambiguous wording (decided, documented, revisitable)
+
+| # | PDF wording | Our interpretation | Why |
+|---|------------|--------------------|-----|
+| I1 | Description: "search across transcripts" | Must-have = library search (title/date/participant) + in-transcript search. Cross-meeting transcript search = Bonus B3 (**first** bonus to build) | The Core Features list scopes search to the library and to "within the transcript"; the Bonus list explicitly names "Global search across all meetings" |
+| I2 | "seeks the player to that timestamp (and vice versa)" | Vice versa = player position drives the active transcript line (highlight + auto-scroll), including when the user drags the seek bar | The only meaningful inverse of "line → player" |
+| I3 | "audio/video can be a placeholder or a sample file" | A simulated playback clock with real controls (play/pause, seek bar, ±15 s, speed); a real `<audio>` source can be plugged in behind the same `PlaybackClock` interface | Sync behaviour is fully real; no fake media to generate |
+| I4 | "Navbar with profile/settings placeholders" | Fireflies uses a left sidebar + top bar; we provide both (Settings in sidebar, avatar menu in top bar) | Matches both the PDF wording and the reference UI |
+| I5 | "Create a meeting (by uploading or pasting a transcript, **or** via a form)" | We implement all three | Cheap once the parser exists; removes any doubt |
+| I6 | "Add / edit / complete action items" (delete not listed) | Also implement delete and uncomplete | Expected CRUD; trivial; avoids a UX dead end |
+| I7 | "Edit meeting metadata (title, participants)" | Title, participants **and** meeting date | Date is metadata; needed for date-filter demos |
+| I8 | "Real user authentication (assume a default logged-in user)" | Hard-coded default user shown in the top bar; API has no auth | Explicitly allowed |

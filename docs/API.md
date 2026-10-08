@@ -1,6 +1,6 @@
 # API Contract — Meeting Service
 
-> Status: **Proposed (Phase 0)**. Live, always-current docs: `GET /docs` (Swagger UI) and `/openapi.json`.
+> Status: **Accepted (Phase 1)** — implemented in Phase 4. Live, always-current docs: `GET /docs` (Swagger UI) and `/openapi.json`.
 > Base path: `/api`. JSON everywhere except multipart upload. Times: ISO-8601 UTC; transcript offsets: integer ms.
 
 ## Conventions
@@ -40,6 +40,8 @@ No authentication (assignment: assume default logged-in user). CORS restricted t
 | DELETE | `/api/action-items/{id}` | Delete | 204 |
 | GET | `/api/participants` | Options for participant filter + pickers | 200 |
 | GET | `/health`, `/health/ready` | Liveness / readiness | 200 / 503 |
+
+AI service (internal, not called by the browser): `GET /health`; `POST /internal/process` only in `PROCESSING_MODE=http` (shared-token protected).
 
 Why action items are **not** nested for PATCH/DELETE: an item's id is globally unique, so
 `/api/action-items/{id}` is the canonical address; nesting is used only where the parent is needed (list/create).
@@ -87,7 +89,8 @@ Query params (all optional, combinable):
 **Multipart (upload):** fields `title`, `meeting_date`, optional `participants` (JSON string), `file` (.txt / .vtt / .json).
 
 Behaviour: transcript is parsed → speakers resolved/created as participants → if transcript present,
-`processing_status = pending` and a `meeting.created` event is queued (outbox).
+`processing_status = pending` and a `meeting.created` event is queued (outbox). Status values:
+`not_requested | pending | processing | completed | failed` (see [EVENT_DRIVEN_ARCHITECTURE.md §5](EVENT_DRIVEN_ARCHITECTURE.md#5-processing-status-state-machine-meeting-service)).
 Responses: `201` meeting detail · `400` unparseable transcript · `413` · `415` · `422`.
 
 Supported transcript formats (documented with examples in `backend/meeting-service/samples/`):

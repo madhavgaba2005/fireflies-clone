@@ -1,4 +1,4 @@
-# ADR-001: Use FastAPI for both backend services
+# ADR-002: Use FastAPI for both backend services
 
 **Status:** Accepted (Phase 0)
 
@@ -17,4 +17,4 @@ FastAPI + Pydantic v2 for the Meeting Service and the AI Service.
 − We assemble our own pieces (SQLAlchemy, Alembic) instead of an integrated stack.
 
 ## Consequences
-Pydantic models are both the API contract and the event contract. SQLAlchemy + Alembic are added explicitly (ADR-002).
+Pydantic models are both the API contract and the event contract. SQLAlchemy + Alembic are added explicitly (ADR-003).

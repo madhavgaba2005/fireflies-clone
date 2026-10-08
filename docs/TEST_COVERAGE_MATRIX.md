@@ -30,3 +30,23 @@ Every MUST-have needs ≥ 1 automated verification. **P** = planned, **✓** = t
 | M1–M5 | Placeholders | | | P | |
 | C3/C7 | Schema constraints & migrations | | P (`test_schema.py`, migration up/down) | | |
 | X2 | Idempotency & stale results | P | P (duplicate event_id ignored; older revision ignored) | | |
+| X2a | Processing state machine | P (transitions, result accepted from pending and processing) | P | P (Processing → Ready) | |
+| X2b | HTTP fallback mode | | P (relay → fake AI endpoint → apply) | | P (deployed) |
+
+## Edge cases (each must have a named test before its phase is ✅)
+
+| Edge case | Layer | Phase |
+|-----------|-------|-------|
+| Empty library / no filter matches | E2E | 8 |
+| Meeting not found (API 404, UI page) | Integration, E2E | 4, 9 |
+| Empty transcript (form-created meeting) | Integration, E2E | 4, 9 |
+| Transcript search: no matches / multiple matches / regex characters / case | Unit, E2E | 13 |
+| Playback time exactly on a segment boundary; between segments; before first; at/after end | Unit | 10 |
+| Duplicate action-item submit (double click) | E2E (button disabled while pending) | 12 |
+| Delete failure / API unavailable → error toast, UI rolled back | E2E (route mocked) | 11, 12 |
+| Summary processing failure → `failed` + Retry | Integration, E2E | 5, 6 |
+| Duplicate Kafka event | Integration | 5 |
+| Malformed transcript (bad timestamps, empty file, wrong type, too large) | Unit, Integration | 4 |
+| Missing participant data / unknown speaker | Unit | 4 |
+| Invalid payloads (empty title, inverted date range, bad ids) | Integration | 4 |
+| Stale UI after mutation (cache invalidated) | E2E (+ reload) | 11, 12 |
