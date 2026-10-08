@@ -99,39 +99,39 @@ Code existing is **not** enough.
 | ID | Requirement | Priority | Implementation | Test | Demo Verification | Status |
 |----|-------------|----------|----------------|------|-------------------|--------|
 | B1 | Comments / highlights / soundbites on transcript segments | BONUS | `segment_comments` table, comment popover on line hover | Integration; E2E | Add comment on a line, persists | ⏸ |
-| B2 | Export transcript or summary (PDF / Markdown / TXT) | BONUS | `GET /api/meetings/{id}/export?format=txt|md&content=transcript|summary` + Download modal (timestamps / speakers toggles, like Fireflies) | Unit (formatters); integration; E2E download | Download .md and .txt | ⬜ |
-| B3 | Global search across all meetings | BONUS | `GET /api/search?q=` over titles + transcript text (SQLite FTS5) → results with snippet + jump to timestamp | Integration; E2E | Top-bar search finds phrase in any meeting, deep-links to timestamp | ⬜ |
-| B4 | Tags / topics and filtering by them | BONUS | `tags` + `meeting_tags`; AI keywords become tags; dashboard tag filter | Integration; E2E | Filter by tag | ⬜ |
+| B2 | Export transcript or summary (PDF / Markdown / TXT) | BONUS | Client-side formatters in `lib/export.ts` (no endpoint needed: the data is already loaded) + Download dialog in the ⋯ menu with timestamps / speakers toggles. PDF not offered | `lib/export.test.ts`; E2E `export.spec.ts` checks the downloaded files | ⋯ → Download → .txt / .md | ✅ TXT + Markdown |
+| B3 | Global search across all meetings | BONUS | `GET /api/search?q=` (escaped LIKE over titles + transcript lines, grouped per meeting, snippets) → top-bar combobox → deep link `?t=…&find=…` | `test_search_api.py` (12); E2E `global-search.spec.ts` | Top-bar search finds a phrase in any meeting, deep-links to the moment | ✅ |
+| B4 | Tags / topics and filtering by them | BONUS | AI keywords (`summary_keywords`) are the tags; `GET /api/meetings?keyword=`; chips on rows and notes filter the library | `test_filter_by_keyword_tag`; E2E keyword-chip test | Click a chip → filtered library | ✅ |
 | B5 | LLM-powered "ask a question about this meeting" chat | BONUS | "AskFred"-style panel; `LLMProvider` if key present, else keyword-retrieval answer | Unit; manual | Ask question → answer with cited timestamps | ⏸ |
-| B6 | Dark mode | BONUS | CSS variables + `class="dark"` toggle, persisted in localStorage | E2E toggle | Toggle → dark theme | ⬜ |
+| B6 | Dark mode | BONUS | Dark token values under `.dark`; account-menu toggle; localStorage + `prefers-color-scheme` default; pre-paint script | `lib/theme.test.ts`; E2E `dark-mode.spec.ts` | Toggle → dark theme, survives reload | ✅ |
 
 ## 8. Technical Stack & Important Notes (constraints)
 
 | ID | Requirement | Priority | Implementation | Test | Demo Verification | Status |
 |----|-------------|----------|----------------|------|-------------------|--------|
-| C1 | Frontend: **Next.js (TypeScript)** | CONSTR | `frontend/` Next.js 16 App Router, `strict: true` (Phase 2) | `npm run typecheck` + `npm run build` pass locally; in CI | `npm run dev` → placeholder routes | 🟨 scaffolded |
-| C2 | Backend: **Python with FastAPI** | CONSTR | `backend/meeting-service`, `backend/ai-service` (app factories, health, error envelope — Phase 2) | 36 + 11 pytest tests pass | `/docs` OpenAPI page on :8000 / :8001 | 🟨 scaffolded |
+| C1 | Frontend: **Next.js (TypeScript)** | CONSTR | `frontend/` Next.js 16 App Router, React 19, `strict: true` | `npm run typecheck` + `npm run build`; 74 Vitest + 39 Playwright tests | Every screen | ✅ |
+| C2 | Backend: **Python with FastAPI** | CONSTR | `backend/meeting-service`, `backend/ai-service` (app factories, router → service → repository, one error envelope) | 183 + 39 pytest tests | `/docs` OpenAPI page | ✅ |
 | C3 | Database: **SQLite (design your own schema)** | CONSTR | `app/models/` (SQLAlchemy 2.0), Alembic `0001_initial_schema`, `app/database.py` | `test_schema.py`, `test_migrations.py` (migration ≡ models), `test_database.py` | Fresh DB migrates + seeds; integrity check ok | ✅ |
-| C4 | Real audio transcription **out of scope**; may seed / upload .txt/.vtt/.json / optionally LLM | CONSTR | Parsers for .txt, .vtt, .json; Mock provider default | Parser unit tests | — | ⬜ |
-| C5 | **UI should totally resemble Fireflies's design** — study it first | CONSTR | [UI_DESIGN_SPEC.md](UI_DESIGN_SPEC.md) written before UI phase | Manual review | — | ⬜ |
+| C4 | Real audio transcription **out of scope**; may seed / upload .txt/.vtt/.json / optionally LLM | CONSTR | Upload or paste .txt/.vtt/.json (`transcript_parser.py`); seeded meetings; deterministic mock AI provider | Parser unit tests; E2E upload | Create a meeting from a sample file in `samples/` | ✅ |
+| C5 | **UI should totally resemble Fireflies's design** — study it first | CONSTR | [UI_DESIGN_SPEC.md](UI_DESIGN_SPEC.md) written before any UI; fidelity checklist §9 | Screenshot review (README) | All screens | ✅ (subjective; one checklist item open — see UI_DESIGN_SPEC §9) |
 | C6 | **Seed several meetings** with full transcripts, summaries, action items | CONSTR | `app/seed/` — 7 meetings, 3–5 participants each, 183 segments, 34 chapters, 35 action items | `test_seed.py` (completeness, idempotency, shared people) | `python -m app.seed` → app populated | ✅ |
 | C7 | **Database design will be evaluated** | CONSTR | 3NF schema, CHECK/UNIQUE/FK constraints, explicit ON DELETE, justified indexes, UTC type — [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | `test_schema.py` proves each constraint fires | — | ✅ |
-| C8 | **Original work** — plagiarism ⇒ disqualification | CONSTR | All code written from scratch; Fireflies used only as visual reference; no copied assets/logos | Review | — | ⬜ |
-| C9 | Must understand every line (AI tools allowed) | CONSTR | [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md), [INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.md), ADRs | — | Interview | ⬜ |
+| C8 | **Original work** — plagiarism ⇒ disqualification | CONSTR | Written from scratch; no Fireflies-clone repositories consulted; Fireflies used only as a visual reference; own name ("Lumen") and logo | Review | — | ✅ |
+| C9 | Must understand every line (AI tools allowed) | CONSTR | [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md), [INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.md), ADRs, small and layered code | — | Interview | ✅ docs complete; the interview itself is the test |
 
 ## 9. Deliverables & Submission
 
 | ID | Requirement | Priority | Implementation | Test | Demo Verification | Status |
 |----|-------------|----------|----------------|------|-------------------|--------|
-| D1 | **Public GitHub repo** containing `frontend/` and `backend/` | DELIV | Monorepo root with both folders | — | Repo visible logged-out | ⬜ |
-| D2 | README: **setup instructions** | DELIV | `README.md#local-setup` (Phase 2: native + docker compose) | Fresh-clone dry run following README verbatim | — | 🟨 |
-| D3 | README: **tech stack** | DELIV | `README.md#tech-stack` | — | — | 🟨 |
-| D4 | README: **architecture overview** | DELIV | `README.md#architecture` + [ARCHITECTURE.md](ARCHITECTURE.md) | — | — | 🟨 |
-| D5 | README: **database schema** | DELIV | `README.md#database-schema` + [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | — | — | 🟨 |
-| D6 | README: **API overview** | DELIV | `README.md#api-overview` + [API.md](API.md) + `/docs` | — | — | 🟨 |
-| D7 | README: **assumptions made** | DELIV | `README.md#assumptions` | — | — | 🟨 |
-| D8 | **Hosted, working demo link** | DELIV | See [DEPLOYMENT.md](DEPLOYMENT.md) (target pending decision) | Smoke test script against deployed URL | Link opens populated app; CRUD persists | ⬜ |
-| D9 | Submit repo link + deployed link | DELIV | Final checklist in `FINAL_EVALUATION_REPORT.md` | — | — | ⬜ |
+| D1 | **Public GitHub repo** containing `frontend/` and `backend/` | DELIV | Monorepo with both folders; local history of issue branches + merges ready to push | — | Repo visible logged-out | ⏳ ready; publishing needs the author's authorization |
+| D2 | README: **setup instructions** | DELIV | `README.md#local-setup` (Phase 2: native + docker compose) | Fresh-clone dry run following README verbatim | — | ✅ README section: Local Setup (native + docker compose) |
+| D3 | README: **tech stack** | DELIV | `README.md#tech-stack` | — | — | ✅ README section: Tech Stack |
+| D4 | README: **architecture overview** | DELIV | `README.md#architecture` + [ARCHITECTURE.md](ARCHITECTURE.md) | — | — | ✅ README section: Architecture + diagram, Services, Kafka / Event Flow |
+| D5 | README: **database schema** | DELIV | `README.md#database-schema` + [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | — | — | ✅ README section: Database Schema + DATABASE_DESIGN.md |
+| D6 | README: **API overview** | DELIV | `README.md#api-overview` + [API.md](API.md) + `/docs` | — | — | ✅ README section: API Overview + API.md + `/docs` |
+| D7 | README: **assumptions made** | DELIV | `README.md#assumptions` | — | — | ✅ README section: Assumptions |
+| D8 | **Hosted, working demo link** | DELIV | `deploy/docker-compose.prod.yml` (Caddy + real Kafka) — verified locally incl. restart persistence; [DEPLOYMENT.md](DEPLOYMENT.md) | Post-deploy checklist (DEPLOYMENT §5) | Link opens populated app; CRUD persists | ⏳ ready; host choice needs the author |
+| D9 | Submit repo link + deployed link | DELIV | Checklist in [FINAL_EVALUATION_REPORT.md](../FINAL_EVALUATION_REPORT.md) | — | — | ⏳ after D1 + D8 |
 
 ## 10. Evaluation Criteria (exact PDF wording — no numeric weights are given, none are invented)
 
@@ -149,23 +149,23 @@ Code existing is **not** enough.
 
 | ID | Goal | Priority | Implementation | Test | Verification | Status |
 |----|------|----------|----------------|------|--------------|--------|
-| X1 | Two services: Meeting Service (system of record) + stateless AI Processing Service | EXTRA | `backend/meeting-service`, `backend/ai-service` | Each service has its own test suite | docker compose up | ✅ Two services, independently tested (171 + 39 tests) and deployed by compose |
+| X1 | Two services: Meeting Service (system of record) + stateless AI Processing Service | EXTRA | `backend/meeting-service`, `backend/ai-service` | Each service has its own test suite | docker compose up | ✅ Two services, independently tested (183 + 39 tests) and deployed by compose |
 | X2 | Kafka for async processing only (never CRUD) | EXTRA | Topics `meeting.events`, `ai.events`; transactional outbox; idempotent consumers | Kafka integration test in CI (service container) | Upload → summary arrives via Kafka | ✅ Outbox relay + idempotent consumer; real-broker pipeline test passes locally (CI job defined) |
 | X2a | Visible processing state `not_requested → pending → processing → completed / failed` | EXTRA (supports R3.4) | `meetings.processing_status`; FE `SummaryStatus` ("Generating notes…" / Ready / Failed + Retry) | Service unit (state transitions); integration; E2E | New meeting shows Processing… then Ready | ✅ status chip, generating skeleton, failed + Retry, 'Notes ready' toast; E2E |
 | X2b | `PROCESSING_MODE=kafka\|http\|inline-test` — free-hosting fallback reusing the same envelope, processor and idempotent apply path | EXTRA (supports D8) | `EventPublisher` implementations in MS; AI `POST /internal/process` | Tests run the pipeline through `InMemoryEventPublisher`; HTTP mode integration test | Deployed demo generates summaries even without a broker | ✅ HTTP fallback tested in-process (`test_http_fallback_pipeline_end_to_end`) and in the AI service |
-| X3 | Backend coverage ~90%+ (where practical) | EXTRA | pytest-cov, `--cov-fail-under` | CI gate | Coverage badge/report | ⬜ |
-| X4 | Playwright E2E for critical flows | EXTRA | `frontend/tests/e2e` | CI job | — | ✅ 33 Playwright tests against the real stack |
-| X5 | GitHub Actions CI on PR + push to main | EXTRA | `.github/workflows/ci.yml` (Phase 2: backend lint/format/types/tests+coverage, contract check, Kafka job, frontend lint/format/types/unit/build/E2E smoke) | Every step run locally; first CI run happens when the GitHub repo exists | Green checks on PRs | 🟨 written, not yet run on GitHub |
-| X6 | Professional Git workflow: issues → branches → PRs | EXTRA | [PROJECT_PLAN.md](PROJECT_PLAN.md) | — | GitHub history | ⬜ |
+| X3 | Backend coverage ~90%+ (where practical) | EXTRA | pytest-cov, `--cov-fail-under=90` in CI | CI gate (reproduced in a Linux container) | Coverage report | ✅ 97 % / 99 % line + branch |
+| X4 | Playwright E2E for critical flows | EXTRA | `frontend/tests/e2e` | CI job | — | ✅ 39 Playwright tests against the real stack |
+| X5 | GitHub Actions CI on PR + push to main | EXTRA | `.github/workflows/ci.yml`: backend lint/format/types/tests+coverage, contract check, Kafka job, frontend lint/format/types/unit/build/E2E | Every job's commands run locally; backend job reproduced in `python:3.11-slim` | Green checks on PRs | 🟨 verified locally; first GitHub run when the repo is published |
+| X6 | Professional Git workflow: issues → branches → PRs | EXTRA | [PROJECT_PLAN.md](PROJECT_PLAN.md); feature branches merged with `--no-ff`; PR descriptions in [PULL_REQUESTS.md](PULL_REQUESTS.md) | — | Git history | ✅ locally; PRs become real once published |
 | X7 | Loading / empty / error states on every screen | EXTRA (supports R5) | Shared `ui/EmptyState`, `ui/ErrorState`, skeletons | E2E with mocked API failure | — | ✅ shared EmptyState/ErrorState/Skeleton on every screen; E2E failure specs |
-| X8 | Security basics: validation, CORS, env config, no secrets, safe rendering of uploads | EXTRA | Done in Phase 2: env-based config + `.env.example` only, CORS allow-list, generic 500s, non-root Docker users. Later: Pydantic limits, upload checks, React escaping | `test_config.py`, `test_health.py` (CORS), `test_errors.py` (no internals leaked) | — | 🟨 |
+| X8 | Security basics: validation, CORS, env config, no secrets, safe rendering of uploads | EXTRA | Env-based config, `.env.example` only; CORS allow-list; generic 500s; non-root containers; Pydantic limits on every field incl. transcript size (`MAX_TRANSCRIPT_CHARS`); strict transcript parsers with line-numbered errors; React escaping (search highlights are `<mark>` elements, no HTML injection); internal token compared in constant time; prod publishes only Caddy's ports | `test_config.py`, `test_health.py` (CORS), `test_errors.py`, internal API auth tests | Secrets scan of the repo: clean | ✅ |
 
 ## 12. Timeline & constraints (PDF "Timeline", "AI Tools Usage")
 
 | ID | Constraint | Consequence for this project |
 |----|-----------|------------------------------|
 | G1 | Estimated effort ≈ **24 hours** | Must-haves first; Kafka/CI/extra docs are budgeted on top and are the first thing cut if time runs short (never a MUST row) |
-| G2 | Submission deadline "as communicated" | Deployment (Phase 18) must be stable **before** the deadline, not on it — the hosted link is a deliverable |
+| G2 | Submission deadline "as communicated" | Deployment must be stable **before** the deadline, not on it — the hosted link is a deliverable |
 | G3 | AI tools allowed, but **every line must be understood** | DEVELOPMENT_GUIDE, ADRs, INTERVIEW_GUIDE; small architecture; no unexplained generated code |
 | G4 | Plagiarism ⇒ disqualification | No Fireflies-clone repos consulted; Fireflies only as a visual/UX reference; original name & logo |
 

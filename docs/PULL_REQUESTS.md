@@ -91,3 +91,10 @@ headless-browser check with no console errors. Backend CI job re-run in `python:
 **Known limitations:** no host chosen yet; GitHub Actions not run until the repo is published.
 Closes #19
 
+## #20 docs: final evaluation report and interview preparation — `feature/20-final-audit`
+**What:** `FINAL_EVALUATION_REPORT.md` (strict, PDF line by line); all matrix and scorecard statuses closed out;
+completed INTERVIEW_GUIDE (29 answers) and FINAL_DEMO_SCRIPT.
+**Why:** "Code Understanding" is an evaluation criterion, and the report keeps every claim tied to evidence.
+**Testing:** every UI label, file name and code claim in the documents was checked against the source.
+Closes #20
+

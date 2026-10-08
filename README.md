@@ -1,9 +1,13 @@
 # Fireflies Clone — Meeting Notes & Transcription Platform
 
-> **Status:** every MUST-have requirement is implemented and verified by automated tests (backend, Kafka and
-> browser end-to-end). Bonuses, deployment and the final audit are tracked in
-> [docs/PROGRESS.md](docs/PROGRESS.md) and [docs/LIVE_SCORECARD.md](docs/LIVE_SCORECARD.md).
-> Requirement-by-requirement status: [docs/REQUIREMENTS_MATRIX.md](docs/REQUIREMENTS_MATRIX.md).
+> **Status: submission-ready, pending publication.**
+> - Every MUST-have requirement is implemented and verified by automated tests (backend, real Kafka and browser
+>   end-to-end).
+> - Four bonuses are done.
+> - The production stack is verified locally.
+> - Not yet done: publishing this repo and choosing a host. See
+>   [FINAL_EVALUATION_REPORT.md](FINAL_EVALUATION_REPORT.md) for the strict self-assessment and the submission
+>   checklist, and [docs/REQUIREMENTS_MATRIX.md](docs/REQUIREMENTS_MATRIX.md) for status by requirement.
 
 ## Overview
 A Fireflies.ai-inspired meeting workspace built for the Scaler SDE Fullstack assignment. Browse a library of

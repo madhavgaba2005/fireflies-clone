@@ -27,7 +27,7 @@ Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = 
 | Create (upload .txt/.vtt/.json, paste, form), edit, delete | dialogs | R4.1–R4.5 | ✅ |
 | Add / edit / complete / uncomplete / delete action items | action items section | R4.6–R4.8 | ✅ |
 | Everything survives a refresh and a server restart | any | R4.9 | ✅ |
-| **Proof:** 33 Playwright tests drive all of the above against the real stack | `fe/tests/e2e/` | all | ✅ |
+| **Proof:** 39 Playwright tests drive all of the above against the real stack | `fe/tests/e2e/` | all | ✅ |
 
 ## 2. UI/UX
 
@@ -105,7 +105,7 @@ Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = 
 | `SummaryProvider` interface (mock today; LLM = one class) and one `MeetingProcessor` shared by Kafka and HTTP | `ai/app/providers`, `ai/app/processors` | ✅ |
 | Transcript parser module per format (txt / vtt / json) behind one function | `ms/app/services/transcript_parser.py` | ✅ |
 | `PlaybackClock` interface: simulated clock now, a media-element clock later — sync code unchanged | `fe/lib/playback.ts` | ✅ |
-| Pure, unit-tested logic outside JSX: active segment, search, filters, formatting | `fe/lib/*.ts` (65 Vitest tests) | ✅ |
+| Pure, unit-tested logic outside JSX: active segment, search, filters, formatting | `fe/lib/*.ts` (74 Vitest tests) | ✅ |
 | Reusable components: `Modal`, `Menu`, `Avatar(Stack)`, `StatusChip`, `EmptyState/ErrorState`, `ParticipantsInput`, `ActionItemEditor` (add + edit) | `fe/components/ui`, … | ✅ |
 | Server state in one place (TanStack Query hooks, targeted invalidation) | `fe/hooks/queries.ts` | ✅ |
 
