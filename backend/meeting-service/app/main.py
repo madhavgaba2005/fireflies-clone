@@ -15,7 +15,7 @@ from app.config import Settings, get_settings
 from app.database import Database
 from app.errors import register_exception_handlers
 from app.migrations import upgrade_to_head
-from app.routers import health
+from app.routers import action_items, health, meetings, participants
 from app.seed.loader import seed_database
 
 
@@ -53,4 +53,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     register_exception_handlers(app)
     app.include_router(health.router)
+    app.include_router(meetings.router)
+    app.include_router(action_items.router)
+    app.include_router(participants.router)
     return app
