@@ -1,0 +1,10 @@
+[00:00] Priya Sharma: Thanks for joining, Jordan. Today we want to plan your team's onboarding to Routewise and agree on a go-live date.
+[00:09] Jordan Lee: Great. We have twelve dispatchers across two depots, and most of them have only used spreadsheets until now.
+[00:18] Priya Sharma: Then I'd suggest two short training sessions instead of one long one. The first covers building routes, the second covers live tracking and exceptions.
+[00:29] Jordan Lee: That works. Our biggest worry is importing customer locations. We have about four thousand addresses and some of them are messy.
+[00:39] Arjun Mehta: The importer handles that well now. Anything we can't geocode goes into a failure report you can fix and re-upload.
+[00:48] Jordan Lee: Perfect. Can we also connect it to our order system later, not on day one?
+[00:55] Arjun Mehta: Yes. I'll send you the API documentation so your developers can look at it in parallel.
+[01:03] Priya Sharma: I'll schedule both training sessions for next week and share a checklist for the import.
+[01:10] Jordan Lee: Let's target go-live on the first of next month.
+[01:15] Priya Sharma: Agreed. I'll follow up by email with the plan and the dates.

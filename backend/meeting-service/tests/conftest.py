@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.config import Settings
 from app.main import create_app
 from app.models import Base
+from app.seed.loader import seed_database
 
 
 @pytest.fixture
@@ -41,3 +43,13 @@ def session(app: FastAPI) -> Iterator[Session]:
 def client(app: FastAPI) -> Iterator[TestClient]:
     with TestClient(app) as test_client:
         yield test_client
+
+
+SEED_NOW = datetime(2026, 10, 9, 12, 0, tzinfo=UTC)
+
+
+@pytest.fixture
+def seeded(session: Session) -> Session:
+    """The 7 demo meetings, dated relative to SEED_NOW (newest: 2026-10-08)."""
+    seed_database(session, SEED_NOW)
+    return session

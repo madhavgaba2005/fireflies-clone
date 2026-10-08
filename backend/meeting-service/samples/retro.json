@@ -1,0 +1,6 @@
+[
+  { "speaker": "Arjun Mehta", "start": 0, "end": 7.5, "text": "Let's do a quick retro on the 2.4 release. What went well?" },
+  { "speaker": "Sarah Chen", "start": 8, "end": 15, "text": "The design QA process caught three issues before release, which is a first for us." },
+  { "speaker": "David Kim", "start": 15.5, "end": 23, "text": "Batching geocoding was a big win, but we should have load tested it two weeks earlier." },
+  { "speaker": "Arjun Mehta", "start": 23.5, "end": 30, "text": "Agreed. Next release, we'll run load tests before the feature freeze. I'll add it to the checklist." }
+]
