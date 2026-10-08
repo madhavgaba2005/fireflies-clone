@@ -34,3 +34,12 @@ Closes #3, closes #8
 **Testing:** 144 backend tests incl. `test_meetings_api.py`, `test_action_items_api.py`.
 **Known limitations:** date filters use UTC day boundaries.
 Closes #4, closes #5 (transcript API); backend part of #14
+
+## #6 feat: Kafka event pipeline and AI processing service — `feature/6-kafka-events`
+**What:** payload contract, outbox relay, result consumer, idempotent result application; AI service provider,
+processor, Kafka loop and HTTP fallback; compose healthchecks; CI Kafka job runs the full pipeline.
+**Why:** asynchronous, decoupled summary generation (ADR-004/005/008) without routing CRUD through Kafka.
+**Testing:** 171 + 39 tests; `pytest -m kafka` against the real broker and AI container; compose stack smoke test incl.
+restart persistence.
+**Known limitations:** no DLQ; polling relay; single relay instance (see EVENT_DRIVEN_ARCHITECTURE §11).
+Closes #6, closes #7

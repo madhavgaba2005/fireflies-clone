@@ -50,9 +50,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: >
-          cmp backend/meeting-service/tests/contract/envelope_v1.schema.json
-          backend/ai-service/tests/contract/envelope_v1.schema.json
+      - name: Envelope and payload schemas must be byte-identical in both services
+        run: |
+          for f in envelope_v1.schema.json payloads_v1.schema.json; do
+            cmp "backend/meeting-service/tests/contract/$f" "backend/ai-service/tests/contract/$f"
+          done
 
   kafka:
     name: kafka integration
@@ -63,17 +65,21 @@ jobs:
         working-directory: backend/meeting-service
     steps:
       - uses: actions/checkout@v4
-      - name: Start Kafka (same config as local docker compose)
+      - name: Start Kafka and the AI service (same config as local docker compose)
         working-directory: .
-        run: docker compose up -d --wait kafka
+        run: docker compose up -d --build --wait kafka ai-service
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: backend/meeting-service/requirements*.txt
       - run: pip install -r requirements-dev.txt
-      - name: Real-broker tests
+      - name: Real-broker tests (round trip + full pipeline through the AI service)
         run: pytest -m kafka -v
+      - name: AI service logs
+        if: failure()
+        working-directory: .
+        run: docker compose logs ai-service kafka
 
   frontend:
     runs-on: ubuntu-latest

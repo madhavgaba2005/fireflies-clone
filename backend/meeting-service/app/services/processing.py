@@ -3,6 +3,7 @@
 from sqlalchemy.orm import Session
 
 from app.events.envelope import EventEnvelope, EventType
+from app.events.payloads import ParticipantPayload, ProcessingRequestPayload, SegmentPayload
 from app.models import Meeting, ProcessingStatus, TranscriptSegment
 from app.repositories.outbox import OutboxRepository
 
@@ -12,25 +13,24 @@ def processing_request(
 ) -> EventEnvelope:
     """Event-carried state transfer: the transcript travels in the event, so the AI service
     never calls back into the Meeting Service and stays stateless."""
+    payload = ProcessingRequestPayload(
+        meeting_id=meeting.id,
+        transcript_revision=meeting.transcript_revision,
+        title=meeting.title,
+        participants=[ParticipantPayload(id=p.id, name=p.name) for p in meeting.participants],
+        segments=[
+            SegmentPayload(
+                speaker_id=segment.speaker_id,
+                speaker=segment.speaker.name,
+                start_ms=segment.start_ms,
+                end_ms=segment.end_ms,
+                text=segment.text,
+            )
+            for segment in segments
+        ],
+    )
     return EventEnvelope(
-        event_type=event_type,
-        aggregate_id=str(meeting.id),
-        payload={
-            "meeting_id": meeting.id,
-            "transcript_revision": meeting.transcript_revision,
-            "title": meeting.title,
-            "participants": [{"id": p.id, "name": p.name} for p in meeting.participants],
-            "segments": [
-                {
-                    "speaker_id": segment.speaker_id,
-                    "speaker": segment.speaker.name,
-                    "start_ms": segment.start_ms,
-                    "end_ms": segment.end_ms,
-                    "text": segment.text,
-                }
-                for segment in segments
-            ],
-        },
+        event_type=event_type, aggregate_id=str(meeting.id), payload=payload.model_dump()
     )
 
 

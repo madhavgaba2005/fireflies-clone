@@ -1,0 +1,251 @@
+{
+  "ProcessingRequestPayload": {
+    "$defs": {
+      "ParticipantPayload": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ParticipantPayload",
+        "type": "object"
+      },
+      "SegmentPayload": {
+        "properties": {
+          "end_ms": {
+            "minimum": 0,
+            "title": "End Ms",
+            "type": "integer"
+          },
+          "speaker": {
+            "title": "Speaker",
+            "type": "string"
+          },
+          "speaker_id": {
+            "title": "Speaker Id",
+            "type": "integer"
+          },
+          "start_ms": {
+            "minimum": 0,
+            "title": "Start Ms",
+            "type": "integer"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "speaker_id",
+          "speaker",
+          "start_ms",
+          "end_ms",
+          "text"
+        ],
+        "title": "SegmentPayload",
+        "type": "object"
+      }
+    },
+    "description": "meeting.created / transcript.updated / summary.requested \u2014 carries the whole transcript.",
+    "properties": {
+      "meeting_id": {
+        "title": "Meeting Id",
+        "type": "integer"
+      },
+      "participants": {
+        "items": {
+          "$ref": "#/$defs/ParticipantPayload"
+        },
+        "title": "Participants",
+        "type": "array"
+      },
+      "segments": {
+        "items": {
+          "$ref": "#/$defs/SegmentPayload"
+        },
+        "title": "Segments",
+        "type": "array"
+      },
+      "title": {
+        "title": "Title",
+        "type": "string"
+      },
+      "transcript_revision": {
+        "title": "Transcript Revision",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "meeting_id",
+      "transcript_revision",
+      "title",
+      "participants",
+      "segments"
+    ],
+    "title": "ProcessingRequestPayload",
+    "type": "object"
+  },
+  "SummaryFailedPayload": {
+    "properties": {
+      "attempts": {
+        "minimum": 0,
+        "title": "Attempts",
+        "type": "integer"
+      },
+      "meeting_id": {
+        "title": "Meeting Id",
+        "type": "integer"
+      },
+      "reason": {
+        "title": "Reason",
+        "type": "string"
+      },
+      "transcript_revision": {
+        "title": "Transcript Revision",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "meeting_id",
+      "transcript_revision",
+      "reason",
+      "attempts"
+    ],
+    "title": "SummaryFailedPayload",
+    "type": "object"
+  },
+  "SummaryGeneratedPayload": {
+    "$defs": {
+      "ActionItemPayload": {
+        "properties": {
+          "assignee_speaker_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Assignee Speaker Id"
+          },
+          "start_ms": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Start Ms"
+          },
+          "title": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "ActionItemPayload",
+        "type": "object"
+      },
+      "TopicPayload": {
+        "properties": {
+          "start_ms": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Start Ms"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "summary"
+        ],
+        "title": "TopicPayload",
+        "type": "object"
+      }
+    },
+    "properties": {
+      "action_items": {
+        "items": {
+          "$ref": "#/$defs/ActionItemPayload"
+        },
+        "title": "Action Items",
+        "type": "array"
+      },
+      "keywords": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Keywords",
+        "type": "array"
+      },
+      "meeting_id": {
+        "title": "Meeting Id",
+        "type": "integer"
+      },
+      "overview": {
+        "title": "Overview",
+        "type": "string"
+      },
+      "provider": {
+        "maxLength": 32,
+        "title": "Provider",
+        "type": "string"
+      },
+      "topics": {
+        "items": {
+          "$ref": "#/$defs/TopicPayload"
+        },
+        "title": "Topics",
+        "type": "array"
+      },
+      "transcript_revision": {
+        "title": "Transcript Revision",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "meeting_id",
+      "transcript_revision",
+      "provider",
+      "overview"
+    ],
+    "title": "SummaryGeneratedPayload",
+    "type": "object"
+  }
+}

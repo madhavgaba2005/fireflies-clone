@@ -25,7 +25,7 @@ generated asynchronously by a separate AI Processing Service via Kafka.
 **Core (assignment must-haves)**
 - Meetings library: title, date, duration, participants · title search · date & participant filters · sort by recency · profile/settings placeholders
 - Meeting workspace: speaker-labelled, timestamped transcript · media player with seek bar · click a line to seek, playback highlights and scrolls to the active line · in-transcript search with highlighted matches
-- AI notes: keywords, overview, notes, timestamped outline/chapters, extracted action items — with a visible processing state (Processing → Ready / Failed + Retry)
+- AI notes: keywords, overview, timestamped outline/chapters, extracted action items — generated asynchronously through Kafka by a separate AI service, with a visible processing state (Processing → Ready / Failed + Retry)
 - CRUD: create meetings (upload / paste / form), edit title, date & participants, delete; add / edit / complete / delete action items — all persisted
 - Fireflies-style layout, modals, filters, toasts; "Coming soon" for live bot, speech-to-text, integrations, team sharing
 

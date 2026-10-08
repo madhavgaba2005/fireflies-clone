@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     kafka_bootstrap_servers: str = "localhost:9092"
     kafka_request_topic: str = "meeting.events"
     kafka_result_topic: str = "ai.events"
+    kafka_consumer_group: str = "meeting-service"
+    outbox_poll_interval: float = 1.0
     ai_service_url: str = "http://localhost:8001"
     internal_api_token: str = ""
 
