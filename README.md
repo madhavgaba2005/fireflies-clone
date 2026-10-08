@@ -210,7 +210,17 @@ lint/format/strict types/tests + 90 % coverage gate (both services), event-contr
 lint/format/types/unit/build/E2E smoke. See [docs/CI_CD.md](docs/CI_CD.md).
 
 ## Deployment
-_(pending — Phase 18)_ Free-first options and verification checklist: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+A production stack is ready in [`deploy/`](deploy): Caddy (automatic HTTPS, one origin), the Next.js standalone
+image, both services and **real Kafka**, all on one free VM. It has been verified locally: summaries are processed
+through Kafka, and data persists across a full restart.
+
+```bash
+cp deploy/.env.example deploy/.env   # set SITE_ADDRESS / PUBLIC_URL
+docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d --build --wait
+```
+
+Options, steps, backups and the post-deploy checklist are in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). The host is
+not chosen yet; that is the author's decision.
 
 ## Assumptions
 - Single default logged-in user; no authentication (explicitly allowed by the assignment).
@@ -244,11 +254,22 @@ See [docs/TRADEOFFS.md](docs/TRADEOFFS.md) and [docs/adr/](docs/adr/).
 
 ## Known Limitations
 - SQLite allows one writer, so the Meeting Service runs as a single instance.
-- Free hosting may not run Kafka; the hosted demo may use the documented HTTP processing mode.
-_(maintained as implementation progresses)_
+- Playback is simulated by a clock, since there is no real audio. The `PlaybackClock` interface is where a real
+  `<audio>` element would plug in.
+- AI notes come from a deterministic mock provider (heuristics over the transcript). No LLM is called.
+- The outbox relay polls (sub-second), and there is no dead-letter topic. Failed processing is shown in the UI with a
+  retry button.
+- Date filters use UTC day boundaries.
+- Authentication, live meeting bots, integrations and sharing are "Coming soon" placeholders, as the brief allows.
 
 ## Future Improvements
-_(maintained as implementation progresses)_
+- An LLM summary provider behind the existing `SummaryProvider` interface (ADR-007), plus an "Ask" chat grounded in
+  transcript segments.
+- Comments and highlights on transcript lines (bonus B1).
+- SQLite FTS5 for global search once the data outgrows `LIKE`.
+- A dead-letter topic and an admin view of failed events.
+- Real audio/video playback through an `AudioElementClock`.
+- Postgres (or Litestream backups) if write concurrency or durability needs grow.
 
 ## Screenshots
 Captured from the running application (seeded data).

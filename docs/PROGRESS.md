@@ -85,3 +85,62 @@ are now test errors; keyword de-duplication kept the last spelling instead of th
 **Bugs found and fixed:** seek while paused didn't scroll the active line into view; optimistic checkbox flickered
 (update ran after an await); success toasts skipped when a row unmounted (`mutate` callbacks); top bar overflowed at
 phone width (utility-class conflict).
+
+## G — Bonuses (#16–#18)
+
+**Built:**
+- Global search across titles and transcripts, with deep links to the exact moment.
+- Export of the transcript or notes as TXT or Markdown.
+- Dark mode: system default, persisted choice, no flash on load.
+- Tags (from the AI keywords) were already built in D–F.
+
+**Deferred, with reasons in BONUS_FEATURES:** comments on segments, and an "Ask" chat (it needs a real LLM to be
+honest).
+
+**Verified:** 6 export and 3 theme unit tests. The E2E tests check real downloaded file names and contents, and the
+theme toggle, reload persistence and system preference. Dark screenshots were reviewed.
+
+## H — Full test run and coverage
+
+**Results:** every suite passes (see TESTING "Latest results"): 183 + 2 Kafka + 39 backend tests, 74 Vitest tests and
+39 Playwright tests. Coverage is 97 % for the meeting service and 99 % for the AI service.
+
+**Bug found and fixed:** `seed --reset` in the same session could fail intermittently. Bulk DELETEs leave stale
+objects in SQLAlchemy's identity map, and SQLite reuses row IDs, so a new row could collide with a stale one. The fix
+is `session.expunge_all()` after the wipe. The test now passes on repeated runs, and SAWarnings stay fatal in tests.
+
+**Clean-ups:**
+- Removed the deprecated `Result.tuples()` calls (SQLAlchemy 2.1).
+- Set Alembic's `path_separator`.
+
+## I — CI validation
+
+- `act` is not installed, so the backend CI job was reproduced in a clean `python:3.11-slim` container with its exact
+  commands. Both services pass, coverage gate included.
+- The frontend job's commands (`lint`, `format:check`, `typecheck`, `test`, `build`, `test:e2e` with
+  `E2E_PYTHON=python`) all pass locally.
+- The Kafka job's `docker compose up --wait kafka ai-service` followed by `pytest -m kafka` passes locally.
+- **Not yet verified:** a run on GitHub itself, which needs the repository to be published (the owner's decision).
+
+## J — Deployment preparation (#19)
+
+**Built:**
+- `deploy/docker-compose.prod.yml`: Caddy with automatic HTTPS, Next.js standalone image, both services and real
+  Kafka with a 256 MB heap. Only Caddy publishes ports.
+- `deploy/Caddyfile`: a single origin, so there is no CORS.
+- Frontend `Dockerfile` and `deploy/.env.example`.
+- `docs/DEPLOYMENT.md` rewritten with options, steps, backup and the checklist.
+
+**Verified locally:** the prod stack ran on `:8088`.
+- All containers became healthy, and the frontend served the seeded library.
+- `/health/ready` returned OK.
+- A meeting created through Caddy was summarised through Kafka in about 2 s.
+- After restarting the whole stack, the new meeting was still there with status `completed`.
+- In a headless browser, the workspace rendered, click-to-seek worked, and there were no console errors.
+
+The browser does log `net::ERR_ABORTED` for some link prefetches. These are Next.js cancelling its own prefetches;
+the pages themselves load normally.
+
+**Pending the owner's decision:** the hosting provider. Free VM recommended, no purchase made. Publishing the
+repository is also pending.
+
