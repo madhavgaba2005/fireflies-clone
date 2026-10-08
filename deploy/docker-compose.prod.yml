@@ -48,6 +48,9 @@ services:
       KAFKA_NUM_PARTITIONS: 3
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_HEAP_OPTS: -Xms256m -Xmx256m # fits small free-tier VMs
+      KAFKA_LOG_DIRS: /var/lib/kafka/data # on a volume: in-flight events survive a broker restart
+    volumes:
+      - kafka-data:/var/lib/kafka/data
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server kafka:29092 > /dev/null 2>&1"]
       interval: 10s
@@ -94,5 +97,6 @@ services:
 
 volumes:
   meeting-data:
+  kafka-data:
   caddy-data:
   caddy-config:
