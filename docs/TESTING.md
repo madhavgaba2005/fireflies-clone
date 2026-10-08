@@ -37,14 +37,23 @@ cd frontend && npm test                               # Vitest
 cd frontend && npm run build && npm run test:e2e      # Playwright (needs `npx playwright install chromium` once)
 ```
 
-## Latest results (local run, Milestone F)
+## Latest results (full run, Milestone H — 2026-10-09)
 | Suite | Result | Coverage (line + branch) |
 |-------|--------|--------------------------|
-| meeting-service unit + integration | 171 passed | 97 % |
+| meeting-service unit + integration | 183 passed | 97 % (97.45 %) |
 | meeting-service `-m kafka` (real broker + AI container) | 2 passed | — |
-| ai-service unit + integration | 39 passed | 99 % |
-| frontend Vitest | 65 passed | — |
-| frontend Playwright (real stack) | 33 passed (31 desktop + 2 phone-width) | — |
+| ai-service unit + integration | 39 passed | 99 % (98.84 %) |
+| frontend Vitest | 74 passed | — |
+| frontend Playwright (real stack, production build) | 39 passed | — |
+
+Both backend suites were also run **in a clean `python:3.11-slim` Linux container** with exactly the CI job's
+commands (ruff, ruff format, mypy, pytest with the 90 % gate), and passed. This is the same OS and Python version as
+the GitHub runner. Coverage HTML is written locally to `coverage/` (git-ignored); CI uploads `coverage.xml` as an
+artifact.
+
+The meeting-service total covers all of `app/`. The only file below 90 % is `app/seed/__main__.py` (0 %),
+the 19-line CLI wrapper that Playwright runs on every E2E start. Its logic lives in `loader.py`,
+which is 97 % covered.
 
 **How E2E works:** `playwright.config.ts` starts the AI service and the Meeting Service in `PROCESSING_MODE=http`
 (no broker needed), resets and seeds a dedicated SQLite file, builds and starts the frontend on its own port, then
