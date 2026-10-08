@@ -24,6 +24,8 @@ pythonpath = ["."]
 asyncio_mode = "auto"
 markers = ["kafka: needs a running Kafka broker (deselected by default)"]
 addopts = "-m 'not kafka'"
+# A SQLAlchemy warning usually means data silently not saved — fail loudly instead.
+filterwarnings = ["error::sqlalchemy.exc.SAWarning"]
 
 [tool.coverage.run]
 source = ["app"]
