@@ -206,16 +206,16 @@ not a fork of the architecture. Kafka stays the reference implementation and is 
 | Action items | AI service (`source=ai`) and user (`source=manual`) | SQLite | Notes panel; edited via REST |
 | Playback position, transcript search query | Browser only | React state (`?t=` for deep links) | Player + transcript |
 
-## 12. Deployment architecture — *finalized in Phase 18, see [DEPLOYMENT.md](DEPLOYMENT.md)*
+## 12. Deployment architecture — see [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ```
-Local (docker compose)                         Hosted (free-first; target decided in Phase 18)
-┌──────────┐  ┌───────────────┐  ┌───────┐    ┌──────────┐   ┌─────────────────────────────┐
-│ frontend │→ │ meeting-svc   │↔ │ kafka │    │ frontend │ → │ meeting-svc + SQLite volume │
-│  :3000   │  │ :8000 + .db   │  └───┬───┘    │ (Vercel) │   └──────────────┬──────────────┘
-└──────────┘  └───────────────┘      │        └──────────┘    kafka or http │
-                                ┌────┴─────┐                         ┌──────┴──────┐
-                                │ ai-svc   │                         │ ai-service  │
-                                │ :8001    │                         └─────────────┘
-                                └──────────┘
+Local (docker compose)                       Production (deploy/docker-compose.prod.yml, one VM)
+┌──────────┐  ┌───────────────┐  ┌───────┐   ┌────────────────┐ /api, /health ┌──────────────────────┐
+│ frontend │→ │ meeting-svc   │↔ │ kafka │   │ Caddy :80/:443 │ ────────────→ │ meeting-svc + volume │
+│  :3000   │  │ :8000 + .db   │  └───┬───┘   │ (HTTPS; the    │               └──────────┬───────────┘
+└──────────┘  └───────────────┘      │       │  only public   │ ─→ frontend       kafka (internal)
+                                ┌────┴─────┐ │  ports)        │    (standalone)          │
+                                │ ai-svc   │ └────────────────┘                    ┌─────┴──────┐
+                                │ :8001    │                                       │ ai-service │
+                                └──────────┘                                       └────────────┘
 ```
