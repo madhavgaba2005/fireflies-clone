@@ -70,13 +70,13 @@ evaluator is likely to inspect, the main risks to the score, and what we do abou
 | RESTful resource design, nested only where ownership is real | [API.md](API.md) | 🟨 |
 | Router → Service → Repository layering; routers contain no SQL, repositories contain no HTTP | `app/routers`, `app/services`, `app/repositories` | ⬜ |
 | Pydantic request/response schemas with field limits; `422` on bad input | `app/schemas` | ⬜ |
-| Uniform error envelope `{ "error": { "code", "message", "details" } }` | exception handlers | ⬜ |
+| Uniform error envelope `{ "error": { "code", "message", "details" } }` | `meeting-service/app/errors.py`, `tests/integration/test_errors.py` | 🟨 handlers + tests done; applied to feature routes from Phase 4 |
 | Correct status codes: 200/201/204/400/404/409/413/415/422 | tests | ⬜ |
 | Pagination (`limit`/`offset` + `total`) on list endpoint | `GET /api/meetings` | ⬜ |
-| Auto-generated OpenAPI at `/docs` | FastAPI | ⬜ |
+| Auto-generated OpenAPI at `/docs` | FastAPI | 🟨 served by both services (verified); endpoints arrive from Phase 4 |
 | Async processing via Kafka with outbox + idempotent consumer; CRUD stays synchronous; visible `processing_status` | [EVENT_DRIVEN_ARCHITECTURE.md](EVENT_DRIVEN_ARCHITECTURE.md) | 🟨 |
-| Health endpoints `/health` (liveness) and `/health/ready` (DB + broker) | both services | ⬜ |
-| Environment-based config (`pydantic-settings`), `.env.example` | `config.py` | ⬜ |
+| Health endpoints `/health` (liveness) and `/health/ready` (DB; broker check added with the consumer in Phase 5) | both services | 🟨 liveness ✅, readiness DB ✅ |
+| Environment-based config (`pydantic-settings`), `.env.example` | `app/config.py` ×2, three `.env.example` files, fail-fast validation | ✅ |
 
 ## 5. Code Quality
 
@@ -84,9 +84,9 @@ evaluator is likely to inspect, the main risks to the score, and what we do abou
 
 | Evidence | Where | Status |
 |----------|-------|--------|
-| `ruff` lint + format (backend), `eslint` + `prettier` + `tsc --strict` (frontend) enforced in CI | `.github/workflows/ci.yml` | ⬜ |
-| Typed everywhere: Python type hints + `mypy` on services; shared TS types mirroring API schemas | — | ⬜ |
-| Backend coverage report with threshold gate | `pytest --cov` | ⬜ |
+| `ruff` lint + format (backend), `eslint` + `prettier` + `tsc --strict` (frontend) enforced in CI | `.github/workflows/ci.yml` | 🟨 configured and passing locally; first GitHub run pending |
+| Typed everywhere: Python type hints + `mypy` on services; shared TS types mirroring API schemas | `mypy --strict` passes on both services; `tsc` strict | 🟨 |
+| Backend coverage report with threshold gate | `pytest --cov`, CI `--cov-fail-under=90` | 🟨 gate in place (98 % / 99 % on scaffolding) |
 | No dead code, no magic numbers (named constants), no secrets in repo | review | ⬜ |
 | Conventional commits, small PRs linked to issues | Git history | ⬜ |
 
@@ -96,10 +96,10 @@ evaluator is likely to inspect, the main risks to the score, and what we do abou
 
 | Evidence | Where | Status |
 |----------|-------|--------|
-| Two independently runnable/testable services with a single documented contract (event schemas) | `backend/*` | ⬜ |
+| Two independently runnable/testable services with a single documented contract (event schemas) | `backend/*`, `tests/contract/envelope_v1.schema.json` ×2, CI `event-contract` job | 🟨 |
 | `SummaryProvider` interface with `MockSummaryProvider` (default) and optional `LLMSummaryProvider` | `ai-service/app/providers` | ⬜ |
 | Transcript parsers as pluggable strategy per format (`txt`, `vtt`, `json`) | `meeting-service/app/services/transcript_parsers` | ⬜ |
-| `EventPublisher` interface: `KafkaEventPublisher`, `HttpEventPublisher` (fallback), `InMemoryEventPublisher` (tests) | `meeting-service/app/events` | ⬜ |
+| `EventPublisher` interface: `KafkaEventPublisher`, `HttpEventPublisher` (fallback), `InMemoryEventPublisher` (tests) | `meeting-service/app/events`, `tests/unit/test_publishers.py`, `tests/kafka/` | 🟨 built + tested; wired to the outbox in Phase 5 |
 | `PlaybackClock` interface: simulated clock now, `<audio>` later — transcript sync code unchanged | `frontend/lib/playback` | ⬜ |
 | Reusable FE components: `AudioPlayer`, `TranscriptPanel`, `TranscriptLine`, `TranscriptSearch`, `SummaryPanel`, `Topics`, `ActionItems`, `Modal`, `EmptyState` | `frontend/components` | ⬜ |
 | Logic in hooks / pure functions (`usePlaybackClock`, `useActiveSegment`, `splitByQuery`) — unit-testable, not buried in JSX | `frontend/hooks`, `frontend/lib` | ⬜ |

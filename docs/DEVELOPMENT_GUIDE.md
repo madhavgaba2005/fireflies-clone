@@ -1,7 +1,7 @@
 # Development Guide (study document)
 
 > Living document — the author's primary study material for the evaluation interview.
-> Status: **Phase 1** — every *design* decision below is final; implementation details (file names, code
+> Status: **Phase 2** — every *design* decision below is final; scaffolding is explained in the Phase 2 section; implementation details (file names, code
 > excerpts, real test names) are added in the phase that builds each component, marked _(Phase N)_.
 
 Each component answers 13 questions in a fixed order:
@@ -21,6 +21,9 @@ Backend: [FastAPI](#fastapi) · [Pydantic](#pydantic) · [SQLAlchemy](#sqlalchem
 Distributed: [Microservices](#microservices) · [Meeting Service](#meeting-service) · [AI Processing Service](#ai-processing-service) ·
 [Kafka](#kafka) · [Event-driven processing](#event-driven-processing) · [Summary generation](#summary-generation)
 Engineering: [Testing](#testing) · [CI](#ci) · [Git workflow](#git-workflow) · [Deployment](#deployment)
+Scaffolding (Phase 2): [App factory](#app-factory-create_appsettings) · [Configuration](#configuration-appconfigpy) ·
+[Database layer](#database-connection-layer-appdatabasepy) · [Error envelope](#error-envelope-apperrorspy) ·
+[Event publishers](#event-publisher-abstraction-appevents) · [Tooling](#tooling) · [Docker Compose](#local-infrastructure-docker-composeyml)
 
 ---
 
@@ -188,6 +191,88 @@ Issue → branch → small conventional commits → PR → CI → merge commit �
 ## Deployment
 Free-first; Kafka where hostable, otherwise the documented HTTP mode; persistence verified before claimed.
 → [DEPLOYMENT.md](DEPLOYMENT.md)
+
+---
+
+# Phase 2 — scaffolding: what exists and why
+
+## App factory (`create_app(settings)`)
+1. **What:** Both services build their FastAPI app in a function instead of at import time.
+2. **Why:** Tests create a fresh app with their own settings (temp database, no broker); importing a module never opens files or connections.
+3. **Problem:** Module-level `app = FastAPI()` + global engine makes tests share state and read the developer's `.env`.
+4. **How:** `create_app` reads `Settings`, builds a `Database`, stores both on `app.state`, adds CORS + error handlers + routers. Uvicorn runs it with `--factory`.
+5–6. **Alternatives:** global app with dependency overrides — works, but every test must remember to override; rejected for isolation.
+7. **Adv:** isolated, explicit wiring in one function. 8. **Dis:** `uvicorn ... --factory` must be remembered (it's in every README/Dockerfile).
+9. **Failure:** invalid config → `Settings` raises at startup (fail fast). 10–11. n/a; entry point of each service.
+12. **30 s:** "Each service has an app factory, so the app is built from explicit settings — production reads env vars, tests pass a temporary SQLite file."
+13. **Follow-ups:** Where does the Kafka consumer start? (the lifespan inside the factory, Phase 5–6)
+
+## Configuration (`app/config.py`)
+`pydantic-settings` reads environment variables (and an optional `.env`), with types and defaults. Each service owns
+its own `Settings` — no shared config package, because services deploy independently. Cross-field rules fail fast:
+`PROCESSING_MODE=http` without `INTERNAL_API_TOKEN`, or `SUMMARY_PROVIDER=llm` without `LLM_API_KEY`, refuses to start.
+`.env.example` documents every variable; real `.env` files are git-ignored.
+**30 s:** "Typed settings from the environment; invalid combinations crash at startup instead of failing at 2 a.m."
+**Follow-up:** "Why is `NEXT_PUBLIC_API_URL` not a secret?" → it is compiled into the browser bundle by design.
+
+## Database connection layer (`app/database.py`)
+`Database` owns the engine and session factory. A `connect` listener sets `foreign_keys=ON` (SQLite ignores FKs
+otherwise), `journal_mode=WAL` (readers don't block the writer) and `busy_timeout=5000`. `check_same_thread=False`
+because FastAPI runs sync endpoints in a thread pool — safe since each request gets its own session from the
+`SessionDep` dependency, which always closes it. `ping()` backs `/health/ready`.
+**Verified by:** `tests/integration/test_database.py` (pragmas, directory creation, unreachable DB, session lifecycle).
+**30 s:** "One object owns the engine; every connection gets the SQLite pragmas; every request gets its own session."
+
+## Error envelope (`app/errors.py`)
+Services raise `NotFoundError` / `ConflictError` (subclasses of `DomainError`); four handlers turn domain errors,
+validation errors, routing errors and unexpected exceptions into `{"error": {code, message, details}}`.
+Unexpected errors are logged with the stack trace and returned as a generic 500.
+**Verified by:** `tests/integration/test_errors.py`. **30 s:** "One error shape for every failure; internals stay in the log."
+
+## Health endpoints
+`/health` = liveness (process is up; touches nothing, so it can't cause restart loops).
+`/health/ready` = readiness (database answers → 200, else 503). Used by compose, hosting platforms and smoke tests.
+
+## Event publisher abstraction (`app/events/`)
+```
+EventEnvelope (envelope.py)       versioned, frozen, extra fields forbidden
+EventPublisher (publisher.py)     Protocol: start() · stop() · publish(envelope)
+ ├─ KafkaEventPublisher           aiokafka, acks=all + idempotent producer, key = meeting id
+ ├─ HttpEventPublisher            FALLBACK: POST envelope → AI /internal/process → result to on_result()
+ └─ InMemoryEventPublisher        tests only: records events
+build_publisher(settings, on_result)   picks one from PROCESSING_MODE
+```
+Phase 2 builds and tests the transports; Phase 5 wires them into the outbox relay. Kafka is verified against a real
+broker (`tests/kafka/`, CI `kafka` job). The producer is injected (`producer_factory`) so unit tests use a fake
+producer, not a mock of aiokafka internals.
+**Contract:** each service has its own copy of the envelope; both must equal `tests/contract/envelope_v1.schema.json`,
+and CI fails if the two schema files differ.
+**30 s:** "Business code publishes an envelope through one interface; Kafka is the real transport, HTTP is a documented
+fallback, in-memory is for tests — and a contract test stops the two services' event formats drifting."
+**Follow-ups:** Why `Protocol` and not an abstract base class? (structural typing; implementations don't inherit
+anything) · Why `acks=all`? (the broker confirms the write is replicated before we mark the outbox row published).
+
+## Layer packages
+`models/ schemas/ routers/ services/ repositories/ events/` exist now with a docstring stating their rule
+(e.g. "routers only speak HTTP"), so every later file has an obvious home. They fill up from Phase 3.
+
+## Tooling
+| Tool | Role | Why this one |
+|------|------|--------------|
+| ruff | Python lint + format | One fast tool replaces flake8 + isort + black |
+| mypy (strict) | Python types | Catches wrong types across layers before tests do |
+| ESLint (next config) + Prettier | TS lint + format | Next's recommended rules; Prettier owns formatting (`eslint-config-prettier` disables overlapping rules) |
+| `next typegen && tsc --noEmit` | TS types | Next generates route types (`LayoutProps`, `PageProps`) that plain `tsc` can't see |
+| Vitest | Frontend unit tests | Native TS/ESM, near-zero config — for pure logic like `findActiveSegmentIndex` |
+| Playwright | E2E | Real browser against a production build |
+| `.gitattributes` | LF everywhere | Windows checkouts would otherwise get CRLF and fail format checks in CI |
+
+## Local infrastructure (`docker-compose.yml`)
+Single-node Kafka 3.9 in KRaft mode (no ZooKeeper) with two listeners: `localhost:9092` for tools on the host,
+`kafka:29092` for containers. Both services run as non-root users; the SQLite file lives on a named volume.
+The frontend runs natively for fast hot reload.
+**Follow-up:** "Why two listeners?" → a Kafka client connects to whatever address the broker *advertises*; host and
+container networks need different addresses.
 
 ## Assumptions · Known limitations · Future improvements
 Maintained in the [README](../README.md#assumptions).

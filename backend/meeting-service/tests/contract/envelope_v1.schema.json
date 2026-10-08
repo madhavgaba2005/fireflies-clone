@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "EventType": {
+      "enum": [
+        "meeting.created",
+        "transcript.updated",
+        "summary.requested",
+        "summary.generated",
+        "summary.failed"
+      ],
+      "title": "EventType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "aggregate_id": {
+      "minLength": 1,
+      "title": "Aggregate Id",
+      "type": "string"
+    },
+    "event_id": {
+      "format": "uuid",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "event_type": {
+      "$ref": "#/$defs/EventType"
+    },
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "title": "Payload",
+      "type": "object"
+    },
+    "version": {
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "event_type",
+    "aggregate_id",
+    "payload"
+  ],
+  "title": "EventEnvelope",
+  "type": "object"
+}

@@ -109,9 +109,9 @@ Code existing is **not** enough.
 
 | ID | Requirement | Priority | Implementation | Test | Demo Verification | Status |
 |----|-------------|----------|----------------|------|-------------------|--------|
-| C1 | Frontend: **Next.js (TypeScript)** | CONSTR | `frontend/` Next.js App Router, `strict: true` | CI `tsc --noEmit` + build | — | ⬜ |
-| C2 | Backend: **Python with FastAPI** | CONSTR | `backend/meeting-service`, `backend/ai-service` | CI pytest | `/docs` OpenAPI page | ⬜ |
-| C3 | Database: **SQLite (design your own schema)** | CONSTR | SQLAlchemy 2.0 models + Alembic migrations; [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | Migration test (fresh DB → head) | — | ⬜ |
+| C1 | Frontend: **Next.js (TypeScript)** | CONSTR | `frontend/` Next.js 16 App Router, `strict: true` (Phase 2) | `npm run typecheck` + `npm run build` pass locally; in CI | `npm run dev` → placeholder routes | 🟨 scaffolded |
+| C2 | Backend: **Python with FastAPI** | CONSTR | `backend/meeting-service`, `backend/ai-service` (app factories, health, error envelope — Phase 2) | 36 + 11 pytest tests pass | `/docs` OpenAPI page on :8000 / :8001 | 🟨 scaffolded |
+| C3 | Database: **SQLite (design your own schema)** | CONSTR | Connection layer done (`app/database.py`: pragmas, sessions, ping — Phase 2); models + Alembic in Phase 3 | `tests/integration/test_database.py` (pragmas, dir creation, ping, session); migration test in Phase 3 | `/health/ready` reports database ok | 🟨 connection layer |
 | C4 | Real audio transcription **out of scope**; may seed / upload .txt/.vtt/.json / optionally LLM | CONSTR | Parsers for .txt, .vtt, .json; Mock provider default | Parser unit tests | — | ⬜ |
 | C5 | **UI should totally resemble Fireflies's design** — study it first | CONSTR | [UI_DESIGN_SPEC.md](UI_DESIGN_SPEC.md) written before UI phase | Manual review | — | ⬜ |
 | C6 | **Seed several meetings** with full transcripts, summaries, action items | CONSTR | `meeting-service/seed/` — 7 realistic meetings, 3–5 participants each | Seed test (counts, every meeting has summary + items) | Fresh install looks populated | ⬜ |
@@ -124,7 +124,7 @@ Code existing is **not** enough.
 | ID | Requirement | Priority | Implementation | Test | Demo Verification | Status |
 |----|-------------|----------|----------------|------|-------------------|--------|
 | D1 | **Public GitHub repo** containing `frontend/` and `backend/` | DELIV | Monorepo root with both folders | — | Repo visible logged-out | ⬜ |
-| D2 | README: **setup instructions** | DELIV | `README.md#local-development` | Fresh-clone dry run following README verbatim | — | 🟨 |
+| D2 | README: **setup instructions** | DELIV | `README.md#local-setup` (Phase 2: native + docker compose) | Fresh-clone dry run following README verbatim | — | 🟨 |
 | D3 | README: **tech stack** | DELIV | `README.md#tech-stack` | — | — | 🟨 |
 | D4 | README: **architecture overview** | DELIV | `README.md#architecture` + [ARCHITECTURE.md](ARCHITECTURE.md) | — | — | 🟨 |
 | D5 | README: **database schema** | DELIV | `README.md#database-schema` + [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | — | — | 🟨 |
@@ -155,10 +155,10 @@ Code existing is **not** enough.
 | X2b | `PROCESSING_MODE=kafka\|http\|inline-test` — free-hosting fallback reusing the same envelope, processor and idempotent apply path | EXTRA (supports D8) | `EventPublisher` implementations in MS; AI `POST /internal/process` | Tests run the pipeline through `InMemoryEventPublisher`; HTTP mode integration test | Deployed demo generates summaries even without a broker | ⬜ |
 | X3 | Backend coverage ~90%+ (where practical) | EXTRA | pytest-cov, `--cov-fail-under` | CI gate | Coverage badge/report | ⬜ |
 | X4 | Playwright E2E for critical flows | EXTRA | `frontend/tests/e2e` | CI job | — | ⬜ |
-| X5 | GitHub Actions CI on PR + push to main | EXTRA | `.github/workflows/ci.yml` | Pipeline fails on red | Green checks on PRs | ⬜ |
+| X5 | GitHub Actions CI on PR + push to main | EXTRA | `.github/workflows/ci.yml` (Phase 2: backend lint/format/types/tests+coverage, contract check, Kafka job, frontend lint/format/types/unit/build/E2E smoke) | Every step run locally; first CI run happens when the GitHub repo exists | Green checks on PRs | 🟨 written, not yet run on GitHub |
 | X6 | Professional Git workflow: issues → branches → PRs | EXTRA | [PROJECT_PLAN.md](PROJECT_PLAN.md) | — | GitHub history | ⬜ |
 | X7 | Loading / empty / error states on every screen | EXTRA (supports R5) | Shared `ui/EmptyState`, `ui/ErrorState`, skeletons | E2E with mocked API failure | — | ⬜ |
-| X8 | Security basics: validation, CORS, env config, no secrets, safe rendering of uploads | EXTRA | Pydantic limits, upload size/type checks, React escaping (no `dangerouslySetInnerHTML`) | Validation tests | — | ⬜ |
+| X8 | Security basics: validation, CORS, env config, no secrets, safe rendering of uploads | EXTRA | Done in Phase 2: env-based config + `.env.example` only, CORS allow-list, generic 500s, non-root Docker users. Later: Pydantic limits, upload checks, React escaping | `test_config.py`, `test_health.py` (CORS), `test_errors.py` (no internals leaked) | — | 🟨 |
 
 ## 12. Timeline & constraints (PDF "Timeline", "AI Tools Usage")
 

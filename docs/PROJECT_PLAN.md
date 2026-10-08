@@ -109,3 +109,15 @@ EOF
 ```
 Labels must exist first: `for l in docs chore backend database events frontend enhancement test ci; do gh label create "$l" --force; done`.
 Issues are created in order, so the numbers match the table on a fresh repository.
+
+## 5. Issue status (kept in sync until the GitHub issues exist, then GitHub is the source of truth)
+
+| # | Issue | Status | Branch / commit | Notes |
+|---|-------|--------|-----------------|-------|
+| 1 | Requirements & architecture | ✅ Done locally — PR pending | `docs/1-requirements-analysis` | Approved by the author |
+| 2 | Project scaffolding | ✅ Done locally — PR pending | `chore/2-project-scaffolding` (branched from #1) | Lint, types, tests, builds and service start-up verified |
+| 3–21 | — | ⬜ Not started | — | — |
+
+**Branching note:** the GitHub repository doesn't exist yet, so #2 is stacked on #1. Once it is published:
+push both branches, open PR #1 → `main`, merge, then retarget PR #2 to `main` (GitHub does this automatically when the
+base branch is merged and deleted).
