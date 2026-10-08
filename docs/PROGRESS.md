@@ -158,3 +158,36 @@ repository is also pending.
 - [FINAL_DEMO_SCRIPT.md](FINAL_DEMO_SCRIPT.md): an 8-minute walkthrough using the exact UI labels, with a recovery
   table for live problems.
 
+## Final submission pass (#21–#24)
+
+**UI fidelity:** two recorded QA passes ([UI_FIDELITY_AUDIT.md](UI_FIDELITY_AUDIT.md)).
+- Transcript lines now put the speaker and time on one row, as in Fireflies.
+- Notes or transcript can expand to full width.
+- Settings → Appearance offers System / Light / Dark, and System follows OS changes live.
+- Mobile header fixes; equal panel header heights.
+- README screenshots re-captured from a production build.
+
+**Reliability:**
+- New real-broker test: a duplicated `summary.generated` is applied once.
+- Production Kafka now keeps its log on a volume. Verified: a request in flight during a broker restart still
+  completes.
+
+**Docs:**
+- Every count refreshed.
+- CI_CD rewritten to match the workflow.
+- False claims removed (an LLM provider setting, FTS5 search).
+- Interview guide: answers for testing and deployment.
+- Strict FINAL_EVALUATION_REPORT.
+
+**Final run:**
+
+| Suite | Result |
+|-------|--------|
+| meeting-service | 183 passed, 97.45 % coverage |
+| Real Kafka | 3 passed |
+| ai-service | 39 passed, 98.84 % coverage |
+| Vitest | 75 passed |
+| Playwright | 42 passed |
+| Production stack checklist | Passed locally |
+
+**Still with the author:** publishing the repository and choosing a host.

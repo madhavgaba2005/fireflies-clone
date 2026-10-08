@@ -98,3 +98,22 @@ completed INTERVIEW_GUIDE (29 answers) and FINAL_DEMO_SCRIPT.
 **Testing:** every UI label, file name and code claim in the documents was checked against the source.
 Closes #20
 
+## #21 feat: Fireflies visual fidelity pass — `feature/21-ui-fidelity`
+**What:** Fireflies-style transcript lines; expandable notes and transcript panels; System / Light / Dark in settings;
+mobile header fixes; UI fidelity audit; refreshed screenshots.
+**Testing:** new E2E tests for panel expansion, exact-boundary seeking and theme settings; 42 Playwright + 75 Vitest tests pass.
+Closes #21
+
+## #22 test: duplicate delivery through real Kafka — `test/22-kafka-duplicates`
+**What:** `tests/kafka/test_duplicates_kafka.py` publishes the same result twice, then a sentinel on the same key,
+and asserts it was applied once. Also synchronises the docs with the final implementation.
+Closes #22
+
+## #23 fix: durable Kafka in the production stack — `fix/23-durable-kafka`
+**What:** a `kafka-data` volume; DEPLOYMENT checklist run and readiness review.
+**Testing:** stopped the AI service, created a meeting, restarted the broker, started the AI service: the meeting completed.
+Closes #23
+
+## #24 docs: strict final evaluation report — `docs/24-final-report`
+**What:** FINAL_EVALUATION_REPORT rewritten per criterion (evidence, strengths, weaknesses, likely lost marks, fixes).
+Closes #24
