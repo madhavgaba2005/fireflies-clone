@@ -52,21 +52,28 @@ export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
         />
       </form>
       <div className="ml-auto flex items-center gap-2">
+        {/* Wrapper controls visibility: a class on Button itself would fight its own inline-flex. */}
+        <div className="hidden md:block">
+          <Button
+            size="sm"
+            onClick={() =>
+              comingSoon({
+                name: "Add to live meeting",
+                description:
+                  "Paste a Zoom, Google Meet or Teams link and the notetaker joins the call.",
+              })
+            }
+          >
+            <Radio size={15} /> Add to live meeting
+          </Button>
+        </div>
         <Button
+          variant="primary"
           size="sm"
-          className="hidden md:inline-flex"
-          onClick={() =>
-            comingSoon({
-              name: "Add to live meeting",
-              description:
-                "Paste a Zoom, Google Meet or Teams link and the notetaker joins the call.",
-            })
-          }
+          onClick={() => openCreate("upload")}
+          aria-label="New meeting"
         >
-          <Radio size={15} /> Add to live meeting
-        </Button>
-        <Button variant="primary" size="sm" onClick={() => openCreate("upload")}>
-          <Plus size={16} /> New meeting
+          <Plus size={16} /> <span className="hidden sm:inline">New meeting</span>
         </Button>
         <Menu
           trigger={
