@@ -33,3 +33,6 @@ test-results/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local SQLite data directories
+backend/*/data/

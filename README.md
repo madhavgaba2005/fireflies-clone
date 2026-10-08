@@ -1,6 +1,7 @@
 # Fireflies Clone — Meeting Notes & Transcription Platform
 
-> **Status:** Phase 1 (architecture & documentation) complete — application code starts in Phase 2.
+> **Status:** Phase 2 (project scaffolding) complete — both services and the frontend build, start and pass
+> their checks; no business features yet (they start in Phase 3).
 > Sections marked _(pending)_ are filled in by the phase that implements them. Live progress:
 > [docs/REQUIREMENTS_MATRIX.md](docs/REQUIREMENTS_MATRIX.md).
 
@@ -33,12 +34,12 @@ generated asynchronously by a separate AI Processing Service via Kafka.
 ## Tech Stack
 | Layer | Choice |
 |-------|--------|
-| Frontend | Next.js (App Router) · TypeScript (strict) · Tailwind CSS · Radix UI primitives · TanStack Query · lucide-react · sonner |
+| Frontend | Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS v4 · Radix UI · TanStack Query · lucide-react · sonner (UI libraries are added in Phase 7 with their first use) |
 | Meeting Service | Python 3.11 · FastAPI · SQLAlchemy 2.0 · Alembic · Pydantic v2 · aiokafka |
 | AI Processing Service | Python 3.11 · FastAPI (health + HTTP-mode endpoint) · aiokafka · pluggable `SummaryProvider` |
 | Database | SQLite (WAL, foreign keys enforced) |
 | Messaging | Apache Kafka (single-node KRaft, Docker) |
-| Testing | pytest · pytest-cov · Playwright |
+| Testing | pytest · pytest-cov · pytest-asyncio · Vitest · Playwright |
 | Tooling / CI | ruff · mypy · ESLint · Prettier · GitHub Actions · Docker Compose |
 
 Every choice is justified in [docs/adr/](docs/adr/).
@@ -107,12 +108,44 @@ docs/                     Requirements, evaluation, architecture, schema, API, e
 Detailed tree: [docs/ARCHITECTURE.md §8](docs/ARCHITECTURE.md#8-repository--folder-structure).
 
 ## Local Setup
-_(pending — Phase 2)_ Planned: `docker compose up --build` for everything (Kafka included), or run each service
-natively with `PROCESSING_MODE=inline-test` to skip Kafka.
+**Prerequisites:** Python 3.11, Node.js 22, Docker Desktop (for Kafka).
+
+**Option A — backend in Docker, frontend native (closest to the real architecture)**
+```bash
+docker compose up -d --build            # Kafka (KRaft) + meeting-service :8000 + ai-service :8001
+cd frontend && npm install && cp .env.example .env.local && npm run dev   # http://localhost:3000
+```
+
+**Option B — everything native (fast iteration)**
+```bash
+docker compose up -d kafka              # or set PROCESSING_MODE=inline-test in the Meeting Service .env to skip Kafka
+
+cd backend/meeting-service
+python -m venv .venv && source .venv/Scripts/activate      # macOS/Linux: source .venv/bin/activate
+pip install -r requirements-dev.txt && cp .env.example .env
+uvicorn app.main:create_app --factory --reload --port 8000  # http://localhost:8000/docs
+
+cd ../ai-service                          # second terminal
+python -m venv .venv && source .venv/Scripts/activate
+pip install -r requirements-dev.txt && cp .env.example .env
+uvicorn app.main:create_app --factory --reload --port 8001
+
+cd ../../frontend                         # third terminal
+npm install && cp .env.example .env.local && npm run dev
+```
+Health checks: `GET :8000/health`, `GET :8000/health/ready` (database), `GET :8001/health`.
 
 ## Environment Variables
-_(pending — Phase 2; every variable will be listed in `.env.example` files)_. Planned set:
-[docs/DEPLOYMENT.md §3](docs/DEPLOYMENT.md#3-configuration-finalized-in-phase-2-envexample-files).
+Each deployable reads its own environment (12-factor); every variable is documented in its `.env.example`.
+Real `.env` files are git-ignored.
+
+| File | Key variables |
+|------|---------------|
+| [backend/meeting-service/.env.example](backend/meeting-service/.env.example) | `DATABASE_URL`, `CORS_ORIGINS`, `PROCESSING_MODE` (`kafka` \| `http` \| `inline-test`), `KAFKA_*`, `AI_SERVICE_URL`, `INTERNAL_API_TOKEN` |
+| [backend/ai-service/.env.example](backend/ai-service/.env.example) | `PROCESSING_MODE` (`kafka` \| `http`), `KAFKA_*`, `INTERNAL_API_TOKEN`, `SUMMARY_PROVIDER` (`mock` \| `llm`), `LLM_API_KEY` |
+| [frontend/.env.example](frontend/.env.example) | `NEXT_PUBLIC_API_URL` |
+
+`PROCESSING_MODE=http` and `SUMMARY_PROVIDER=llm` refuse to start without their secret — misconfiguration fails fast.
 
 ## Seed Data
 _(pending — Phase 3)_ 6–8 realistic business meetings (product sync, sprint review, client discovery, kickoff,
@@ -120,14 +153,22 @@ design review, hiring, marketing, quarterly planning), each with 3–5 participa
 topics and action items.
 
 ## Testing
-_(pending)_ Strategy: [docs/TESTING.md](docs/TESTING.md). Requirement → test mapping:
+```bash
+cd backend/meeting-service && pytest --cov     # + `pytest -m kafka` with Kafka running
+cd backend/ai-service      && pytest --cov
+cd frontend && npm test && npm run build && npm run test:e2e
+```
+Strategy: [docs/TESTING.md](docs/TESTING.md). Requirement → test mapping:
 [docs/TEST_COVERAGE_MATRIX.md](docs/TEST_COVERAGE_MATRIX.md).
 
 ## Coverage
-_(pending — figures are copied from generated reports only, never estimated)_
+Figures are copied from generated reports only. End of Phase 2 (scaffolding only): meeting-service 98 %,
+ai-service 99 % (line + branch). CI fails below 90 %. Details: [docs/TESTING.md](docs/TESTING.md).
 
 ## CI/CD
-_(pending — Phase 15)_ See [docs/CI_CD.md](docs/CI_CD.md).
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on pull requests and pushes to `main`: backend
+lint/format/strict types/tests + 90 % coverage gate (both services), event-contract check, a real-Kafka job, and frontend
+lint/format/types/unit/build/E2E smoke. See [docs/CI_CD.md](docs/CI_CD.md).
 
 ## Deployment
 _(pending — Phase 18)_ Free-first options and verification checklist: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).

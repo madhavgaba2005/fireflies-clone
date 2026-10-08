@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+/* Design tokens — see docs/UI_DESIGN_SPEC.md §3. Dark values are added with the dark-mode bonus. */
+:root {
+  --primary: #6d28d9;
+  --primary-soft: #f3eeff;
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --border: #e6e6ef;
+  --text: #1f2033;
+  --text-muted: #6b6f80;
+  --mark: #fde68a;
+  --mark-current: #f59e0b;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-mark: var(--mark);
+  --color-mark-current: var(--mark-current);
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}

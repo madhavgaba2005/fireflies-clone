@@ -110,8 +110,10 @@ Polling was chosen over WebSockets/SSE: one page needs it, it is trivially expla
 ```
 fireflies-clone/
 ├── README.md
-├── docker-compose.yml            # kafka + meeting-service + ai-service + frontend
-├── .github/workflows/ci.yml
+├── docker-compose.yml            # kafka (KRaft) + meeting-service + ai-service; frontend runs natively
+├── .gitattributes                # LF line endings everywhere
+├── .github/workflows/ci.yml      # see docs/CI_CD.md
+├── .github/pull_request_template.md
 ├── docs/                         # this documentation set + adr/
 ├── backend/
 │   ├── meeting-service/
@@ -119,6 +121,7 @@ fireflies-clone/
 │   │   │   ├── main.py           # app factory, lifespan (start/stop relay + consumer)
 │   │   │   ├── config.py         # pydantic-settings
 │   │   │   ├── database.py       # engine, session, SQLite pragmas
+│   │   │   ├── dependencies.py   # FastAPI deps: settings, database, session
 │   │   │   ├── errors.py         # domain exceptions + handlers → error envelope
 │   │   │   ├── models/           # SQLAlchemy ORM
 │   │   │   ├── schemas/          # Pydantic request/response
@@ -151,8 +154,13 @@ fireflies-clone/
     ├── hooks/                    # usePlaybackClock, useActiveSegment, useTranscriptSearch, useMeetingPolling
     ├── lib/                      # api.ts, types.ts, format.ts, highlight.ts, transcript.ts, playback/ (PlaybackClock, SimulatedClock)
     ├── tests/e2e/                # Playwright
+    ├── vitest.config.ts · playwright.config.ts · eslint.config.mjs · .prettierrc.json
     └── package.json
 ```
+
+**Phase 2 status:** everything above exists as a runnable skeleton except `alembic/`, `seed/`, `samples/` (Phase 3–4),
+`components/` and `hooks/` (Phase 7+). Both services are built with an app factory (`create_app(settings)`), run as
+`uvicorn app.main:create_app --factory`, so tests construct isolated apps without import-time side effects.
 
 Event schemas are defined once per service in `events/envelope.py`. They are intentionally duplicated (two small
 Pydantic models) rather than shared through a common package: independent deployability beats DRY across service

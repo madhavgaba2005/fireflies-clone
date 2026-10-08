@@ -28,6 +28,16 @@ search highlighting, modals) and is graded on Fireflies similarity.
 + Accessible primitives and a query cache let us spend time on Fireflies fidelity, not plumbing.
 − Four small UI dependencies to justify; client-side fetching means a brief loading skeleton on first paint.
 
+## Implementation notes (Phase 2)
+- Scaffolded with `create-next-app` → **Next.js 16.4, React 19.3, Tailwind CSS v4** (CSS-first config; tokens in `app/globals.css`).
+- Removed the generator's experimental `cacheComponents` / `partialPrefetching` flags: data is fetched client-side,
+  so they add caching concepts with no benefit here.
+- `@types/node` aligned to the Node 22 runtime (the generator pinned v20, which also conflicted with Vitest).
+- **Vitest** added for unit tests of pure logic (`lib/`, later `hooks/`); Playwright stays for user workflows.
+  Rejected: Jest (heavier TS/ESM setup), Node's built-in runner (TypeScript support still behind a flag on Node 22).
+- Radix UI, TanStack Query, sonner and lucide-react are installed in Phase 7 with the first component that uses them,
+  so no unused dependency is ever committed.
+
 ## Consequences
 Complex logic (active-segment lookup, search splitting, transcript sync) lives in pure functions and hooks under
 `lib/` and `hooks/`, so it is unit-testable and not buried in JSX.
