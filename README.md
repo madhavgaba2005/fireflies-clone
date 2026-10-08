@@ -86,7 +86,7 @@ ER diagram, constraints, indexes and rationale: [docs/DATABASE_DESIGN.md](docs/D
 ## API Overview
 | Method | Path |
 |--------|------|
-| GET / POST | `/api/meetings` (`q`, `participant_id`, `date_from`, `date_to`, `sort`, `limit`, `offset`) |
+| GET / POST | `/api/meetings` (`q`, `participant_id`, `date_from`, `date_to`, `keyword`, `sort`, `limit`, `offset`) |
 | GET / PATCH / DELETE | `/api/meetings/{id}` |
 | GET | `/api/meetings/{id}/transcript` |
 | GET | `/api/meetings/{id}/summary` · POST `/api/meetings/{id}/summary/regenerate` |

@@ -33,18 +33,18 @@ Code existing is **not** enough.
 
 | ID | Requirement (PDF wording) | Priority | Implementation | Test | Demo Verification | Status |
 |----|---------------------------|----------|----------------|------|-------------------|--------|
-| R1.1 | List of past meetings with **title, date, duration, participants** | MUST | MS `GET /api/meetings` → FE `app/meetings/page.tsx`, `components/meetings/MeetingList`, `MeetingRow` | MS integration: list returns fields; E2E: rows render seeded data | Open `/meetings`, see 6–8 seeded meetings with all 4 fields | ⬜ |
-| R1.2 | **Search** meetings by title | MUST | MS query param `q` (title `LIKE`, case-insensitive) → FE `MeetingFilters` search box (debounced, URL-synced) | MS unit (repo filter) + integration; E2E type query → list narrows | Type "roadmap" → only matching meetings | ⬜ |
-| R1.3 | **Filter** meetings by **date** | MUST | MS `date_from`, `date_to` params → FE date-range dropdown (Today / Last 7 days / Last 30 days / Custom) | MS integration (boundary dates inclusive); E2E select "Last 7 days" | Pick range → list narrows; count updates | ⬜ |
-| R1.4 | **Filter** meetings by **participant** | MUST | MS `participant_id` param (join `meeting_participants`) → FE participant multi-select from `GET /api/participants` | MS integration; E2E choose participant | Choose "Priya Sharma" → only her meetings | ⬜ |
-| R1.5 | **Sort by recency** | MUST | MS `sort=-meeting_date` (default) / `meeting_date`; FE sort toggle | MS integration asserts order; E2E toggles order | Newest first by default; toggle flips | ⬜ |
+| R1.1 | List of past meetings with **title, date, duration, participants** | MUST | MS `GET /api/meetings` → FE `app/meetings/page.tsx`, `components/meetings/MeetingList`, `MeetingRow` | MS integration: list returns fields; E2E: rows render seeded data | Open `/meetings`, see 6–8 seeded meetings with all 4 fields | 🟨 API ✅ (`test_list_returns_required_fields_newest_first`) · UI pending |
+| R1.2 | **Search** meetings by title | MUST | MS query param `q` (title `LIKE`, case-insensitive) → FE `MeetingFilters` search box (debounced, URL-synced) | MS unit (repo filter) + integration; E2E type query → list narrows | Type "roadmap" → only matching meetings | 🟨 API ✅ (case-insensitive, wildcards escaped) · UI pending |
+| R1.3 | **Filter** meetings by **date** | MUST | MS `date_from`, `date_to` params → FE date-range dropdown (Today / Last 7 days / Last 30 days / Custom) | MS integration (boundary dates inclusive); E2E select "Last 7 days" | Pick range → list narrows; count updates | 🟨 API ✅ (inclusive bounds, 422 on inverted range) · UI pending |
+| R1.4 | **Filter** meetings by **participant** | MUST | MS `participant_id` param (join `meeting_participants`) → FE participant multi-select from `GET /api/participants` | MS integration; E2E choose participant | Choose "Priya Sharma" → only her meetings | 🟨 API ✅ (any-of participants) · UI pending |
+| R1.5 | **Sort by recency** | MUST | MS `sort=-meeting_date` (default) / `meeting_date`; FE sort toggle | MS integration asserts order; E2E toggles order | Newest first by default; toggle flips | 🟨 API ✅ (both orders) · UI pending |
 | R1.6 | **Navbar with profile/settings placeholders** | MUST | FE `components/layout/Sidebar`, `TopBar` (avatar menu → Profile / Settings), `app/settings/page.tsx` | E2E: navigate to Settings via avatar menu | Click avatar → Settings page with placeholder sections | ⬜ |
 
 ## 2. Meeting / Transcript Detail View
 
 | ID | Requirement | Priority | Implementation | Test | Demo Verification | Status |
 |----|-------------|----------|----------------|------|-------------------|--------|
-| R2.1 | **Interactive transcript** with **speaker labels** and **timestamps** | MUST | MS `GET /api/meetings/{id}/transcript` → FE `TranscriptPanel`, `TranscriptLine` (avatar, speaker, `mm:ss`, text) | MS integration (ordered by `sequence`); E2E lines visible | Open a meeting; each line shows speaker + timestamp | ⬜ |
+| R2.1 | **Interactive transcript** with **speaker labels** and **timestamps** | MUST | MS `GET /api/meetings/{id}/transcript` → FE `TranscriptPanel`, `TranscriptLine` (avatar, speaker, `mm:ss`, text) | MS integration (ordered by `sequence`); E2E lines visible | Open a meeting; each line shows speaker + timestamp | 🟨 API ✅ (ordered segments + speaker) · UI pending |
 | R2.2 | **Media player area with seek bar** (placeholder or sample file) | MUST | FE `components/audio/AudioPlayer` (play/pause, seek bar, ±15 s, speed 1×–2×, time display) over a `usePlaybackClock` hook (`PlaybackClock` interface; `SimulatedClock` now, `<audio>` later) | Unit (hook logic via Playwright component/E2E); E2E drag/click seek bar | Play → time advances; drag seek bar → time jumps | ⬜ |
 | R2.3 | **Clicking a transcript line seeks the player** to that timestamp | MUST | `TranscriptLine.onClick → player.seek(segment.start_ms)` | E2E: click line at 02:15 → player time 02:15 | Click any line → player jumps, starts playing | ⬜ |
 | R2.4 | **…and vice versa** (player position highlights the active line) | MUST | `useActiveSegment(segments, currentMs)` (binary search) → active style + `scrollIntoView` (only if user isn't manually scrolling) | Unit test of `findActiveSegmentIndex`; E2E: seek bar → active line changes | Drag seek bar → highlighted line follows and auto-scrolls | ⬜ |
@@ -54,24 +54,24 @@ Code existing is **not** enough.
 
 | ID | Requirement | Priority | Implementation | Test | Demo Verification | Status |
 |----|-------------|----------|----------------|------|-------------------|--------|
-| R3.1 | **AI-generated meeting summary** section | MUST | AI `MockSummaryProvider` → event `summary.generated` → MS persists `summaries` → FE `SummaryPanel` (Overview) | AI unit tests; MS consumer test; E2E summary visible | Detail page shows Overview paragraph | ⬜ |
+| R3.1 | **AI-generated meeting summary** section | MUST | AI `MockSummaryProvider` → event `summary.generated` → MS persists `summaries` → FE `SummaryPanel` (Overview) | AI unit tests; MS consumer test; E2E summary visible | Detail page shows Overview paragraph | 🟨 API ✅ (seeded overview) · AI pipeline + UI pending |
 | R3.2 | **Action items / tasks extracted** from the meeting | MUST | AI extracts (heuristic: "I'll / we need to / can you / by Friday"…) → `action_items` (`source='ai'`) → FE `ActionItems` | AI unit tests on extraction; MS integration | Action items tab lists extracted tasks with assignee | ⬜ |
-| R3.3 | **Key topics / outline / chapters** | MUST | AI groups segments into chapters → `summary_topics` (title, bullets, `start_ms`) → FE `Topics` outline; click chapter → seek | AI unit; E2E click chapter → player seeks | Outline shows timestamped chapters; click seeks | ⬜ |
+| R3.3 | **Key topics / outline / chapters** | MUST | AI groups segments into chapters → `summary_topics` (title, bullets, `start_ms`) → FE `Topics` outline; click chapter → seek | AI unit; E2E click chapter → player seeks | Outline shows timestamped chapters; click seeks | 🟨 API ✅ (timestamped chapters) · UI pending |
 | R3.4 | Summaries **seeded, mocked, or LLM-generated** from transcript text | MUST | Seed writes summaries directly; new meetings go through AI pipeline (`SummaryProvider` interface; Mock default, optional LLM) | AI provider contract test; seed test | New uploaded meeting gets a summary within seconds | ⬜ |
 
 ## 4. Meeting Management (CRUD)
 
 | ID | Requirement | Priority | Implementation | Test | Demo Verification | Status |
 |----|-------------|----------|----------------|------|-------------------|--------|
-| R4.1 | **Create a meeting** by **uploading** a transcript | MUST | FE `CreateMeetingModal` → Upload tab (.txt / .vtt / .json) → MS `POST /api/meetings` (multipart) → `transcript_parsers/` | MS unit tests per parser (valid + malformed); integration; E2E upload fixture | Upload `sample.vtt` → new meeting opens, summary "Processing…" then appears | ⬜ |
-| R4.2 | **Create** by **pasting** a transcript | MUST | Paste tab → same endpoint (JSON body `transcript_text`) | Parser unit; integration; E2E | Paste text → meeting created | ⬜ |
-| R4.3 | **Create** via a **form** | MUST | Form tab: title, date, participants (no transcript → empty transcript state) | Integration; E2E | Meeting created with metadata only | ⬜ |
-| R4.4 | **Edit meeting metadata** (title, participants) | MUST | `EditMeetingModal` → `PATCH /api/meetings/{id}` (title, meeting_date, participant list) | Validation unit; integration; E2E edit → reload → persisted | Rename meeting; add/remove participant; refresh → kept | ⬜ |
-| R4.5 | **Delete a meeting** | MUST | Confirm dialog → `DELETE /api/meetings/{id}` (cascade transcript/summary/actions) → toast + redirect | Integration (children gone; 404 after); E2E | Delete → toast, gone from list after refresh | ⬜ |
-| R4.6 | **Add** action items | MUST | `POST /api/meetings/{id}/action-items` → `ActionItemComposer` | Integration; E2E | Add task → appears, persists after refresh | ⬜ |
-| R4.7 | **Edit** action items | MUST | Inline edit → `PATCH /api/action-items/{id}` (title, assignee, due date) | Integration; E2E | Edit text → persists | ⬜ |
-| R4.8 | **Complete** action items | MUST | Checkbox → `PATCH {completed}` (optimistic update + rollback on error) | Integration (`completed_at` set/cleared); E2E | Tick → strikethrough, persists after refresh | ⬜ |
-| R4.9 | **All meetings, transcripts, summaries, action items must persist** | MUST | SQLite file via SQLAlchemy; Alembic migrations; persistent volume in deployment | Integration tests across new sessions; E2E "reload and verify" in every CRUD spec | Do any CRUD → hard refresh → state preserved | ⬜ |
+| R4.1 | **Create a meeting** by **uploading** a transcript | MUST | FE `CreateMeetingModal` → Upload tab (.txt / .vtt / .json) → MS `POST /api/meetings` (multipart) → `transcript_parsers/` | MS unit tests per parser (valid + malformed); integration; E2E upload fixture | Upload `sample.vtt` → new meeting opens, summary "Processing…" then appears | 🟨 API ✅ (vtt/json/txt as text) · UI pending |
+| R4.2 | **Create** by **pasting** a transcript | MUST | Paste tab → same endpoint (JSON body `transcript_text`) | Parser unit; integration; E2E | Paste text → meeting created | 🟨 API ✅ · UI pending |
+| R4.3 | **Create** via a **form** | MUST | Form tab: title, date, participants (no transcript → empty transcript state) | Integration; E2E | Meeting created with metadata only | 🟨 API ✅ · UI pending |
+| R4.4 | **Edit meeting metadata** (title, participants) | MUST | `EditMeetingModal` → `PATCH /api/meetings/{id}` (title, meeting_date, participant list) | Validation unit; integration; E2E edit → reload → persisted | Rename meeting; add/remove participant; refresh → kept | 🟨 API ✅ (409 speaker rule) · UI pending |
+| R4.5 | **Delete a meeting** | MUST | Confirm dialog → `DELETE /api/meetings/{id}` (cascade transcript/summary/actions) → toast + redirect | Integration (children gone; 404 after); E2E | Delete → toast, gone from list after refresh | 🟨 API ✅ (cascade verified) · UI pending |
+| R4.6 | **Add** action items | MUST | `POST /api/meetings/{id}/action-items` → `ActionItemComposer` | Integration; E2E | Add task → appears, persists after refresh | 🟨 API ✅ · UI pending |
+| R4.7 | **Edit** action items | MUST | Inline edit → `PATCH /api/action-items/{id}` (title, assignee, due date) | Integration; E2E | Edit text → persists | 🟨 API ✅ · UI pending |
+| R4.8 | **Complete** action items | MUST | Checkbox → `PATCH {completed}` (optimistic update + rollback on error) | Integration (`completed_at` set/cleared); E2E | Tick → strikethrough, persists after refresh | 🟨 API ✅ (completed_at server-side) · UI pending |
+| R4.9 | **All meetings, transcripts, summaries, action items must persist** | MUST | SQLite file via SQLAlchemy; Alembic migrations; persistent volume in deployment | Integration tests across new sessions; E2E "reload and verify" in every CRUD spec | Do any CRUD → hard refresh → state preserved | 🟨 API ✅ (fresh-session read test) · UI reload test pending |
 
 ## 5. Fireflies Experience
 

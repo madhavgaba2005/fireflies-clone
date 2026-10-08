@@ -26,3 +26,11 @@ Closes #2
 **Testing:** 82 backend tests (constraints, cascades, migration ≡ models, parser edge cases, seed); manual integrity check.
 **Known limitations:** none.
 Closes #3, closes #8
+
+## #4 feat: meeting API — `feature/4-meeting-api`
+**What:** repositories, services and REST endpoints for meetings, transcripts, summaries, action items and participants.
+**Why:** PDF core features 1–4 need a clean, sensible API (evaluated under Backend/API Design).
+**Files:** `app/repositories/`, `app/services/`, `app/routers/`, `app/schemas/`, `samples/`.
+**Testing:** 144 backend tests incl. `test_meetings_api.py`, `test_action_items_api.py`.
+**Known limitations:** date filters use UTC day boundaries.
+Closes #4, closes #5 (transcript API); backend part of #14
