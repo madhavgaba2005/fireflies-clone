@@ -44,6 +44,7 @@ limit for pasted and uploaded transcripts, and the parser is identical for both 
 | PATCH | `/api/action-items/{id}` | Edit / complete / uncomplete | 200 |
 | DELETE | `/api/action-items/{id}` | Delete item | 204 |
 | GET | `/api/participants` | Everyone, with meeting counts (filters, pickers) | 200 |
+| GET | `/api/search?q=` | Global search over titles and transcripts (bonus) | 200 |
 | GET | `/health` · `/health/ready` | Liveness · readiness (database) | 200 · 503 |
 
 **Resource design:** action items are nested only for list/create (they need the parent); an item's id is globally
@@ -163,6 +164,17 @@ replaces only AI items, so user work is never lost.
 `200 [{ "id": 1, "name": "Priya Sharma", "email": "priya.sharma@northwind.io", "meeting_count": 6 }]` (by name)
 
 ## Bonus endpoints
-| Method | Path | Bonus |
-|--------|------|-------|
-| GET | `/api/search?q=` — titles + transcript text, with snippets and `start_ms` to deep-link | B3 (Milestone G) |
+
+### GET /api/search?q= (B3 — global search)
+`q`: 2–100 characters, case-insensitive, `%`/`_` matched literally. Searches every meeting title and transcript line.
+```json
+200 { "query": "webhook", "total_hits": 7, "truncated": false,
+      "results": [{ "meeting_id": 2, "title": "Engineering Sprint 14 Review", "meeting_date": "…",
+                    "title_match": false,
+                    "hits": [{ "segment_id": 41, "start_ms": 149440, "speaker": "Arjun Mehta",
+                               "snippet": "…a customer's webhook endpoint was down for about forty minutes…" }] }] }
+```
+One entry per meeting (newest first, ≤ 10 meetings), hits in transcript order (≤ 50 in total; `truncated` says
+whether more exist). Snippets keep ~60 characters of context without cutting words. The UI deep-links each hit to
+`/meetings/{id}?t={start_ms}&find={q}`. Implementation: escaped `LIKE` (full scan); scale-up path: SQLite FTS5 /
+PostgreSQL full-text search behind the same repository.

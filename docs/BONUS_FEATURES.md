@@ -4,10 +4,10 @@ Rule: no bonus work starts until every MUST row in [REQUIREMENTS_MATRIX.md](REQU
 
 | Priority | ID | Bonus | Implementation plan | Test | Status |
 |----------|----|-------|---------------------|------|--------|
-| 1 | B3 | Global search across all meetings | SQLite FTS5 virtual table over segment text (kept in sync on transcript write) + title; `GET /api/search`; top-bar results dropdown with snippet → deep link `/meetings/{id}?t=ms` | Integration (ranking, snippet); E2E deep link seeks | ⬜ |
+| 1 | B3 | Global search across all meetings | `GET /api/search` (escaped LIKE over titles + transcript lines, grouped per meeting, snippets); top-bar combobox dropdown with highlighted snippets → deep link `/meetings/{id}?t=ms&find=q` that seeks the player and pre-fills transcript search. FTS5 deferred: LIKE is instant at this scale and simpler to explain | `test_search_api.py` (12); E2E `global-search.spec.ts` (2) | ✅ |
 | 2 | B2 | Export transcript / summary (TXT, Markdown) | `GET /api/meetings/{id}/export`; Fireflies-like Download modal with *timestamps* / *speaker labels* toggles | Unit (formatters); E2E download | ⬜ |
 | 3 | B6 | Dark mode | CSS variable tokens already planned; toggle in user menu; persisted in localStorage; respects `prefers-color-scheme` | E2E toggle | ⬜ |
-| 4 | B4 | Tags / topics + filtering | AI keywords → tags (`tags`, `meeting_tags`); tag filter on dashboard | Integration; E2E | ⬜ |
+| 4 | B4 | Tags / topics + filtering | AI keywords (`summary_keywords`) are the tags — no duplicate tag tables; `GET /api/meetings?keyword=`; keyword chips on rows and in notes filter the library | `test_filter_by_keyword_tag`; E2E "keyword chips filter by tag" | ✅ |
 | 5 | B1 | Comments / highlights on segments | `segment_comments` table; hover action on transcript line | Integration; E2E | ⏸ |
 | 6 | B5 | Ask-a-question chat | Keyword retrieval over segments → answer with cited timestamps; LLM if key configured | Unit | ⏸ |
 

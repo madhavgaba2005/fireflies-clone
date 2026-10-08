@@ -21,7 +21,7 @@ from app.events.envelope import EventEnvelope
 from app.events.factory import build_publisher
 from app.events.relay import OutboxRelay
 from app.migrations import upgrade_to_head
-from app.routers import action_items, health, meetings, participants
+from app.routers import action_items, health, meetings, participants, search
 from app.seed.loader import seed_database
 
 logger = logging.getLogger(__name__)
@@ -99,4 +99,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(meetings.router)
     app.include_router(action_items.router)
     app.include_router(participants.router)
+    app.include_router(search.router)
     return app

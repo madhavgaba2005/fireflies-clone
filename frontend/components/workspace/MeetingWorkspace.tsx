@@ -191,6 +191,8 @@ export function MeetingWorkspace({ id }: { id: number }) {
     <TranscriptPanel
       ref={transcript}
       segments={segments}
+      initialQuery={searchParams.get("find") ?? ""}
+      initialMatchFromMs={startAt || 0}
       activeIndex={activeIndex}
       playing={state.playing}
       onSeek={seekAndPlay}

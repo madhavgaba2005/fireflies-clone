@@ -28,6 +28,8 @@ export interface TranscriptPanelHandle {
 
 interface TranscriptPanelProps {
   segments: Segment[];
+  initialQuery?: string; // e.g. from a global-search result (?find=)
+  initialMatchFromMs?: number; // start at the first match at/after this moment (?t=)
   activeIndex: number;
   playing: boolean;
   onSeek: (ms: number) => void;
@@ -35,15 +37,14 @@ interface TranscriptPanelProps {
 
 export const TranscriptPanel = memo(
   forwardRef<TranscriptPanelHandle, TranscriptPanelProps>(function TranscriptPanel(
-    { segments, activeIndex, playing, onSeek },
+    { segments, initialQuery = "", initialMatchFromMs = 0, activeIndex, playing, onSeek },
     ref,
   ) {
     const lines = useRef(new Map<number, HTMLElement>());
     const scroller = useRef<HTMLDivElement>(null);
     const searchInput = useRef<HTMLInputElement>(null);
     const lastManualScroll = useRef(0);
-    const [query, setQuery] = useState("");
-    const [current, setCurrent] = useState(-1);
+    const [query, setQuery] = useState(initialQuery);
     const [awayFromActive, setAwayFromActive] = useState(false);
 
     useImperativeHandle(ref, () => ({ focusSearch: () => searchInput.current?.focus() }), []);
@@ -65,6 +66,13 @@ export const TranscriptPanel = memo(
     // --- search ---------------------------------------------------------------------------------
     const texts = useMemo(() => segments.map((s) => s.text), [segments]);
     const matches = useMemo(() => findMatches(texts, query), [texts, query]);
+    const [current, setCurrent] = useState(() => {
+      if (!matches.length) return -1;
+      const index = matches.findIndex(
+        (m) => segments[m.segmentIndex].start_ms >= initialMatchFromMs,
+      );
+      return index === -1 ? 0 : index;
+    });
     const rangesBySegment = useMemo(() => {
       const map = new Map<number, { start: number; end: number }[]>();
       for (const match of matches) {

@@ -135,3 +135,25 @@ export interface MeetingQuery {
   keyword?: string;
   sort?: "-meeting_date" | "meeting_date";
 }
+
+export interface SearchHit {
+  segment_id: number;
+  start_ms: number;
+  speaker: string;
+  snippet: string;
+}
+
+export interface SearchMeetingResult {
+  meeting_id: number;
+  title: string;
+  meeting_date: string;
+  title_match: boolean;
+  hits: SearchHit[];
+}
+
+export interface SearchResponse {
+  query: string;
+  results: SearchMeetingResult[];
+  total_hits: number;
+  truncated: boolean;
+}
