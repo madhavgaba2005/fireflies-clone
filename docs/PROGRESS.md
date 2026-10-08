@@ -144,3 +144,17 @@ the pages themselves load normally.
 **Pending the owner's decision:** the hosting provider. Free VM recommended, no purchase made. Publishing the
 repository is also pending.
 
+## K — Final audit (#20)
+- Re-read the PDF line by line, and wrote [FINAL_EVALUATION_REPORT.md](../FINAL_EVALUATION_REPORT.md) (strict).
+- Brought all matrix statuses up to date; ticked the UI fidelity checklist against the screenshots, leaving one item
+  open (expandable panels).
+- Scanned the repo for secrets and committed env or database files: clean.
+- Checked every claim in the report against the code and tests.
+- No CRITICAL issues. The one HIGH item, the public repo and hosted link, needs the owner's authorization.
+
+## L — Interview preparation (#20)
+- [INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.md): all 29 questions answered (30-second answer, deeper answer, trade-off,
+  follow-up), with real file and test references, plus the bugs worth telling.
+- [FINAL_DEMO_SCRIPT.md](FINAL_DEMO_SCRIPT.md): an 8-minute walkthrough using the exact UI labels, with a recovery
+  table for live problems.
+
