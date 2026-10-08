@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { NO_FLASH_SCRIPT, THEME_STORAGE_KEY, parseTheme, resolveTheme } from "./theme";
+import {
+  NO_FLASH_SCRIPT,
+  THEME_STORAGE_KEY,
+  parsePreference,
+  parseTheme,
+  resolveTheme,
+} from "./theme";
 
 describe("theme", () => {
   it("accepts only known theme values", () => {
@@ -8,6 +14,12 @@ describe("theme", () => {
     expect(parseTheme("light")).toBe("light");
     expect(parseTheme("purple")).toBeNull();
     expect(parseTheme(null)).toBeNull();
+  });
+
+  it("treats anything but light or dark as the system preference", () => {
+    expect(parsePreference("dark")).toBe("dark");
+    expect(parsePreference(null)).toBe("system");
+    expect(parsePreference("system")).toBe("system");
   });
 
   it("prefers the stored choice, then the system preference", () => {

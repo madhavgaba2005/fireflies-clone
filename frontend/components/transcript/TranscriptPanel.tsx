@@ -13,6 +13,7 @@ import {
   type KeyboardEvent,
 } from "react";
 
+import { PanelExpandButton } from "@/components/ui/PanelExpandButton";
 import { EmptyState } from "@/components/ui/States";
 import { findMatches, splitByMatches, stepMatch } from "@/lib/search";
 import type { Segment } from "@/lib/types";
@@ -33,11 +34,22 @@ interface TranscriptPanelProps {
   activeIndex: number;
   playing: boolean;
   onSeek: (ms: number) => void;
+  expanded: boolean;
+  onToggleExpand: () => void; // must be stable (memoized panel)
 }
 
 export const TranscriptPanel = memo(
   forwardRef<TranscriptPanelHandle, TranscriptPanelProps>(function TranscriptPanel(
-    { segments, initialQuery = "", initialMatchFromMs = 0, activeIndex, playing, onSeek },
+    {
+      segments,
+      initialQuery = "",
+      initialMatchFromMs = 0,
+      activeIndex,
+      playing,
+      onSeek,
+      expanded,
+      onToggleExpand,
+    },
     ref,
   ) {
     const lines = useRef(new Map<number, HTMLElement>());
@@ -140,8 +152,9 @@ export const TranscriptPanel = memo(
 
     return (
       <div className="flex h-full min-h-0 flex-col">
-        <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-          <h2 className="text-[14px] font-semibold">Transcript</h2>
+        <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-4">
+          {/* On phones the tab bar already says "Transcript". */}
+          <h2 className="hidden text-[14px] font-semibold lg:block">Transcript</h2>
           <div className="relative ml-auto w-full max-w-72">
             <Search
               size={14}
@@ -194,6 +207,7 @@ export const TranscriptPanel = memo(
               </div>
             )}
           </div>
+          <PanelExpandButton panel="transcript" expanded={expanded} onToggle={onToggleExpand} />
         </div>
 
         {query.trim() && matches.length === 0 && (

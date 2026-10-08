@@ -27,6 +27,7 @@ export const TranscriptLine = memo(function TranscriptLine({
   onSelect,
   register,
 }: TranscriptLineProps) {
+  const time = formatTimestamp(segment.start_ms);
   return (
     <li
       ref={(element) => register(segment.sequence, element)}
@@ -39,17 +40,36 @@ export const TranscriptLine = memo(function TranscriptLine({
         active ? "border-primary bg-primary-soft" : "border-transparent hover:bg-surface-muted",
       )}
     >
-      <div className="w-7 shrink-0">
-        {showSpeaker && <Avatar id={segment.speaker.id} name={segment.speaker.name} />}
+      <div className="w-9 shrink-0 pt-0.5">
+        {showSpeaker ? (
+          <Avatar id={segment.speaker.id} name={segment.speaker.name} />
+        ) : (
+          // Continuation lines keep their time in the gutter, so every line shows when it was said.
+          <span
+            aria-hidden
+            onClick={() => onSelect(segment)}
+            className="tabular block cursor-pointer pt-0.5 text-[11px] font-medium text-subtle group-hover:text-primary"
+          >
+            {time}
+          </span>
+        )}
       </div>
       <div className="min-w-0 flex-1">
         {showSpeaker && (
-          <div className="mb-0.5 flex items-baseline gap-2">
+          <div className="mb-0.5 flex items-center gap-2">
             <span
               className="text-[13px] font-semibold"
               style={{ color: speakerColor(segment.speaker.id) }}
             >
               {segment.speaker.name}
+            </span>
+            <span
+              aria-hidden
+              onClick={() => onSelect(segment)}
+              className="tabular inline-flex cursor-pointer items-center gap-1 text-[11.5px] font-medium text-subtle group-hover:text-primary"
+            >
+              <Play size={9} className="opacity-0 group-hover:opacity-100" fill="currentColor" />
+              {time}
             </span>
           </div>
         )}
@@ -57,12 +77,8 @@ export const TranscriptLine = memo(function TranscriptLine({
           type="button"
           onClick={() => onSelect(segment)}
           className="block w-full text-left text-[14px] leading-relaxed text-text"
-          aria-label={`Play from ${formatTimestamp(segment.start_ms)}: ${segment.text}`}
+          aria-label={`Play from ${time}: ${segment.text}`}
         >
-          <span className="tabular mr-2 inline-flex items-center gap-1 rounded px-1 text-[11.5px] font-medium text-subtle group-hover:text-primary">
-            <Play size={10} className="opacity-0 group-hover:opacity-100" fill="currentColor" />
-            {formatTimestamp(segment.start_ms)}
-          </span>
           {fragments
             ? fragments.map((fragment, index) =>
                 fragment.match ? (

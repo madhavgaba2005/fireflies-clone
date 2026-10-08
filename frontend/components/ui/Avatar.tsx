@@ -43,11 +43,11 @@ export function AvatarStack({
           key={person.id}
           id={person.id}
           name={person.name}
-          className="-ml-1 ring-2 ring-surface first:ml-0"
+          className="-ml-0.5 ring-2 ring-surface first:ml-0"
         />
       ))}
       {hidden > 0 && (
-        <span className="-ml-1 inline-flex h-7 w-7 items-center justify-center rounded-full bg-surface-muted text-[11px] font-semibold text-muted ring-2 ring-surface">
+        <span className="-ml-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-surface-muted text-[11px] font-semibold text-muted ring-2 ring-surface">
           +{hidden}
         </span>
       )}

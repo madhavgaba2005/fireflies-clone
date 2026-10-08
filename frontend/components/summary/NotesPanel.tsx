@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { ActionItemsSection } from "@/components/action-items/ActionItemsSection";
 import { Button } from "@/components/ui/Button";
 import { Skeleton, errorMessage } from "@/components/ui/States";
+import { PanelExpandButton } from "@/components/ui/PanelExpandButton";
 import { StatusChip } from "@/components/ui/StatusChip";
 import { useRegenerateSummary } from "@/hooks/queries";
 import { cn, speakerColor } from "@/lib/colors";
@@ -181,22 +182,27 @@ export const NotesPanel = memo(function NotesPanel({
   summaryLoading,
   activeTopic,
   onSeek,
+  expanded,
+  onToggleExpand,
 }: {
   meeting: MeetingDetail;
   summary: Summary | undefined;
   summaryLoading: boolean;
   activeTopic: number;
   onSeek: (ms: number) => void;
+  expanded: boolean;
+  onToggleExpand: () => void;
 }) {
   const status = meeting.processing_status;
   return (
     <div className="h-full overflow-y-auto">
-      <div className="flex items-center gap-2 border-b border-border px-5 py-3">
+      <div className="flex h-14 items-center gap-2 border-b border-border px-5">
         <Sparkles size={16} className="text-primary" />
         <h2 className="text-[14px] font-semibold">AI meeting notes</h2>
         <span className="ml-auto">
           <StatusChip status={status} />
         </span>
+        <PanelExpandButton panel="notes" expanded={expanded} onToggle={onToggleExpand} />
       </div>
 
       {status === "pending" || status === "processing" ? (

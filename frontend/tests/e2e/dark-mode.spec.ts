@@ -31,4 +31,28 @@ test.describe("Dark mode (bonus)", () => {
     await expect(page.locator("html")).toHaveClass(/dark/);
     await context.close();
   });
+  test("settings offer System, Light and Dark; System follows the OS live", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.goto("/settings?tab=appearance");
+    const option = (name: string) => page.getByRole("radio", { name: new RegExp(`^${name}`) });
+    await expect(option("System")).toHaveAttribute("aria-checked", "true");
+
+    await option("Dark").click();
+    await expect(html(page)).toHaveClass(/dark/);
+    await page.reload();
+    await expect(option("Dark")).toHaveAttribute("aria-checked", "true");
+    await expect(html(page)).toHaveClass(/dark/);
+
+    await option("Light").click();
+    await expect(html(page)).not.toHaveClass(/dark/);
+    await page.emulateMedia({ colorScheme: "dark" });
+    await expect(html(page)).not.toHaveClass(/dark/); // an explicit choice ignores the OS
+
+    await option("System").click();
+    await expect(html(page)).toHaveClass(/dark/); // OS is dark now
+    await page.emulateMedia({ colorScheme: "light" });
+    await expect(html(page)).not.toHaveClass(/dark/); // and it follows changes live
+    await page.reload();
+    await expect(option("System")).toHaveAttribute("aria-checked", "true");
+  });
 });
