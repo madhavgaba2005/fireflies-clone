@@ -1,14 +1,18 @@
 "use client";
 
-import { Bell, Plug, User, Users } from "lucide-react";
+import { Bell, Monitor, Moon, Palette, Plug, Sun, User, Users } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs } from "radix-ui";
 
 import { DEFAULT_USER } from "@/components/layout/TopBar";
 import { Avatar } from "@/components/ui/Avatar";
+import { useThemePreference } from "@/hooks/useTheme";
+import { cn } from "@/lib/colors";
+import { setThemePreference, type ThemePreference } from "@/lib/theme";
 
 const TABS = [
   { id: "profile", label: "Profile", icon: User },
+  { id: "appearance", label: "Appearance", icon: Palette },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "integrations", label: "Integrations", icon: Plug },
   { id: "team", label: "Team", icon: Users },
@@ -28,6 +32,55 @@ function Soon() {
     <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary">
       Coming soon
     </span>
+  );
+}
+
+const THEME_OPTIONS: { value: ThemePreference; label: string; hint: string; icon: typeof Sun }[] = [
+  { value: "system", label: "System", hint: "Follow device", icon: Monitor },
+  { value: "light", label: "Light", hint: "Always light", icon: Sun },
+  { value: "dark", label: "Dark", hint: "Always dark", icon: Moon },
+];
+
+function AppearanceSettings() {
+  const preference = useThemePreference();
+  return (
+    <section>
+      <h2 className="text-[15px] font-semibold">Theme</h2>
+      <p className="mt-0.5 text-[13px] text-muted">Saved in this browser.</p>
+      <div role="radiogroup" aria-label="Theme" className="mt-4 grid gap-3 sm:grid-cols-3">
+        {THEME_OPTIONS.map(({ value, label, hint, icon: Icon }) => {
+          const selected = preference === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              onClick={() => setThemePreference(value)}
+              className={cn(
+                "flex items-center gap-3 rounded-xl border p-4 text-left transition",
+                selected
+                  ? "border-primary bg-primary-soft ring-1 ring-primary"
+                  : "border-border hover:bg-surface-muted",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex h-9 w-9 items-center justify-center rounded-lg",
+                  selected ? "bg-primary text-white" : "bg-surface-muted text-muted",
+                )}
+              >
+                <Icon size={17} />
+              </span>
+              <span>
+                <span className="block text-[13.5px] font-semibold">{label}</span>
+                <span className="block text-[12px] text-muted">{hint}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -99,6 +152,10 @@ export function SettingsPage() {
               Authentication is out of scope for this demo — everyone uses this default account.
               Profile editing is coming soon.
             </p>
+          </Tabs.Content>
+
+          <Tabs.Content value="appearance" className="outline-none">
+            <AppearanceSettings />
           </Tabs.Content>
 
           <Tabs.Content value="notifications" className="outline-none">

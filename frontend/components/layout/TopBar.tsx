@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { useComingSoon } from "@/components/ui/ComingSoon";
 import { Menu, MenuItem, MenuSeparator } from "@/components/ui/Menu";
 import { useTheme } from "@/hooks/useTheme";
-import { setTheme } from "@/lib/theme";
+import { setThemePreference } from "@/lib/theme";
 
 import { useOpenCreateMeeting } from "./CreateMeetingContext";
 import { GlobalSearch } from "./GlobalSearch";
@@ -82,7 +82,7 @@ export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
           </MenuItem>
           <MenuItem
             icon={theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-            onSelect={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onSelect={() => setThemePreference(theme === "dark" ? "light" : "dark")}
           >
             {theme === "dark" ? "Light mode" : "Dark mode"}
           </MenuItem>
