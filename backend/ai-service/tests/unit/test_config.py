@@ -19,10 +19,9 @@ def test_http_mode_requires_internal_token() -> None:
     assert make(processing_mode="http", internal_api_token="t").processing_mode == "http"
 
 
-def test_llm_provider_requires_api_key() -> None:
-    with pytest.raises(ValidationError, match="LLM_API_KEY"):
+def test_only_the_mock_provider_is_available() -> None:
+    with pytest.raises(ValidationError):
         make(summary_provider="llm")
-    assert make(summary_provider="llm", llm_api_key="k").summary_provider == "llm"
 
 
 def test_inline_test_mode_is_not_valid_for_the_ai_service() -> None:

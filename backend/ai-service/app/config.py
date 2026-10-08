@@ -23,16 +23,15 @@ class Settings(BaseSettings):
     kafka_consumer_group: str = "ai-service"
     internal_api_token: str = ""
 
-    summary_provider: Literal["mock", "llm"] = "mock"
-    llm_api_key: str = ""
+    # Only the deterministic mock ships; ADR-007 describes adding an LLM provider (+ its API key).
+    summary_provider: Literal["mock"] = "mock"
     max_retries: int = 3
+    retry_backoff_seconds: float = 1.0
 
     @model_validator(mode="after")
-    def _check_required_secrets(self) -> Self:
+    def _require_token_in_http_mode(self) -> Self:
         if self.processing_mode == "http" and not self.internal_api_token:
             raise ValueError("INTERNAL_API_TOKEN is required when PROCESSING_MODE=http")
-        if self.summary_provider == "llm" and not self.llm_api_key:
-            raise ValueError("LLM_API_KEY is required when SUMMARY_PROVIDER=llm")
         return self
 
 
