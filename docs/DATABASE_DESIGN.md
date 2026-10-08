@@ -1,6 +1,8 @@
 # Database Design
 
-> Status: **Accepted (Phase 1)** — implemented in Phase 3 (models + Alembic migration + seed).
+> Status: **Implemented (Milestone A)** — models in `backend/meeting-service/app/models/`, migration
+> `alembic/versions/0001_initial_schema.py`, seed in `app/seed/`. Constraints are verified by `tests/integration/test_schema.py`;
+> `tests/integration/test_migrations.py` proves the migration builds exactly the schema the models describe.
 > Engine: SQLite 3 via SQLAlchemy 2.0 (ORM, typed `Mapped[]` models). Owned exclusively by the Meeting Service.
 
 ## 1. ER diagram
@@ -90,8 +92,9 @@ erDiagram
 Infrastructure tables (not part of the domain model, used by the event pipeline):
 
 ```
-outbox_events     (id TEXT PK [uuid], topic, event_type, aggregate_id, payload JSON, created_at, published_at NULL, attempts)
-processed_events  (event_id TEXT PK, event_type, processed_at)
+outbox_events     (id TEXT PK [= envelope event_id], event_type, aggregate_id, envelope TEXT [serialized EventEnvelope],
+                   created_at, published_at NULL, attempts, last_error)   partial index on created_at WHERE published_at IS NULL
+processed_events  (event_id TEXT PK, event_type, outcome [applied|stale|meeting_missing], processed_at)
 ```
 
 ## 2. Tables
@@ -182,6 +185,9 @@ the scale-up path is SQLite FTS5 (planned for bonus global search B3).
 ## 6. Update behaviour
 
 * `updated_at` set by SQLAlchemy `onupdate`.
+* **Timestamps are stored as UTC.** SQLite has no timezone type, so a `UTCDateTime` column type (`app/models/types.py`)
+  converts aware datetimes to naive UTC on write, returns aware UTC on read, and refuses naive datetimes outright —
+  a whole class of "which timezone is this?" bugs becomes impossible.
 * Editing participants on a meeting = diff-and-apply on `meeting_participants` in one transaction.
 * Uploading a new transcript replaces segments, bumps `transcript_revision`, sets `processing_status='pending'`,
   and writes a `transcript.updated` outbox row — all in one transaction.
@@ -203,7 +209,11 @@ the scale-up path is SQLite FTS5 (planned for bonus global search B3).
 
 * **Alembic** owns the schema. `alembic upgrade head` on a fresh file builds everything; the service runs it on startup
   (`RUN_MIGRATIONS_ON_STARTUP=true`) so a fresh deploy just works.
-* `python -m seed` is idempotent: it skips if meetings already exist (`--reset` to wipe and reseed).
-* CI runs a migration test: empty DB → `upgrade head` → `downgrade base` → `upgrade head`.
+* `python -m app.seed` is idempotent: it skips if meetings already exist (`--reset` to wipe and reseed).
+  `SEED_ON_STARTUP=true` does the same automatically on an empty database (useful for fresh deployments).
+* **Seed data:** 7 meetings at a fictional company (Northwind) with 11 recurring people, 183 transcript segments,
+  34 chapters, 42 keywords and 35 action items. Dates are relative to *now*, so date filters stay demoable; timestamps
+  are derived from word counts (~158 wpm) so chapters and action items always point at the right moment.
+* Tests: empty DB → `upgrade head` → compare with models (no diff allowed) → `downgrade base` → `upgrade head`.
 * **Path to PostgreSQL:** models use portable types; SQLite-specific bits are isolated (pragmas, `COLLATE NOCASE`
   → `citext`/`lower()` index, FTS5 → `tsvector`). Change `DATABASE_URL`, run migrations, done.
