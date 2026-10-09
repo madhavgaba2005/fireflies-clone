@@ -1,5 +1,7 @@
 # Lumen: a Fireflies.ai-style meeting notes workspace
 
+[![CI](https://github.com/madhavgaba2005/fireflies-clone/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/madhavgaba2005/fireflies-clone/actions/workflows/ci.yml)
+
 Lumen is a meeting library and post-meeting workspace modelled on Fireflies.ai, built for the Scaler SDE Fullstack
 assignment. You browse your meetings, open one to read a speaker-labelled transcript synced to a player, and review
 AI notes (summary, outline, keywords and action items) that a separate AI service generates asynchronously over
@@ -7,9 +9,10 @@ Kafka.
 
 > **Status:** every must-have requirement in the brief is implemented and covered by automated tests (backend, a real
 > Kafka broker and browser end-to-end).
-> **Not done yet:** the GitHub repository isn't public, GitHub Actions has not run, and there is **no hosted demo**.
-> Both are waiting on the author (see [Deployment](#deployment)).
-> The strict self-assessment is in [FINAL_EVALUATION_REPORT.md](FINAL_EVALUATION_REPORT.md).
+> - **CI:** runs on GitHub Actions for every push and pull request. Current results are on the
+>   [Actions page](https://github.com/madhavgaba2005/fireflies-clone/actions/workflows/ci.yml) and in the badge above.
+> - **Hosted demo: not deployed yet** (see [Deployment](#deployment)).
+> - **Self-assessment:** the strict version is in [FINAL_EVALUATION_REPORT.md](FINAL_EVALUATION_REPORT.md).
 
 **Contents:** [Overview](#overview) · [Screenshots](#screenshots) · [Features](#features) · [Tech stack](#tech-stack) ·
 [Architecture](#architecture) · [Repository](#repository-structure) · [Quick start](#quick-start) ·
@@ -151,7 +154,7 @@ file on first start.
 
 **Option A: backend in Docker, frontend native** (closest to the real architecture)
 ```bash
-git clone <repo-url> fireflies-clone && cd fireflies-clone
+git clone https://github.com/madhavgaba2005/fireflies-clone.git && cd fireflies-clone
 docker compose up -d --build --wait     # Kafka + meeting-service :8000 (seeds itself) + ai-service :8001
 cd frontend && npm install && cp .env.example .env.local && npm run dev   # http://localhost:3000
 ```
@@ -321,8 +324,8 @@ requirements installed. It starts the AI service on `:8101`, the Meeting Service
 3. Real-Kafka tests.
 4. Frontend: lint, format, types, unit tests, build, Playwright.
 
-Every job's commands pass locally, and the backend job was also re-run in a clean Linux container. **It has not run
-on GitHub yet**, because the repository isn't published. See [docs/CI_CD.md](docs/CI_CD.md).
+Results for every run are on the [Actions page](https://github.com/madhavgaba2005/fireflies-clone/actions/workflows/ci.yml). The same commands also pass locally. Details:
+[docs/CI_CD.md](docs/CI_CD.md).
 
 ## Deployment
 

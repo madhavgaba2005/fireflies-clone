@@ -13,7 +13,7 @@ Implementation paths refer to the planned structure in [ARCHITECTURE.md](ARCHITE
 
 **Definition of Done for ✅:** implemented · integrated end-to-end · UI states (loading/empty/error) handled ·
 persistence verified after reload · tests written and passing · docs/README/matrices updated · committed · CI checks
-pass locally (the first GitHub Actions run happens when the repository is published).
+pass on GitHub Actions and locally.
 Code existing is **not** enough.
 
 ### Section map (assignment PDF → this file)
@@ -124,7 +124,7 @@ Code existing is **not** enough.
 
 | ID | Requirement | Priority | Implementation | Test | Demo Verification | Status |
 |----|-------------|----------|----------------|------|-------------------|--------|
-| D1 | **Public GitHub repo** containing `frontend/` and `backend/` | DELIV | Monorepo with both folders; local history of issue branches + merges ready to push | — | Repo visible logged-out | ⏳ ready; publishing needs the author's authorization |
+| D1 | **Public GitHub repo** containing `frontend/` and `backend/` | DELIV | Monorepo with both folders | — | Repo visible logged-out | ✅ [github.com/madhavgaba2005/fireflies-clone](https://github.com/madhavgaba2005/fireflies-clone) |
 | D2 | README: **setup instructions** | DELIV | `README.md#local-setup` (Phase 2: native + docker compose) | Fresh-clone dry run following README verbatim | — | ✅ README section: Local Setup (native + docker compose) |
 | D3 | README: **tech stack** | DELIV | `README.md#tech-stack` | — | — | ✅ README section: Tech Stack |
 | D4 | README: **architecture overview** | DELIV | `README.md#architecture` + [ARCHITECTURE.md](ARCHITECTURE.md) | — | — | ✅ README section: Architecture + diagram, Services, Kafka / Event Flow |
@@ -156,7 +156,7 @@ Code existing is **not** enough.
 | X2b | `PROCESSING_MODE=kafka\|http\|inline-test` — free-hosting fallback reusing the same envelope, processor and idempotent apply path | EXTRA (supports D8) | `EventPublisher` implementations in MS; AI `POST /internal/process` | Tests run the pipeline through `InMemoryEventPublisher`; HTTP mode integration test | Deployed demo generates summaries even without a broker | ✅ HTTP fallback tested in-process (`test_http_fallback_pipeline_end_to_end`) and in the AI service |
 | X3 | Backend coverage ~90%+ (where practical) | EXTRA | pytest-cov, `--cov-fail-under=90` in CI | CI gate (reproduced in a Linux container) | Coverage report | ✅ 97 % / 99 % line + branch |
 | X4 | Playwright E2E for critical flows | EXTRA | `frontend/tests/e2e` | CI job | — | ✅ 45 Playwright tests against the real stack |
-| X5 | GitHub Actions CI on PR + push to main | EXTRA | `.github/workflows/ci.yml`: backend lint/format/types/tests+coverage, contract check, Kafka job, frontend lint/format/types/unit/build/E2E | Every job's commands run locally; backend job reproduced in `python:3.11-slim` | Green checks on PRs | 🟨 verified locally; first GitHub run when the repo is published |
+| X5 | GitHub Actions CI on PR + push to main | EXTRA | `.github/workflows/ci.yml`: backend lint/format/types/tests+coverage, contract check, Kafka job, frontend lint/format/types/unit/build/E2E | Every job's commands run locally; backend job reproduced in `python:3.11-slim` | Green checks on PRs | ✅ first GitHub run passed all four jobs ([run 37914974476](https://github.com/madhavgaba2005/fireflies-clone/actions/runs/37914974476)) |
 | X6 | Professional Git workflow: issues → branches → PRs | EXTRA | [PROJECT_PLAN.md](PROJECT_PLAN.md); feature branches merged with `--no-ff`; PR descriptions in [PULL_REQUESTS.md](PULL_REQUESTS.md) | — | Git history | ✅ locally; PRs become real once published |
 | X7 | Loading / empty / error states on every screen | EXTRA (supports R5) | Shared `ui/EmptyState`, `ui/ErrorState`, skeletons | E2E with mocked API failure | — | ✅ shared EmptyState/ErrorState/Skeleton on every screen; E2E failure specs |
 | X8 | Security basics: validation, CORS, env config, no secrets, safe rendering of uploads | EXTRA | Env-based config, `.env.example` only; CORS allow-list; generic 500s; non-root containers; Pydantic limits on every field incl. transcript size (`MAX_TRANSCRIPT_CHARS`); strict transcript parsers with line-numbered errors; React escaping (search highlights are `<mark>` elements, no HTML injection); internal token compared in constant time; prod publishes only Caddy's ports | `test_config.py`, `test_health.py` (CORS), `test_errors.py`, internal API auth tests | Secrets scan of the repo: clean | ✅ |

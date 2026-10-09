@@ -2,8 +2,9 @@
 
 > **Status:** the workflow is written ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) and every job's
 > commands pass locally. The backend job was also re-run in a clean `python:3.11-slim` Linux container.
-> It has **not run on GitHub yet**: that happens on the first push, once the author publishes the repository.
-> Branch protection is configured at that point.
+> It runs on GitHub Actions for every push to `main` and every pull request. The first run on GitHub
+> ([run 37914974476](https://github.com/madhavgaba2005/fireflies-clone/actions/runs/37914974476)) passed all four jobs. Current results: [Actions page](https://github.com/madhavgaba2005/fireflies-clone/actions/workflows/ci.yml).
+> Actions are pinned to the Node 24-based majors (`checkout`, `setup-python`, `setup-node`, `upload-artifact` v7).
 
 ## Why CI
 Every PR proves it doesn't break lint, types, tests, coverage or the build. With a one-person team, CI is the
@@ -35,7 +36,7 @@ reviewer that never gets tired, and green checks on PRs are visible evidence for
 | frontend | lint, format, typecheck, build clean; 76 Vitest + 45 Playwright tests passed |
 | workflow file | parsed as valid YAML (4 jobs) |
 
-## Branch protection (to set once the repository is public)
+## Branch protection (recommended)
 - Require a PR to merge into `main`.
 - Require all four jobs to pass, with the branch up to date.
 - Disallow force-pushes.

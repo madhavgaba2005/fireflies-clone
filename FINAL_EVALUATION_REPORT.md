@@ -41,7 +41,7 @@ author actions in §6. Until they're done, the PDF's deliverables are not met.
 | Seed several meetings with full transcripts, summaries, action items | ✅ | 7 meetings, 183 segments, 35 action items |
 | README: setup, stack, architecture, schema, API, assumptions | ✅ | All sections present |
 | Stack: Next.js (TS), FastAPI, SQLite | ✅ | Next.js 16 / React 19 / TS strict; FastAPI × 2; SQLite |
-| Public GitHub repo with `frontend/` and `backend/` | ⏳ | Layout ready; publishing needs authorization |
+| Public GitHub repo with `frontend/` and `backend/` | ✅ | [github.com/madhavgaba2005/fireflies-clone](https://github.com/madhavgaba2005/fireflies-clone) |
 | Hosted, working link | ⏳ | `deploy/` verified locally; the host choice needs the author |
 
 ## 3. Criteria, strictly
@@ -112,7 +112,7 @@ author actions in §6. Until they're done, the PDF's deliverables are not met.
   (meeting-service) and 98.84 % (ai-service), line + branch. The backend CI job was reproduced in a clean Linux
   container. No secrets, no dead code found in review, no file over about 300 lines except the seed data.
 - **Strengths:** Every bug found was fixed test-first (listed in PROGRESS and the INTERVIEW_GUIDE).
-- **Weakness:** GitHub Actions has never run, because the repository isn't published.
+- **CI:** the first GitHub Actions run ([37914974476](https://github.com/madhavgaba2005/fireflies-clone/actions/runs/37914974476)) passed all four jobs.
 - **Likely lost marks:** Minimal, once the first CI run is green.
 - **Fix:** Publish, then confirm all four jobs pass (§6).
 
@@ -141,7 +141,7 @@ author actions in §6. Until they're done, the PDF's deliverables are not met.
 | Frontend: lint, format, typecheck, production build | Clean |
 | Vitest | **76 passed** |
 | Playwright (both services + production build) | **45 passed** |
-| CI workflow | Valid YAML, 4 jobs; commands verified locally; **not yet run on GitHub** |
+| CI workflow | 4 jobs; first GitHub run passed all of them ([run 37914974476](https://github.com/madhavgaba2005/fireflies-clone/actions/runs/37914974476)) |
 | Production stack (`deploy/`) through Caddy | Healthy; Kafka summary in about 2 s; CRUD; full-restart persistence; in-flight request survives a broker restart; no console errors |
 
 ## 5. Issues found in this audit
@@ -164,20 +164,13 @@ No CRITICAL issues are open.
 
 ## 6. Remaining manual steps (the author)
 
-1. Publish the repository:
+1. ~~Publish the repository~~ **Done:** [github.com/madhavgaba2005/fireflies-clone](https://github.com/madhavgaba2005/fireflies-clone). CI runs on every push
+   ([Actions](https://github.com/madhavgaba2005/fireflies-clone/actions/workflows/ci.yml)).
+2. Deploy, following [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) §3. On a free VM with Docker:
    ```bash
-   cd C:\Users\hp\scaler\fireflies-clone
-   gh repo create fireflies-clone --public --source . --remote origin --push
-   # without gh: create an empty public repo on github.com, then
-   git remote add origin https://github.com/<you>/fireflies-clone.git
-   git push -u origin main
-   ```
-2. Check that the first GitHub Actions run passes all four jobs (Actions tab).
-3. Deploy, following [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) §3. On a free VM with Docker:
-   ```bash
-   git clone https://github.com/<you>/fireflies-clone.git && cd fireflies-clone
+   git clone https://github.com/madhavgaba2005/fireflies-clone.git && cd fireflies-clone
    cp deploy/.env.example deploy/.env   # set SITE_ADDRESS (domain or :80) and PUBLIC_URL
    docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d --build --wait
    ```
-4. Run the post-deploy checklist (DEPLOYMENT §5) against the live URL.
-5. Put both links in the README (Demo and GitHub sections), commit, push, and submit them.
+3. Run the post-deploy checklist (DEPLOYMENT §5) against the live URL.
+4. Add the live link to the README and the repository's About section, then submit both links.
