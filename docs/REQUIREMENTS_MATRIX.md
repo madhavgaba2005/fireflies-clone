@@ -110,7 +110,7 @@ Code existing is **not** enough.
 
 | ID | Requirement | Priority | Implementation | Test | Demo Verification | Status |
 |----|-------------|----------|----------------|------|-------------------|--------|
-| C1 | Frontend: **Next.js (TypeScript)** | CONSTR | `frontend/` Next.js 16 App Router, React 19, `strict: true` | `npm run typecheck` + `npm run build`; 74 Vitest + 39 Playwright tests | Every screen | ✅ |
+| C1 | Frontend: **Next.js (TypeScript)** | CONSTR | `frontend/` Next.js 16 App Router, React 19, `strict: true` | `npm run typecheck` + `npm run build`; 76 Vitest + 45 Playwright tests | Every screen | ✅ |
 | C2 | Backend: **Python with FastAPI** | CONSTR | `backend/meeting-service`, `backend/ai-service` (app factories, router → service → repository, one error envelope) | 183 + 39 pytest tests | `/docs` OpenAPI page | ✅ |
 | C3 | Database: **SQLite (design your own schema)** | CONSTR | `app/models/` (SQLAlchemy 2.0), Alembic `0001_initial_schema`, `app/database.py` | `test_schema.py`, `test_migrations.py` (migration ≡ models), `test_database.py` | Fresh DB migrates + seeds; integrity check ok | ✅ |
 | C4 | Real audio transcription **out of scope**; may seed / upload .txt/.vtt/.json / optionally LLM | CONSTR | Upload or paste .txt/.vtt/.json (`transcript_parser.py`); seeded meetings; deterministic mock AI provider | Parser unit tests; E2E upload | Create a meeting from a sample file in `samples/` | ✅ |
@@ -177,7 +177,7 @@ Code existing is **not** enough.
 | I1 | Description: "search across transcripts" | Must-have = library search (title/date/participant) + in-transcript search. Cross-meeting transcript search = Bonus B3 (**first** bonus to build) | The Core Features list scopes search to the library and to "within the transcript"; the Bonus list explicitly names "Global search across all meetings" |
 | I2 | "seeks the player to that timestamp (and vice versa)" | Vice versa = player position drives the active transcript line (highlight + auto-scroll), including when the user drags the seek bar | The only meaningful inverse of "line → player" |
 | I3 | "audio/video can be a placeholder or a sample file" | A simulated playback clock with real controls (play/pause, seek bar, ±15 s, speed); a real `<audio>` source can be plugged in behind the same `PlaybackClock` interface | Sync behaviour is fully real; no fake media to generate |
-| I4 | "Navbar with profile/settings placeholders" | Fireflies uses a left sidebar + top bar; we provide both (Settings in sidebar, avatar menu in top bar) | Matches both the PDF wording and the reference UI |
+| I4 | "Navbar with profile/settings placeholders" | Fireflies uses a left navigation + top bar; we provide both (icon rail with Settings, contextual Meetings sidebar, avatar menu in top bar) | Matches both the PDF wording and the reference UI |
 | I5 | "Create a meeting (by uploading or pasting a transcript, **or** via a form)" | We implement all three | Cheap once the parser exists; removes any doubt |
 | I6 | "Add / edit / complete action items" (delete not listed) | Also implement delete and uncomplete | Expected CRUD; trivial; avoids a UX dead end |
 | I7 | "Edit meeting metadata (title, participants)" | Title, participants **and** meeting date | Date is metadata; needed for date-filter demos |

@@ -285,7 +285,8 @@ The design records behind them are in the [ADRs](adr/) and [DEVELOPMENT_GUIDE.md
 - **30 s:**
   1. Implement `SummaryProvider` with a client for an LLM API (a current Claude model, for example).
   2. Ask for JSON that matches `SummaryGeneratedPayload` and validate it.
-  3. Select it with `SUMMARY_PROVIDER=llm` and keep the key in the AI Service's environment only.
+  3. Add `llm` as a `SUMMARY_PROVIDER` option (today only `mock` is accepted) and keep the key in the AI Service's
+     environment only.
 - **Deeper:**
   - Chunk long transcripts and summarise the chunks first (map-reduce).
   - Use the existing retries and failure events.

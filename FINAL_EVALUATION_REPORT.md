@@ -3,7 +3,7 @@
 A strict self-assessment against the assignment PDF (`Scaler_SDE_Fullstack_Assignment_-_Fireflies_Clone.pdf`), the
 source of truth, re-read line by line for this audit. It is written as the evaluator would see the project. Every
 "verified" is backed by a passing test or a recorded run, and anything not verified says so.
-Audit date: 2026-10-09 (final submission pass).
+Audit date: 2026-10-09 (final submission pass; documentation and release-readiness audit the same day).
 
 ## 1. Verdict
 
@@ -65,9 +65,13 @@ author actions in §6. Until they're done, the PDF's deliverables are not met.
     ready).
 
 ### UI/UX
-- **Evidence:** Fireflies-style shell (icon rail, contextual Meetings sidebar, compact toolbar) and a weekly-grouped meetings table with aligned columns. Notepad workspace with notes and
-  transcript panels (each expandable), speaker colours, a docked player with a speaker timeline. Toasts; loading,
-  empty and error states; responsive layout; System / Light / Dark. Screenshots are in the README.
+- **Evidence:** a Fireflies-style shell (icon rail, contextual Meetings sidebar, compact toolbars) and a
+  weekly-grouped meetings table with aligned columns.
+  - The meeting page follows the Fireflies meeting view: a one-line toolbar with breadcrumb and purple Share, notes
+    as the main ~73 % column, a compact transcript column and a docked player.
+  - A white, de-boxed canvas; speaker colours; toasts; loading, empty and error states; a responsive layout; Light
+    by default, with Dark and System; a Lumen favicon.
+  - Screenshots of the current build are in the README.
 - **Strengths:** Information hierarchy and interaction patterns follow the Fireflies Notepad closely. Two recorded
   QA passes fixed nine concrete issues.
 - **Weaknesses:**
@@ -151,6 +155,9 @@ author actions in §6. Until they're done, the PDF's deliverables are not met.
 | MEDIUM | Transcript lines wrapped awkwardly (inline timestamp) | **Fixed:** Fireflies-style speaker + time row |
 | LOW | Docs claimed an LLM provider setting and FTS5 search that don't exist; CI doc described the wrong E2E mode | **Fixed** |
 | LOW | Duplicate handling was tested only without a broker | **Fixed:** real-broker duplicate test |
+| LOW | Deleting a meeting from its own page re-requested it and logged three 404s in the console | **Fixed:** cache entries are dropped once unobserved; an E2E test asserts no failed requests |
+| LOW | Test race: the rollback test could grab the library's new row checkbox before navigation finished | **Fixed:** the test waits for the meeting and targets the action-item checkbox (stricter) |
+| INFO | Local environment only: a Meeting Service left running in `http` mode against the Kafka-mode Docker AI service never processed notes | Not a code defect; documented in README Troubleshooting. A live walkthrough of every PDF requirement (22 checks) then passed |
 | INFO | The Next.js dev server logs a hydration warning only when a test clicks before hydration | Not an app defect; no warning on normal loads or in production |
 
 No CRITICAL issues are open.

@@ -109,4 +109,6 @@ app had no favicon at all.
 - E2E tests cover the expanded panels, the theme options (including System following the OS live and the choice
   surviving a reload), speaker names and timestamps on transcript lines, and phone-width layout
   with no horizontal scroll.
-- README screenshots were re-captured after pass 2.
+- README screenshots were re-captured from the production build on 2026-10-09, after the meeting-page and
+  spacing changes: library (light, dark, 1024 px, phone), filters, new-meeting dialog, workspace (light, dark,
+  phone), transcript search, and Settings → Appearance.
