@@ -88,7 +88,7 @@ Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = 
 
 | Evidence | Where | Status |
 |----------|-------|--------|
-| ruff (lint + format) and `mypy --strict` clean on both services; ESLint, Prettier, `tsc --strict` clean on the frontend | local runs; CI workflow | ✅ (CI not yet run on GitHub) |
+| ruff (lint + format) and `mypy --strict` clean on both services; ESLint, Prettier, `tsc --strict` clean on the frontend | local runs; [GitHub Actions](https://github.com/madhavgaba2005/fireflies-clone/actions/workflows/ci.yml) | ✅ (first GitHub run passed all four jobs) |
 | SQLAlchemy warnings turned into test failures (caught a real silent-data-loss bug) | `ms/pyproject.toml` | ✅ |
 | Backend coverage gate 90 % (measured: 97.45 % meeting-service, 98.84 % ai-service, line + branch) | CI, [TESTING.md](TESTING.md) | ✅ |
 | Small focused modules; comments explain *why*, not *what* | review | ✅ |

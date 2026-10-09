@@ -47,7 +47,7 @@ Security posture:
 
 ```bash
 # On the VM (Docker + Compose plugin installed; ports 80/443 open in the VM firewall/security list)
-git clone <repo-url> lumen && cd lumen
+git clone https://github.com/madhavgaba2005/fireflies-clone.git lumen && cd lumen
 cp deploy/.env.example deploy/.env
 #   SITE_ADDRESS=notes.example.com   → Caddy fetches a Let's Encrypt certificate automatically
 #   (or SITE_ADDRESS=:80 to serve plain HTTP on the VM's IP)

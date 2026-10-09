@@ -360,7 +360,7 @@ The design records behind them are in the [ADRs](adr/) and [DEVELOPMENT_GUIDE.md
   4. **Frontend:** lint, format, typecheck, unit tests, build, then Playwright against both real services.
 - **Deeper:** The E2E tests start both FastAPI services in HTTP mode on a freshly seeded SQLite database and run a
   production frontend build, so the browser tests hit real APIs, not mocks.
-- **Trade-off:** It's not yet run on GitHub, because the repo is unpublished. Every command was run locally, and
+- **Trade-off:** It runs on GitHub-hosted runners (the first run passed all four jobs). Every command also runs locally, and
   the backend job in a clean Linux container.
 - **Follow-up:** "Flaky tests?" → Timing-sensitive specs were run repeatedly (`--repeat-each`). Two real UI races
   were found and fixed that way.
@@ -369,7 +369,7 @@ The design records behind them are in the [ADRs](adr/) and [DEVELOPMENT_GUIDE.md
 - **30 s:** One issue leads to one feature branch, then logical commits, then a PR with a description, then a
   `--no-ff` merge into `main`. `main` is always green, and history reads as a list of features.
 - **Deeper:** Commit messages follow Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`). PR descriptions are
-  archived in [PULL_REQUESTS.md](PULL_REQUESTS.md) until the repository is published.
+  archived in [PULL_REQUESTS.md](PULL_REQUESTS.md) (the branches were merged locally before the repository was published).
 - **Trade-off:** Merge commits instead of squashing keep the logical commits, which helps the interview walkthrough.
 - **Follow-up:** "Why not trunk-based?" → It would be fine for a solo developer, but feature branches map each PR to
   a requirement for review.

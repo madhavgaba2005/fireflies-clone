@@ -24,8 +24,8 @@ jobs:
       run:
         working-directory: backend/${{ matrix.service }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
@@ -39,7 +39,7 @@ jobs:
         run: mypy app
       - name: Tests + coverage gate
         run: pytest --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=90
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage-${{ matrix.service }}
@@ -49,7 +49,7 @@ jobs:
     name: event contract identical in both services
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Envelope and payload schemas must be byte-identical in both services
         run: |
           for f in envelope_v1.schema.json payloads_v1.schema.json; do
@@ -64,11 +64,11 @@ jobs:
       run:
         working-directory: backend/meeting-service
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Start Kafka and the AI service (same config as local docker compose)
         working-directory: .
         run: docker compose up -d --build --wait kafka ai-service
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
@@ -87,8 +87,8 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -106,7 +106,7 @@ jobs:
         run: npm run build
       # E2E runs against the real stack: Playwright starts both FastAPI services (HTTP
       # processing mode, freshly seeded SQLite) and a production build of the frontend.
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
@@ -122,7 +122,7 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           npm run test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report
