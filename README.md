@@ -18,7 +18,7 @@ Kafka.
 [Architecture](#architecture) · [Repository](#repository-structure) · [Quick start](#quick-start) ·
 [Configuration](#configuration) · [Seed data](#seed-data) · [Database](#database-schema) · [API](#api-overview) ·
 [Testing](#testing) · [CI](#ci) · [Deployment](#deployment) · [Troubleshooting](#troubleshooting) ·
-[Decisions](#design-decisions-assumptions-and-limitations) · [Documentation](#documentation)
+[Assumptions & notes](#assumptions-mocked-data-and-notes) · [Documentation](#documentation)
 
 ## Overview
 
@@ -374,39 +374,79 @@ This variant was verified locally on `:8088`, including restart persistence.
 | Playwright can't start the backend | Create both `.venv`s (Option B) or set `E2E_PYTHON`. Ports 3100, 8100 and 8101 must be free. Stop `npm run dev` first: both use `frontend/.next` |
 | Kafka tests hang or fail | Start the broker and the AI container first: `docker compose up -d --build --wait kafka ai-service` |
 
-## Design decisions, assumptions and limitations
+## Assumptions, mocked data and notes
 
-**Decisions** (each has an ADR in [docs/adr/](docs/adr/)):
+A few honest notes about what is real, what is simulated, and why.
+
+**You're always signed in.** The brief says real authentication is out of scope, so there's no login screen. You
+use the app as a single demo user, *Alex Morgan*, in one shared workspace. Opening the site takes you straight to
+your meetings. "Sign out" just explains that sign-in isn't part of this project.
+
+**The meetings are made up, but they're complete.** The seven demo meetings come from a fictional company,
+Northwind, which makes route-planning software. They include a product sync, a sprint review, a client discovery
+call, a design review, a hiring debrief, a marketing strategy session and a Q1 planning kickoff, shared across 11 recurring people.
+- I wrote each one as a full, realistic conversation with timestamps, plus notes and action items, so every screen
+  has something real to show.
+- Their dates are set relative to the day the database was seeded, which keeps the date filters meaningful.
+
+**Nobody is actually recording anything.** Real speech-to-text and meeting bots are out of scope. A transcript gets
+into the app in one of three ways: it's seeded, you upload a `.txt` / `.vtt` / `.json` file, or you paste it in
+(samples are in `backend/meeting-service/samples/`).
+- The player has no audio file behind it. It's a simulated clock with real controls, so seeking, playback speed and
+  the transcript highlight all behave as they would with a recording. The small info icon in the player says so.
+- Swapping in real audio would mean adding one class behind the existing `PlaybackClock` interface.
+
+**The "AI" is a careful mock, not an LLM.** Notes come from a deterministic summariser in the AI service:
+- It picks the most representative sentence as the overview and splits the conversation into timed chapters.
+- It pulls out keywords, leaving out names and filler.
+- It spots commitments like "I'll fix the checkout before Friday" and turns them into action items with an owner.
+
+It's predictable, free and testable, which is why it's the default. An LLM could replace it behind the same
+`SummaryProvider` interface ([ADR-007](docs/adr/007-mock-summary-provider.md)). The notes still travel the real
+path: outbox → Kafka → AI service → Kafka → back into the database.
+
+**Some buttons are honest placeholders.** Invite, Share, notifications, integrations, team sharing, channels and
+"Add to live meeting" open a short "Coming soon" note instead of pretending to work.
+
+**The live demo is shared.** Everyone who opens https://lumen-mg.fly.dev sees the same data. Anything you create,
+edit or delete there is real and stays, because the database lives on a persistent volume. Feel free to try things;
+just keep it friendly for the next visitor.
+
+**Smaller assumptions:**
+- When you upload a transcript, people are matched by display name (ignoring case). "Priya Sharma" in two meetings
+  is the same person.
+- Date filters use whole calendar days in UTC, while times are shown in your browser's time zone. Near midnight, a
+  meeting can appear one day off from what you'd expect.
+- The product is called **Lumen** and has its own logo. The layout follows Fireflies closely, but it doesn't use
+  Fireflies' name, logo or assets.
+- Where the brief was ambiguous, my interpretations are written down in
+  [REQUIREMENTS_MATRIX.md §13](docs/REQUIREMENTS_MATRIX.md#13-interpretations-of-ambiguous-wording-decided-documented-revisitable).
+
+**Known limitations, stated plainly:**
+- SQLite allows only one writer at a time, so the Meeting Service runs as a single instance.
+- The outbox relay checks for new events every second rather than reacting instantly, and there's no dead-letter
+  topic. If generating notes fails, you'll see the reason and a Retry button.
+- Two bonus ideas from the brief were left out on purpose: comments on transcript lines, and an "ask a question"
+  chat. A convincing chat really needs an LLM ([why](docs/BONUS_FEATURES.md)).
+
+**Why it's built this way:** every major choice has a short decision record in [docs/adr/](docs/adr/):
 - Next.js and FastAPI.
-- SQLite as the brief requires, with WAL and enforced foreign keys.
-- Two services instead of microservices for their own sake.
-- Kafka only for asynchronous work, with a transactional outbox.
-- A router → service → repository layering.
-- A mock AI provider behind an interface.
+- SQLite with enforced foreign keys.
+- Exactly two services.
+- Kafka used only for background work, never for normal edits.
+- The transactional outbox.
+- The layered backend.
+- The mock AI.
 
-Trade-offs: [docs/TRADEOFFS.md](docs/TRADEOFFS.md).
+The trade-offs are collected in [docs/TRADEOFFS.md](docs/TRADEOFFS.md).
 
-**Assumptions:**
-- One default signed-in user and one shared workspace. A participant's display name identifies them
-  (case-insensitive) when transcripts are uploaded.
-- Library date filters use UTC calendar days; times are shown in the browser's time zone.
-- The product is named **Lumen** with an original logo. The UI follows Fireflies' layout and patterns without using
-  its brand.
-- Interpretations of ambiguous wording: [docs/REQUIREMENTS_MATRIX.md §13](docs/REQUIREMENTS_MATRIX.md#13-interpretations-of-ambiguous-wording-decided-documented-revisitable).
-
-**Known limitations:**
-- SQLite has a single writer, so the Meeting Service runs as one instance.
-- Playback is simulated: there is no audio file.
-- Notes come from a heuristic mock, not an LLM.
-- The outbox relay polls (sub-second), and there is no dead-letter topic; failures are shown with a Retry button.
-
-**Future improvements:**
-- An LLM `SummaryProvider` and an "Ask" chat.
-- Comments and highlights on transcript lines.
-- FTS5 / Postgres full-text search.
+**What I'd do next:**
+- An LLM summary provider and an "ask your meeting" chat.
+- Comments on transcript lines.
+- Full-text search.
 - A dead-letter topic.
-- Real media playback through an `AudioElementClock`.
-- Postgres when write concurrency matters.
+- Real audio playback.
+- Postgres, once more than one writer is needed.
 
 ## Documentation
 
