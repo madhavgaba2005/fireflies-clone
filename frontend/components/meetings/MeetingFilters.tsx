@@ -30,7 +30,7 @@ function FilterButton({
     <button
       type="button"
       className={cn(
-        "inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-[13px] font-medium transition-colors",
+        "inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-[13px] font-medium transition-colors",
         active
           ? "border-primary/40 bg-primary-soft text-primary"
           : "border-border bg-surface text-text hover:bg-surface-muted",
@@ -97,7 +97,7 @@ export function MeetingFilters({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="relative w-full sm:w-72">
+      <div className="relative w-full sm:w-52 xl:w-60">
         <Search
           size={15}
           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-subtle"
@@ -107,7 +107,7 @@ export function MeetingFilters({
           onChange={(event) => setText(event.target.value)}
           placeholder="Search by title"
           aria-label="Search by title"
-          className="h-9 w-full rounded-lg border border-border bg-surface pl-9 pr-8 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
+          className="h-8 w-full rounded-lg border border-border bg-surface pl-9 pr-8 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
         />
         {text && (
           <button
@@ -121,145 +121,151 @@ export function MeetingFilters({
         )}
       </div>
 
-      <Popover.Root>
-        <Popover.Trigger asChild>
-          <FilterButton active={filters.date !== "any"} aria-label="Date filter">
-            <Calendar size={15} />
-            {filters.date === "custom" && (filters.from || filters.to)
-              ? `${filters.from || "…"} → ${filters.to || "…"}`
-              : datePreset.label}
-            <ChevronDown size={14} className="text-subtle" />
-          </FilterButton>
-        </Popover.Trigger>
-        <PopoverPanel>
-          <div role="listbox" aria-label="Date range">
-            {DATE_PRESETS.map((preset) => (
-              <button
-                key={preset.value}
-                type="button"
-                role="option"
-                aria-selected={filters.date === preset.value}
-                onClick={() => onChange({ ...filters, date: preset.value })}
-                className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[13px] hover:bg-surface-muted"
-              >
-                {preset.label}
-                {filters.date === preset.value && <Check size={14} className="text-primary" />}
-              </button>
-            ))}
-          </div>
-          {filters.date === "custom" && (
-            <div className="mt-2 grid grid-cols-2 gap-2 border-t border-border px-1 pt-3">
-              <label className="text-[12px] text-muted">
-                From
-                <input
-                  type="date"
-                  aria-label="From date"
-                  value={filters.from}
-                  max={filters.to || undefined}
-                  onChange={(event) => onChange({ ...filters, from: event.target.value })}
-                  className="mt-1 h-8 w-full rounded-md border border-border px-2 text-[12px] text-text"
-                />
-              </label>
-              <label className="text-[12px] text-muted">
-                To
-                <input
-                  type="date"
-                  aria-label="To date"
-                  value={filters.to}
-                  min={filters.from || undefined}
-                  onChange={(event) => onChange({ ...filters, to: event.target.value })}
-                  className="mt-1 h-8 w-full rounded-md border border-border px-2 text-[12px] text-text"
-                />
-              </label>
-            </div>
-          )}
-        </PopoverPanel>
-      </Popover.Root>
-
-      <Popover.Root onOpenChange={() => setPersonQuery("")}>
-        <Popover.Trigger asChild>
-          <FilterButton active={filters.participantIds.length > 0} aria-label="Participant filter">
-            <Users size={15} />
-            {selectedPeople.length === 0
-              ? "Participants"
-              : selectedPeople.length === 1
-                ? selectedPeople[0].name
-                : `${selectedPeople.length} participants`}
-            <ChevronDown size={14} className="text-subtle" />
-          </FilterButton>
-        </Popover.Trigger>
-        <PopoverPanel>
-          <input
-            autoFocus
-            value={personQuery}
-            onChange={(event) => setPersonQuery(event.target.value)}
-            placeholder="Find a person"
-            aria-label="Find a person"
-            className="mb-1 h-8 w-full rounded-md border border-border px-2.5 text-[13px] outline-none focus:border-primary"
-          />
-          <div className="max-h-64 overflow-y-auto">
-            {visiblePeople.map((person) => {
-              const checked = filters.participantIds.includes(person.id);
-              return (
-                <label
-                  key={person.id}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] hover:bg-surface-muted"
+      {/* Phones: the controls scroll sideways in one row instead of stacking. */}
+      <div className="flex min-w-0 items-center gap-2 max-sm:-mx-4 max-sm:w-[calc(100%+2rem)] max-sm:overflow-x-auto max-sm:px-4 max-sm:pb-0.5 [&>*]:shrink-0">
+        <Popover.Root>
+          <Popover.Trigger asChild>
+            <FilterButton active={filters.date !== "any"} aria-label="Date filter">
+              <Calendar size={15} />
+              {filters.date === "custom" && (filters.from || filters.to)
+                ? `${filters.from || "…"} → ${filters.to || "…"}`
+                : datePreset.label}
+              <ChevronDown size={14} className="text-subtle" />
+            </FilterButton>
+          </Popover.Trigger>
+          <PopoverPanel>
+            <div role="listbox" aria-label="Date range">
+              {DATE_PRESETS.map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  role="option"
+                  aria-selected={filters.date === preset.value}
+                  onClick={() => onChange({ ...filters, date: preset.value })}
+                  className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[13px] hover:bg-surface-muted"
                 >
+                  {preset.label}
+                  {filters.date === preset.value && <Check size={14} className="text-primary" />}
+                </button>
+              ))}
+            </div>
+            {filters.date === "custom" && (
+              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-border px-1 pt-3">
+                <label className="text-[12px] text-muted">
+                  From
                   <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => togglePerson(person.id)}
-                    className="accent-[var(--primary)]"
+                    type="date"
+                    aria-label="From date"
+                    value={filters.from}
+                    max={filters.to || undefined}
+                    onChange={(event) => onChange({ ...filters, from: event.target.value })}
+                    className="mt-1 h-8 w-full rounded-md border border-border px-2 text-[12px] text-text"
                   />
-                  <Avatar id={person.id} name={person.name} size="xs" />
-                  <span className="flex-1">{person.name}</span>
-                  <span className="text-[11px] text-subtle">{person.meeting_count}</span>
                 </label>
-              );
-            })}
-            {visiblePeople.length === 0 && (
-              <p className="px-2 py-3 text-[12px] text-muted">No one matches.</p>
+                <label className="text-[12px] text-muted">
+                  To
+                  <input
+                    type="date"
+                    aria-label="To date"
+                    value={filters.to}
+                    min={filters.from || undefined}
+                    onChange={(event) => onChange({ ...filters, to: event.target.value })}
+                    className="mt-1 h-8 w-full rounded-md border border-border px-2 text-[12px] text-text"
+                  />
+                </label>
+              </div>
             )}
-          </div>
-        </PopoverPanel>
-      </Popover.Root>
+          </PopoverPanel>
+        </Popover.Root>
 
-      <FilterButton
-        onClick={() =>
-          onChange({ ...filters, sort: filters.sort === "newest" ? "oldest" : "newest" })
-        }
-        aria-label={`Sort: ${filters.sort === "newest" ? "newest first" : "oldest first"}`}
-      >
-        {filters.sort === "newest" ? (
-          <ArrowDownWideNarrow size={15} />
-        ) : (
-          <ArrowUpNarrowWide size={15} />
+        <Popover.Root onOpenChange={() => setPersonQuery("")}>
+          <Popover.Trigger asChild>
+            <FilterButton
+              active={filters.participantIds.length > 0}
+              aria-label="Participant filter"
+            >
+              <Users size={15} />
+              {selectedPeople.length === 0
+                ? "Participants"
+                : selectedPeople.length === 1
+                  ? selectedPeople[0].name
+                  : `${selectedPeople.length} participants`}
+              <ChevronDown size={14} className="text-subtle" />
+            </FilterButton>
+          </Popover.Trigger>
+          <PopoverPanel>
+            <input
+              autoFocus
+              value={personQuery}
+              onChange={(event) => setPersonQuery(event.target.value)}
+              placeholder="Find a person"
+              aria-label="Find a person"
+              className="mb-1 h-8 w-full rounded-md border border-border px-2.5 text-[13px] outline-none focus:border-primary"
+            />
+            <div className="max-h-64 overflow-y-auto">
+              {visiblePeople.map((person) => {
+                const checked = filters.participantIds.includes(person.id);
+                return (
+                  <label
+                    key={person.id}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] hover:bg-surface-muted"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => togglePerson(person.id)}
+                      className="accent-[var(--primary)]"
+                    />
+                    <Avatar id={person.id} name={person.name} size="xs" />
+                    <span className="flex-1">{person.name}</span>
+                    <span className="text-[11px] text-subtle">{person.meeting_count}</span>
+                  </label>
+                );
+              })}
+              {visiblePeople.length === 0 && (
+                <p className="px-2 py-3 text-[12px] text-muted">No one matches.</p>
+              )}
+            </div>
+          </PopoverPanel>
+        </Popover.Root>
+
+        <FilterButton
+          onClick={() =>
+            onChange({ ...filters, sort: filters.sort === "newest" ? "oldest" : "newest" })
+          }
+          aria-label={`Sort: ${filters.sort === "newest" ? "newest first" : "oldest first"}`}
+        >
+          {filters.sort === "newest" ? (
+            <ArrowDownWideNarrow size={15} />
+          ) : (
+            <ArrowUpNarrowWide size={15} />
+          )}
+          {filters.sort === "newest" ? "Newest first" : "Oldest first"}
+        </FilterButton>
+
+        {filters.keyword && (
+          <span className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-primary/40 bg-primary-soft px-3 text-[13px] font-medium text-primary">
+            <Tag size={14} /> {filters.keyword}
+            <button
+              type="button"
+              aria-label="Remove tag filter"
+              onClick={() => onChange({ ...filters, keyword: "" })}
+            >
+              <X size={14} />
+            </button>
+          </span>
         )}
-        {filters.sort === "newest" ? "Newest first" : "Oldest first"}
-      </FilterButton>
 
-      {filters.keyword && (
-        <span className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-primary/40 bg-primary-soft px-3 text-[13px] font-medium text-primary">
-          <Tag size={14} /> {filters.keyword}
+        {hasActiveFilters(filters) && (
           <button
             type="button"
-            aria-label="Remove tag filter"
-            onClick={() => onChange({ ...filters, keyword: "" })}
+            onClick={() => onChange({ ...EMPTY_FILTERS, sort: filters.sort })}
+            className="h-8 px-2 text-[13px] font-medium text-muted hover:text-text"
           >
-            <X size={14} />
+            Clear filters
           </button>
-        </span>
-      )}
-
-      {hasActiveFilters(filters) && (
-        <button
-          type="button"
-          onClick={() => onChange({ ...EMPTY_FILTERS, sort: filters.sort })}
-          className="h-9 px-2 text-[13px] font-medium text-muted hover:text-text"
-        >
-          Clear filters
-        </button>
-      )}
+        )}
+      </div>
     </div>
   );
 }

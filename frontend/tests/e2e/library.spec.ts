@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { createMeetingViaApi } from "./helpers";
+
 // Seed: 7 meetings dated 1, 3, 5, 8, 11, 16 and 23 days ago (see app/seed/data.py).
 const rows = (page: import("@playwright/test").Page) => page.getByTestId("meeting-row");
 
@@ -101,6 +103,53 @@ test.describe("Meetings library", () => {
     await page.getByRole("button", { name: "Remove tag filter" }).click();
     await expect(page).not.toHaveURL(/keyword=/);
   });
+  test("meetings are grouped by week with the meeting count beside the range", async ({ page }) => {
+    await page.goto("/meetings");
+    const firstGroup = page.locator("section").first();
+    await expect(firstGroup.getByRole("heading", { level: 2 })).toContainText(
+      /Today · \d+ meetings?/,
+    );
+    // Columns: the date, time and duration of a row sit under their headings.
+    const sync = row(page, "Weekly Product Sync");
+    for (const name of ["Date", "Time", "Duration"]) {
+      const heading = await page.getByText(name, { exact: true }).first().boundingBox();
+      const cell = await sync
+        .locator("> div")
+        .nth(["Date", "Time", "Duration"].indexOf(name) + 1)
+        .boundingBox();
+      expect(Math.abs(heading!.x - cell!.x)).toBeLessThanOrEqual(2);
+    }
+  });
+
+  test("row details show participants and tags; a tag filters the library", async ({ page }) => {
+    await page.goto("/meetings");
+    await page.getByRole("button", { name: "Details for Weekly Product Sync" }).click();
+    const details = page.getByRole("dialog");
+    await expect(details).toContainText("Priya Sharma");
+    await details.getByRole("button", { name: "Release 2.4" }).click();
+    await expect(page).toHaveURL(/keyword=Release/);
+    await expect(rows(page)).toHaveCount(1);
+  });
+
+  test("select meetings and delete them together", async ({ page }) => {
+    const tag = `bulk-${Date.now()}`;
+    await createMeetingViaApi(page, { title: `${tag} one` });
+    await createMeetingViaApi(page, { title: `${tag} two` });
+    await page.goto(`/meetings?q=${tag}`);
+    await expect(rows(page)).toHaveCount(2);
+    await page.getByLabel("Select all meetings").check();
+    await expect(page.getByRole("region", { name: "Selection" })).toContainText("2 selected");
+    await page
+      .getByRole("region", { name: "Selection" })
+      .getByRole("button", { name: "Delete" })
+      .click();
+    await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
+    await expect(page.getByText("2 meetings deleted")).toBeVisible();
+    await expect(rows(page)).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByText("No meetings match your filters")).toBeVisible();
+  });
+
   test("navbar: profile and settings placeholders, coming-soon features", async ({ page }) => {
     await page.goto("/meetings");
     await page.getByRole("button", { name: "Account menu" }).click();

@@ -24,6 +24,10 @@
   --success-soft: #f0fdf4;
   --warning: #b45309;
   --warning-soft: #fffbeb;
+  /* Secondary metadata (owner, date, time, duration, column headings): muted blue-gray, AA on surface. */
+  --meta: #5f6b7e;
+  --row-hover: #f8f7fc;
+  --rail: #fbfbfd;
   color-scheme: light;
 }
 
@@ -48,6 +52,9 @@
   --success-soft: #12301d;
   --warning: #fbbf24;
   --warning-soft: #36280c;
+  --meta: #9aa4b6;
+  --row-hover: #1c1d2b;
+  --rail: #13141e;
   color-scheme: dark;
 }
 
@@ -71,6 +78,9 @@
   --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
+  --color-meta: var(--meta);
+  --color-row-hover: var(--row-hover);
+  --color-rail: var(--rail);
   --font-sans: var(--font-inter);
 }
 
@@ -113,4 +123,36 @@ body {
 
 input[type="range"].seek {
   accent-color: var(--primary);
+}
+
+/* Library typography — one definition for the date groups, table headings and metadata in both themes. */
+.type-group-heading {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--text);
+}
+.type-group-count {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--meta);
+}
+.type-col-heading {
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--meta);
+}
+.type-row-title {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--text);
+}
+.type-meta {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--meta);
 }

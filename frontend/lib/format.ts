@@ -34,32 +34,41 @@ export function formatDate(iso: string): string {
   });
 }
 
-function startOfDay(date: Date): number {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-}
-
 /** Library group heading: "Today", "Yesterday" or "Mon, Oct 5". */
-export function dayLabel(iso: string, now: Date = new Date()): string {
-  const days = Math.round((startOfDay(now) - startOfDay(new Date(iso))) / 86_400_000);
-  if (days === 0) return "Today";
-  if (days === 1) return "Yesterday";
+const shortDay = (date: Date) =>
+  date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+/** Library date column, e.g. "Wed, Oct 7". */
+export function formatShortDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
-    ...(new Date(iso).getFullYear() !== now.getFullYear() ? { year: "numeric" } : {}),
   });
 }
 
-/** Groups items (already sorted) by local calendar day, keeping order. */
-export function groupByDay<T>(
+/** Sunday that starts the local calendar week containing `date`. */
+function startOfWeek(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay());
+}
+
+/** Fireflies-style week heading: "Oct 4 – Today" for this week, "Sep 27 – Oct 3, 2026" before. */
+export function weekLabel(iso: string, now: Date = new Date()): string {
+  const start = startOfWeek(new Date(iso));
+  if (start.getTime() === startOfWeek(now).getTime()) return `${shortDay(start)} – Today`;
+  const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+  return `${shortDay(start)} – ${shortDay(end)}, ${end.getFullYear()}`;
+}
+
+/** Groups items (already sorted) by calendar week, keeping order. */
+export function groupByWeek<T>(
   items: T[],
   getDate: (item: T) => string,
   now: Date = new Date(),
 ): { label: string; items: T[] }[] {
   const groups: { label: string; items: T[] }[] = [];
   for (const item of items) {
-    const label = dayLabel(getDate(item), now);
+    const label = weekLabel(getDate(item), now);
     const last = groups.at(-1);
     if (last && last.label === label) last.items.push(item);
     else groups.push({ label, items: [item] });
