@@ -1,0 +1,35 @@
+# Kafka (KRaft, single node) on the Fly private network: lumen-kafka-mg.internal:9092.
+# Deploy from the repo root:  flyctl deploy --config deploy/fly/kafka.toml
+app = "lumen-kafka-mg"
+primary_region = "sin"
+
+[build]
+  dockerfile = "kafka.Dockerfile"
+
+[env]
+  CLUSTER_ID = "Lm9wZW5LYWZrYUx1bWVuMQ"
+  KAFKA_NODE_ID = "1"
+  KAFKA_PROCESS_ROLES = "broker,controller"
+  KAFKA_LISTENERS = "PLAINTEXT://[::]:9092,CONTROLLER://[::]:9093"
+  KAFKA_ADVERTISED_LISTENERS = "PLAINTEXT://lumen-kafka-mg.internal:9092"
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP = "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+  KAFKA_INTER_BROKER_LISTENER_NAME = "PLAINTEXT"
+  KAFKA_CONTROLLER_LISTENER_NAMES = "CONTROLLER"
+  KAFKA_CONTROLLER_QUORUM_VOTERS = "1@localhost:9093"
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR = "1"
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR = "1"
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR = "1"
+  KAFKA_NUM_PARTITIONS = "3"
+  KAFKA_AUTO_CREATE_TOPICS_ENABLE = "true"
+  # A subdirectory: a fresh volume contains lost+found, which Kafka would reject as a log dir.
+  KAFKA_LOG_DIRS = "/var/lib/kafka/data/logs"
+  KAFKA_HEAP_OPTS = "-Xms512m -Xmx512m"
+
+[mounts]
+  source = "kafka_data"
+  destination = "/var/lib/kafka/data"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "1gb"
