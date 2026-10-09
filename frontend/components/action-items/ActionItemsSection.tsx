@@ -65,10 +65,10 @@ export function ActionItemsSection({
   };
 
   return (
-    <section className="border-b border-border px-5 py-4" aria-label="Action items">
-      <div className="mb-2.5 flex items-center gap-2">
+    <section className="py-4" aria-label="Action items">
+      <div className="mb-2 flex items-center gap-2">
         <CheckSquare size={15} className="text-primary" />
-        <h3 className="text-[13.5px] font-semibold">Action items</h3>
+        <h3 className="text-[14px] font-semibold text-text">Action items</h3>
         {items && items.length > 0 && (
           <span className="text-[12px] text-muted">
             {open} open · {items.length - open} done

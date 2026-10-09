@@ -152,62 +152,68 @@ export const TranscriptPanel = memo(
 
     return (
       <div className="flex h-full min-h-0 flex-col">
-        <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-4">
-          {/* On phones the tab bar already says "Transcript". */}
-          <h2 className="hidden text-[14px] font-semibold lg:block">Transcript</h2>
-          <div className="relative ml-auto w-full max-w-72">
-            <Search
-              size={14}
-              className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-subtle"
-            />
-            <input
-              ref={searchInput}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onKeyDown={onSearchKey}
-              placeholder="Find in transcript"
-              aria-label="Find in transcript"
-              className="h-8 w-full rounded-lg border border-border bg-surface-muted pl-8 pr-24 text-[13px] outline-none focus:border-primary focus:bg-surface focus:ring-2 focus:ring-primary-ring"
-            />
-            {query.trim() && (
-              <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center">
-                <span
-                  className="tabular px-1 text-[11.5px] text-muted"
-                  data-testid="match-count"
-                  aria-live="polite"
-                >
-                  {matches.length ? `${current + 1} / ${matches.length}` : "0 / 0"}
-                </span>
-                <button
-                  type="button"
-                  aria-label="Previous match"
-                  onClick={() => step(-1)}
-                  disabled={!matches.length}
-                  className="rounded p-0.5 text-muted hover:text-text disabled:opacity-40"
-                >
-                  <ChevronUp size={14} />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Next match"
-                  onClick={() => step(1)}
-                  disabled={!matches.length}
-                  className="rounded p-0.5 text-muted hover:text-text disabled:opacity-40"
-                >
-                  <ChevronDown size={14} />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Clear search"
-                  onClick={() => setQuery("")}
-                  className="rounded p-0.5 text-muted hover:text-text"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            )}
+        <div className="shrink-0 border-b border-border">
+          {/* Phones: the tab bar already names the panel, and panels can't be expanded. */}
+          <div className="hidden h-11 items-center px-4 lg:flex">
+            <h2 className="text-[13.5px] font-semibold text-primary">Transcript</h2>
+            <span className="ml-auto">
+              <PanelExpandButton panel="transcript" expanded={expanded} onToggle={onToggleExpand} />
+            </span>
           </div>
-          <PanelExpandButton panel="transcript" expanded={expanded} onToggle={onToggleExpand} />
+          <div className="px-3 py-2.5 lg:pt-0">
+            <div className="relative w-full">
+              <Search
+                size={14}
+                className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-subtle"
+              />
+              <input
+                ref={searchInput}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={onSearchKey}
+                placeholder="Find in transcript"
+                aria-label="Find in transcript"
+                className="h-8 w-full rounded-lg border border-border bg-surface-muted pl-8 pr-24 text-[13px] outline-none focus:border-primary focus:bg-surface focus:ring-2 focus:ring-primary-ring"
+              />
+              {query.trim() && (
+                <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center">
+                  <span
+                    className="tabular px-1 text-[11.5px] text-muted"
+                    data-testid="match-count"
+                    aria-live="polite"
+                  >
+                    {matches.length ? `${current + 1} / ${matches.length}` : "0 / 0"}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label="Previous match"
+                    onClick={() => step(-1)}
+                    disabled={!matches.length}
+                    className="rounded p-0.5 text-muted hover:text-text disabled:opacity-40"
+                  >
+                    <ChevronUp size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Next match"
+                    onClick={() => step(1)}
+                    disabled={!matches.length}
+                    className="rounded p-0.5 text-muted hover:text-text disabled:opacity-40"
+                  >
+                    <ChevronDown size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Clear search"
+                    onClick={() => setQuery("")}
+                    className="rounded p-0.5 text-muted hover:text-text"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {query.trim() && matches.length === 0 && (
@@ -222,7 +228,7 @@ export const TranscriptPanel = memo(
         <div className="relative min-h-0 flex-1">
           <div
             ref={scroller}
-            className="h-full overflow-y-auto px-2 pb-6 sm:px-3"
+            className="h-full overflow-y-auto px-2 pb-6 pt-1"
             onWheel={markManualScroll}
             onTouchMove={markManualScroll}
             onKeyDown={markManualScroll}
