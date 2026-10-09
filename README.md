@@ -55,11 +55,31 @@ persists in SQLite.
 separate AI service via Kafka and the page updates itself ("Generating notes…" → toast "Your meeting notes are ready";
 failures show the reason and a Retry button).
 
-**Fireflies experience** — sidebar + top bar navigation, dialogs, popovers, toasts for every action, loading /
-empty / error states everywhere, settings (Profile, Appearance, and placeholder Notifications, Integrations and Team tabs) and "Coming soon"
+**Fireflies experience** — a narrow icon rail plus a contextual Meetings sidebar, compact one-line toolbars, a
+white de-boxed canvas, dialogs, popovers, toasts for every action, loading / empty / error states everywhere, a Lumen
+favicon, Light theme by default (Dark and System in Settings), settings (Profile, Appearance, and placeholder Notifications, Integrations and Team tabs) and "Coming soon"
 dialogs for the live meeting bot, integrations, analytics and team sharing. Works down to phone width.
 
 **Bonus** (only after every must-have is done): see [docs/BONUS_FEATURES.md](docs/BONUS_FEATURES.md).
+
+### Assignment requirements at a glance
+Where to find each core requirement from the brief. Every row is covered by an automated test
+([docs/TEST_COVERAGE_MATRIX.md](docs/TEST_COVERAGE_MATRIX.md)) and was re-checked by hand in the running app.
+
+| Brief | Where in the app |
+|-------|------------------|
+| Meetings list: title, date, duration, participants | `/meetings` table (Meeting · Date · Time · Duration; participants under the title) |
+| Search / filter by title, date, participant; sort by recency | Filter bar above the table: *Search by title*, *Any time*, *Participants*, *Newest first* |
+| Navbar with profile / settings placeholders | Avatar menu (top right) → Profile, Settings; Settings tabs |
+| Transcript with speaker labels and timestamps | Meeting page, right column |
+| Media player with a seek bar | Player docked at the bottom of a meeting (simulated playback clock) |
+| Click a line → seek, and vice versa | Click any transcript line, outline chapter or action-item time; drag the seek bar or press Play to see the active line follow |
+| Search within the transcript with highlights | *Find in transcript* (`/`), with n / m counter and ↑ / ↓ |
+| AI summary, action items, outline / chapters | Notes column: Keywords, Overview, Outline, Action items, Talk time |
+| Create (upload / paste / form), edit, delete | *New meeting* dialog (3 tabs); meeting ⋯ → Edit details / Delete; row ⋯ in the library |
+| Add / edit / complete action items | Action items section (+ Add, hover → edit / delete, checkbox) |
+| Everything persists | SQLite; survives refresh and restarts |
+| Toasts, modals, forms, settings placeholders | Every mutation shows a toast; Coming-soon dialogs for live bot, integrations, team |
 
 ## Tech Stack
 | Layer | Choice |
@@ -294,7 +314,7 @@ not chosen yet; that is the author's decision, and **nothing is deployed**.
 ## Troubleshooting
 | Symptom | Cause and fix |
 |---------|---------------|
-| Notes stay "Generating notes…" | The AI service or Kafka isn't running, or the modes don't match. Check `http://localhost:8001/health` and `docker compose ps`; both services must use the same `PROCESSING_MODE` (and the same token in `http` mode). Requests wait safely in the outbox and are processed once the broker is back |
+| Notes stay "Generating notes…" | **Most common cause:** the two services use different `PROCESSING_MODE`s. Running `docker compose up … ai-service` (for example for the Kafka tests) puts the Docker AI service on port 8001 in `kafka` mode, so a native Meeting Service started in `http` mode gets 404s from `/internal/process`. Run the Meeting Service in `kafka` mode as well (the default), or stop the container and start the AI service natively in `http` mode. Otherwise the AI service or Kafka isn't running, or the modes don't match. Check `http://localhost:8001/health` and `docker compose ps`; both services must use the same `PROCESSING_MODE` (and the same token in `http` mode). Requests wait safely in the outbox and are processed once the broker is back |
 | Meeting Service exits on start: `INTERNAL_API_TOKEN` | `http` mode needs the token set in both `.env` files (Option C) |
 | Library shows "Couldn't load meetings" | The Meeting Service isn't reachable at `NEXT_PUBLIC_API_URL` (default `http://localhost:8000`), or the frontend's origin isn't in `CORS_ORIGINS`. Restart `npm run dev` after editing `.env.local` |
 | `port is already allocated` from Docker | Another process uses 9092, 8000 or 8001. Stop it, or stop the native services before Option A |

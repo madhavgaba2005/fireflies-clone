@@ -81,6 +81,28 @@ export function useActionItems(id: number) {
   return useQuery({ queryKey: keys.actionItems(id), queryFn: () => api.listActionItems(id) });
 }
 
+/**
+ * Drops a deleted meeting's cached query. If the meeting page is still mounted (deleting from
+ * the workspace navigates away a moment later), removing it now would make that page refetch
+ * the deleted meeting and log 404s; so wait until nothing observes it any more.
+ */
+function forgetWhenUnused(client: QueryClient, queryKey: readonly unknown[]) {
+  const cache = client.getQueryCache();
+  const query = cache.find({ queryKey, exact: true });
+  if (!query) return;
+  if (query.getObserversCount() === 0) {
+    cache.remove(query);
+    return;
+  }
+  void client.cancelQueries({ queryKey, exact: true });
+  const unsubscribe = cache.subscribe((event) => {
+    if (event.query === query && event.type === "observerRemoved" && !query.getObserversCount()) {
+      unsubscribe();
+      cache.remove(query);
+    }
+  });
+}
+
 function invalidateMeetingLists(client: QueryClient) {
   return Promise.all([
     client.invalidateQueries({ queryKey: keys.meetings() }),
@@ -124,7 +146,7 @@ export function useDeleteMeeting() {
         keys.summary(id),
         keys.actionItems(id),
       ]) {
-        client.removeQueries({ queryKey: key });
+        forgetWhenUnused(client, key);
       }
       return invalidateMeetingLists(client);
     },
