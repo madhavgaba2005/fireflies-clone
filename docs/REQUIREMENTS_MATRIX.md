@@ -104,7 +104,7 @@ Code existing is **not** enough.
 | B3 | Global search across all meetings | BONUS | `GET /api/search?q=` (escaped LIKE over titles + transcript lines, grouped per meeting, snippets) → top-bar combobox → deep link `?t=…&find=…` | `test_search_api.py` (12); E2E `global-search.spec.ts` | Top-bar search finds a phrase in any meeting, deep-links to the moment | ✅ |
 | B4 | Tags / topics and filtering by them | BONUS | AI keywords (`summary_keywords`) are the tags; `GET /api/meetings?keyword=`; chips on rows and notes filter the library | `test_filter_by_keyword_tag`; E2E keyword-chip test | Click a chip → filtered library | ✅ |
 | B5 | LLM-powered "ask a question about this meeting" chat | BONUS | "AskFred"-style panel; `LLMProvider` if key present, else keyword-retrieval answer | Unit; manual | Ask question → answer with cited timestamps | ⏸ |
-| B6 | Dark mode | BONUS | Dark token values under `.dark`; account-menu toggle; localStorage + `prefers-color-scheme` default; pre-paint script | `lib/theme.test.ts`; E2E `dark-mode.spec.ts` | Toggle → dark theme, survives reload | ✅ |
+| B6 | Dark mode | BONUS | Dark token values under `.dark`; account-menu toggle; Light default, saved System / Light / Dark choice (System follows `prefers-color-scheme`); pre-paint script | `lib/theme.test.ts`; E2E `dark-mode.spec.ts` | Toggle → dark theme, survives reload | ✅ |
 
 ## 8. Technical Stack & Important Notes (constraints)
 

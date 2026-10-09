@@ -17,5 +17,5 @@ export function useTheme(): Theme {
 
 /** What the user chose: system, light or dark. */
 export function useThemePreference(): ThemePreference {
-  return useSyncExternalStore(subscribeToTheme, currentPreference, () => "system");
+  return useSyncExternalStore(subscribeToTheme, currentPreference, () => "light");
 }

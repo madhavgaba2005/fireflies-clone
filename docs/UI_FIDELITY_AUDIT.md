@@ -77,6 +77,25 @@ and 390 px.
 Kept unchanged: search, date and participant filters, sorting, tags, detail navigation, edit and delete, the API and
 database, dark mode.
 
+## Meeting page and de-boxing (against a Fireflies meeting screenshot)
+
+The meeting page was still a full-width header over two equal-feeling panels, with bordered section blocks and
+card-like transcript messages. Every meeting uses the same workspace component; it was verified on three seeded
+meetings (own title, participants, transcript, notes and action items each).
+
+| # | Change |
+|---|--------|
+| C1 | On meeting routes the global toolbar gives way to a one-line **meeting toolbar**: ← and the breadcrumb `All meetings › Title` on the left; a purple **Share**, copy link, ⋯ (edit, regenerate, download, delete), notifications and the avatar on the right. Global search and New meeting stay on the library and settings toolbars |
+| C2 | **Notes are the primary column (~73 %)** with the title and metadata at the top. The transcript gets `clamp(320px, 27%, 460px)`. Both panels scroll independently, the player stays docked, and the expand buttons still focus either panel |
+| C3 | **De-boxed notes:** no section borders or blocks. Keywords, Overview, Outline and Action items are marked by small purple icons, 14 px headings and spacing on one white canvas, in a centred reading column (≤ 860 px). "Notes ready" is quiet muted text; only the in-progress and failed states use a coloured pill |
+| C4 | **Transcript as a continuous conversation:** a compact header with the search on its own row, 20 px avatars, 12.5 px names, 13.5 px text, tighter spacing. Only the active line gets a soft tint with a 2 px accent |
+| C5 | **Settings de-boxed:** the content card is gone (a thin divider separates it from the tabs), and integrations are a divided list instead of tiles. Controls such as the theme radio cards keep their borders for usability |
+| C6 | Tablet keeps both columns (transcript at 320 px). Phones use the Notes / Transcript tabs and a compact toolbar (☰, ←, title, Share, copy link, ⋯); notifications and the avatar are in the drawer. No horizontal overflow |
+
+**Favicon:** `frontend/app/icon.svg` is the Lumen spark on a purple tile (original, simplified for 16 px). The App
+Router emits `<link rel="icon" href="/icon.svg…" type="image/svg+xml">`, served as `image/svg+xml`. Previously the
+app had no favicon at all.
+
 ## Known differences (accepted)
 
 - **No real audio or video.** The player is a simulated clock behind the `PlaybackClock` interface, which the PDF

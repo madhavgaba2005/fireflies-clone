@@ -36,7 +36,9 @@ Meeting / Date / Time / Duration columns, participants, open action items and ke
 multi-select with bulk delete · debounced title search (also from the top bar) · date presets and custom range · participant filter ·
 newest/oldest sort · tag filter · filters live in the URL, so links and refreshes keep them.
 
-**Meeting workspace** (Fireflies' "Notepad") — notes on the left, transcript on the right, player docked below:
+**Meeting workspace** (Fireflies' meeting view): a one-line toolbar (breadcrumb, purple Share, copy link, ⋯), the AI
+notes as the main column (~73 %) with the title on top, a compact transcript column on the right, and the player
+docked below:
 - **Transcript:** speaker-coloured avatars and names, timestamps, grouped consecutive lines.
 - **Transcript ⇄ player:** click a line, chapter or action-item timestamp and the player seeks there and plays;
   playback or dragging the seek bar highlights the active line and scrolls it into view (pausing for a few seconds
@@ -322,7 +324,7 @@ Built only after every MUST-have was verified; details and tests in [docs/BONUS_
 |---|---|
 | Global search across all meetings | Top-bar search; results deep-link to the exact transcript moment |
 | Export (TXT / Markdown) | Meeting ⋯ menu → **Download**: transcript or AI notes, with timestamp/speaker options |
-| Dark mode | Settings → **Appearance**: System / Light / Dark (System follows the OS live); quick toggle in the account menu |
+| Dark mode | Light by default for new visitors. Settings → **Appearance**: System / Light / Dark (saved per browser; System follows the OS live); quick toggle in the account menu |
 | Tags | AI keywords appear as chips on meetings and in notes; clicking one filters the library |
 
 Deferred on purpose: comments on transcript lines and an "Ask" chat (a convincing chat needs a real LLM; see

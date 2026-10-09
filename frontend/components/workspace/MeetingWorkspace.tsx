@@ -31,30 +31,47 @@ import { findActiveSegmentIndex, playbackDurationMs } from "@/lib/transcript";
 import type { ProcessingStatus, Segment } from "@/lib/types";
 
 import { ExportDialog } from "./ExportDialog";
-import { MeetingHeader } from "./MeetingHeader";
+import { MeetingActions, MeetingToolbar } from "./MeetingHeader";
 
 const NO_SEGMENTS: Segment[] = [];
 const ARROW_SEEK_MS = 5000;
 
 function WorkspaceSkeleton() {
   return (
-    <div className="flex h-full flex-col" aria-label="Loading meeting">
-      <div className="border-b border-border bg-surface px-6 py-4">
-        <Skeleton className="h-5 w-72" />
-        <Skeleton className="mt-2 h-3 w-96" />
+    <div
+      className="grid min-h-0 flex-1 bg-surface lg:grid-cols-[minmax(0,1fr)_clamp(320px,27%,460px)]"
+      aria-label="Loading meeting"
+    >
+      <div className="mx-auto w-full max-w-[860px] space-y-3 px-6 py-6 lg:px-12">
+        <Skeleton className="h-6 w-72" />
+        <Skeleton className="h-3 w-96" />
+        {Array.from({ length: 6 }, (_, i) => (
+          <Skeleton key={i} className="h-3 w-full" />
+        ))}
       </div>
-      <div className="grid flex-1 gap-0 lg:grid-cols-[minmax(340px,42%)_1fr]">
-        <div className="space-y-3 border-r border-border bg-surface p-5">
-          {Array.from({ length: 6 }, (_, i) => (
-            <Skeleton key={i} className="h-3 w-full" />
-          ))}
-        </div>
-        <div className="space-y-4 p-5">
-          {Array.from({ length: 8 }, (_, i) => (
-            <Skeleton key={i} className="h-4 w-11/12" />
-          ))}
-        </div>
+      <div className="hidden space-y-4 border-l border-border p-5 lg:block">
+        {Array.from({ length: 8 }, (_, i) => (
+          <Skeleton key={i} className="h-4 w-11/12" />
+        ))}
       </div>
+    </div>
+  );
+}
+
+/** Every state of the page keeps the meeting toolbar, so navigation never disappears. */
+function Frame({
+  title,
+  actions,
+  children,
+}: {
+  title?: string;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex h-full flex-col bg-surface">
+      <MeetingToolbar title={title} actions={actions} />
+      {children}
     </div>
   );
 }
@@ -167,29 +184,41 @@ export function MeetingWorkspace({ id }: { id: number }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [clock]);
 
-  if (meetingQuery.isPending) return <WorkspaceSkeleton />;
+  if (meetingQuery.isPending)
+    return (
+      <Frame>
+        <WorkspaceSkeleton />
+      </Frame>
+    );
 
   if (meetingQuery.isError) {
     const notFound = meetingQuery.error instanceof ApiError && meetingQuery.error.status === 404;
-    return notFound ? (
-      <EmptyState
-        icon={FileQuestion}
-        title="Meeting not found"
-        description="It may have been deleted, or the link is wrong."
-        action={
-          <Link href="/meetings" className="text-[13px] font-semibold text-primary hover:underline">
-            Back to meetings
-          </Link>
-        }
-        className="h-full"
-      />
-    ) : (
-      <ErrorState
-        error={meetingQuery.error}
-        title="Couldn't load this meeting"
-        onRetry={() => meetingQuery.refetch()}
-        className="h-full justify-center"
-      />
+    return (
+      <Frame>
+        {notFound ? (
+          <EmptyState
+            icon={FileQuestion}
+            title="Meeting not found"
+            description="It may have been deleted, or the link is wrong."
+            action={
+              <Link
+                href="/meetings"
+                className="text-[13px] font-semibold text-primary hover:underline"
+              >
+                Go to all meetings
+              </Link>
+            }
+            className="h-full"
+          />
+        ) : (
+          <ErrorState
+            error={meetingQuery.error}
+            title="Couldn't load this meeting"
+            onRetry={() => meetingQuery.refetch()}
+            className="h-full justify-center"
+          />
+        )}
+      </Frame>
     );
   }
 
@@ -222,14 +251,17 @@ export function MeetingWorkspace({ id }: { id: number }) {
   );
 
   return (
-    <div className="flex h-full flex-col">
-      <MeetingHeader
-        meeting={loaded}
-        onDownload={() => setDownloading(true)}
-        onEdit={() => setEditing(true)}
-        onDelete={() => setDeleting(true)}
-      />
-
+    <Frame
+      title={loaded.title}
+      actions={
+        <MeetingActions
+          meeting={loaded}
+          onDownload={() => setDownloading(true)}
+          onEdit={() => setEditing(true)}
+          onDelete={() => setDeleting(true)}
+        />
+      }
+    >
       <div
         role="tablist"
         aria-label="Workspace panels"
@@ -255,14 +287,13 @@ export function MeetingWorkspace({ id }: { id: number }) {
       <div
         className={cn(
           "grid min-h-0 flex-1",
-          focusedPanel ? "lg:grid-cols-1" : "lg:grid-cols-[minmax(340px,42%)_1fr]",
+          focusedPanel ? "lg:grid-cols-1" : "lg:grid-cols-[minmax(0,1fr)_clamp(320px,27%,460px)]",
         )}
       >
         <div
           data-testid="notes-panel"
           className={cn(
             "min-h-0 bg-surface",
-            !focusedPanel && "lg:border-r lg:border-border",
             mobileTab === "notes" ? "block" : "hidden",
             focusedPanel === "transcript" ? "lg:hidden" : "lg:block",
           )}
@@ -280,7 +311,8 @@ export function MeetingWorkspace({ id }: { id: number }) {
         <div
           data-testid="transcript-panel"
           className={cn(
-            "min-h-0 bg-bg",
+            "min-h-0 bg-surface",
+            !focusedPanel && "lg:border-l lg:border-border",
             mobileTab === "transcript" ? "block" : "hidden",
             focusedPanel === "notes" ? "lg:hidden" : "lg:block",
           )}
@@ -308,6 +340,6 @@ export function MeetingWorkspace({ id }: { id: number }) {
           onDeleted={() => router.push("/meetings")}
         />
       )}
-    </div>
+    </Frame>
   );
 }

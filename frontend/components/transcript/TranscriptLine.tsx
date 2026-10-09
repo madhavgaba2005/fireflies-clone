@@ -35,20 +35,20 @@ export const TranscriptLine = memo(function TranscriptLine({
       data-active={active || undefined}
       aria-current={active ? "true" : undefined}
       className={cn(
-        "group relative flex gap-3 rounded-lg border-l-[3px] px-3 transition-colors",
-        showSpeaker ? "mt-3 pt-2.5 pb-2" : "py-1.5",
-        active ? "border-primary bg-primary-soft" : "border-transparent hover:bg-surface-muted",
+        "group relative flex gap-2.5 rounded-md border-l-2 px-2.5 transition-colors",
+        showSpeaker ? "mt-1.5 pb-1.5 pt-2" : "py-1",
+        active ? "border-primary bg-primary-soft/60" : "border-transparent hover:bg-surface-muted",
       )}
     >
-      <div className="w-9 shrink-0 pt-0.5">
+      <div className="w-7 shrink-0 pt-px">
         {showSpeaker ? (
-          <Avatar id={segment.speaker.id} name={segment.speaker.name} />
+          <Avatar id={segment.speaker.id} name={segment.speaker.name} size="xs" />
         ) : (
           // Continuation lines keep their time in the gutter, so every line shows when it was said.
           <span
             aria-hidden
             onClick={() => onSelect(segment)}
-            className="tabular block cursor-pointer pt-0.5 text-[11px] font-medium text-subtle group-hover:text-primary"
+            className="tabular block cursor-pointer pt-0.5 text-[10.5px] font-medium text-subtle group-hover:text-primary"
           >
             {time}
           </span>
@@ -58,7 +58,7 @@ export const TranscriptLine = memo(function TranscriptLine({
         {showSpeaker && (
           <div className="mb-0.5 flex items-center gap-2">
             <span
-              className="text-[13px] font-semibold"
+              className="text-[12.5px] font-semibold"
               style={{ color: speakerColor(segment.speaker.id) }}
             >
               {segment.speaker.name}
@@ -76,7 +76,7 @@ export const TranscriptLine = memo(function TranscriptLine({
         <button
           type="button"
           onClick={() => onSelect(segment)}
-          className="block w-full text-left text-[14px] leading-relaxed text-text"
+          className="block w-full text-left text-[13.5px] leading-[1.6] text-text"
           aria-label={`Play from ${time}: ${segment.text}`}
         >
           {fragments

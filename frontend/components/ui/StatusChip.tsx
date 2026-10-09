@@ -10,22 +10,26 @@ const config: Record<
   not_requested: null,
   pending: {
     label: "Generating notes",
-    className: "bg-primary-soft text-primary",
+    className: "bg-primary-soft px-2 text-primary",
     icon: Loader2,
     spin: true,
   },
   processing: {
     label: "Generating notes",
-    className: "bg-primary-soft text-primary",
+    className: "bg-primary-soft px-2 text-primary",
     icon: Loader2,
     spin: true,
   },
   completed: {
     label: "Notes ready",
-    className: "bg-success-soft text-success",
+    className: "text-meta", // the normal state stays quiet: no badge background
     icon: CheckCircle2,
   },
-  failed: { label: "Notes failed", className: "bg-danger-soft text-danger", icon: AlertCircle },
+  failed: {
+    label: "Notes failed",
+    className: "bg-danger-soft px-2 text-danger",
+    icon: AlertCircle,
+  },
 };
 
 /** Visible state of the asynchronous AI pipeline. `hideCompleted` keeps busy lists calm. */
@@ -43,7 +47,7 @@ export function StatusChip({
     <span
       data-status={status}
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
+        "inline-flex items-center gap-1 rounded-full py-0.5 text-[11px] font-medium",
         entry.className,
       )}
     >

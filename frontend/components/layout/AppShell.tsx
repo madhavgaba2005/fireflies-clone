@@ -9,6 +9,7 @@ import { CreateMeetingProvider } from "./CreateMeetingContext";
 import { IconRail } from "./IconRail";
 import { MeetingsSidebar } from "./MeetingsSidebar";
 import { NavDrawer } from "./NavDrawer";
+import { OpenNavDrawerContext } from "./ShellContext";
 import { TopBar } from "./TopBar";
 
 /**
@@ -19,6 +20,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false); // closed by the drawer's own navigation clicks
   const isLibrary = pathname === "/meetings";
+  // Meeting pages render their own compact toolbar (breadcrumb + meeting actions) instead.
+  const isMeeting = /^\/meetings\/[^/]+$/.test(pathname);
 
   return (
     <ComingSoonProvider>
@@ -34,8 +37,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
           {drawerOpen && <NavDrawer onClose={() => setDrawerOpen(false)} />}
           <div className="flex min-w-0 flex-1 flex-col">
-            <TopBar onOpenMenu={() => setDrawerOpen(true)} />
-            <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+            {!isMeeting && <TopBar onOpenMenu={() => setDrawerOpen(true)} />}
+            <OpenNavDrawerContext.Provider value={() => setDrawerOpen(true)}>
+              <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+            </OpenNavDrawerContext.Provider>
           </div>
         </div>
       </CreateMeetingProvider>

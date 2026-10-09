@@ -64,7 +64,8 @@ locally run `docker compose up -d` plus `npm run dev` (README "Local Setup").
 1. **Global search** in the top bar: type `geocoding`. Results are grouped by meeting with highlighted snippets.
    Clicking one deep-links to that moment, with the player seeked and the transcript search pre-filled.
 2. **⋯ → Download**: export the transcript as TXT (with timestamps and speakers) or the notes as Markdown.
-3. **Settings → Appearance**: pick Dark, reload to show it persists, then pick System (it follows the OS).
+3. **Settings → Appearance**: the app starts in Light; pick Dark, reload to show it persists, then pick System
+   (it follows the OS).
    The account menu has a quick light/dark toggle too.
 
 ## 7. Engineering, if there's time (≈1 min)

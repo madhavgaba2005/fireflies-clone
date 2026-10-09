@@ -24,18 +24,20 @@ test.describe("Dark mode (bonus)", () => {
     expect(await background(page)).toBe(light);
   });
 
-  test("follows the system preference when no choice is stored", async ({ browser }) => {
+  test("a fresh visit is light even when the OS prefers dark", async ({ browser }) => {
     const context = await browser.newContext({ colorScheme: "dark" });
     const page = await context.newPage();
     await page.goto("/meetings");
-    await expect(page.locator("html")).toHaveClass(/dark/);
+    await expect(page.locator("html")).not.toHaveClass(/dark/);
+    expect(await page.evaluate(() => localStorage.getItem("lumen-theme"))).toBeNull(); // nothing forced
     await context.close();
   });
+
   test("settings offer System, Light and Dark; System follows the OS live", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto("/settings?tab=appearance");
     const option = (name: string) => page.getByRole("radio", { name: new RegExp(`^${name}`) });
-    await expect(option("System")).toHaveAttribute("aria-checked", "true");
+    await expect(option("Light")).toHaveAttribute("aria-checked", "true"); // the default
 
     await option("Dark").click();
     await expect(html(page)).toHaveClass(/dark/);

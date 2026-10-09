@@ -220,3 +220,18 @@ repository is also pending.
   the screenshots were judged.
 - Tests: 76 Vitest and 45 Playwright, all passing, including new tests for column alignment, week headings, the
   details popover and bulk delete. Lint, format, typecheck and production build are clean. The backend is unchanged.
+
+## Meeting workspace, favicon and Light default (#28)
+- **Meeting page:**
+  - A one-line meeting toolbar (breadcrumb, purple Share, copy link, ⋯, notifications, avatar).
+  - Notes as the main ~73 % column with the title on top; a compact 320–460 px transcript.
+  - De-boxed notes, transcript and Settings.
+  - Verified on three different seeded meetings at 1440, 1024 and 390 px.
+- **Favicon:** `app/icon.svg` added. The app previously had none.
+- **Theme:** Light is now the default when nothing is saved. System is stored explicitly when chosen. Saved
+  Light / Dark / System choices are respected, and the pre-paint script applies the same rule (no flash).
+- **Tests:** 76 Vitest and 45 Playwright, all passing.
+  - Theme unit and E2E tests updated to the new default rule: a fresh visit on a dark OS stays light, and nothing
+    is written to storage.
+  - A duplicate "Back to meetings" link on the not-found page (toolbar + empty state) was renamed to "Go to all
+    meetings".

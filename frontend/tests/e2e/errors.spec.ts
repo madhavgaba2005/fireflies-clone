@@ -47,7 +47,11 @@ test.describe("Error and loading states", () => {
     );
     await page.goto("/meetings");
     await page.getByRole("link", { name: "Weekly Product Sync" }).click();
-    const checkbox = page.getByRole("checkbox").first();
+    await expect(
+      page.getByRole("heading", { name: "Weekly Product Sync", level: 1 }),
+    ).toBeVisible();
+    // Target an action item's checkbox: the library also has checkboxes (row selection).
+    const checkbox = page.getByTestId("action-item").first().getByRole("checkbox");
     const before = await checkbox.isChecked();
     await checkbox.click();
     await expect(page.getByText("Couldn't update the action item")).toBeVisible();

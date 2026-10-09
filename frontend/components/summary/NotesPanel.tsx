@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Skeleton, errorMessage } from "@/components/ui/States";
 import { PanelExpandButton } from "@/components/ui/PanelExpandButton";
 import { StatusChip } from "@/components/ui/StatusChip";
+import { MeetingTitle } from "@/components/workspace/MeetingHeader";
 import { useRegenerateSummary } from "@/hooks/queries";
 import { cn, speakerColor } from "@/lib/colors";
 import { formatTimestamp } from "@/lib/format";
@@ -27,10 +28,10 @@ function Section({
   aside?: ReactNode;
 }) {
   return (
-    <section className="border-b border-border px-5 py-4 last:border-b-0">
-      <div className="mb-2.5 flex items-center gap-2">
+    <section className="py-4">
+      <div className="mb-2 flex items-center gap-2">
         <span className="text-primary">{icon}</span>
-        <h3 className="text-[13.5px] font-semibold">{title}</h3>
+        <h3 className="text-[14px] font-semibold text-text">{title}</h3>
         <div className="ml-auto">{aside}</div>
       </div>
       {children}
@@ -40,7 +41,7 @@ function Section({
 
 function GeneratingNotes() {
   return (
-    <div className="px-5 py-6" role="status" aria-live="polite">
+    <div className="py-6" role="status" aria-live="polite">
       <div className="mb-4 flex items-center gap-2 text-[13px] font-medium text-primary">
         <Loader2 size={15} className="animate-spin" /> Lumen is reading the transcript and writing
         your notes…
@@ -59,7 +60,7 @@ function GeneratingNotes() {
 function FailedNotes({ meeting }: { meeting: MeetingDetail }) {
   const regenerate = useRegenerateSummary(meeting.id);
   return (
-    <div role="alert" className="m-5 rounded-xl border border-danger/20 bg-danger-soft p-4">
+    <div role="alert" className="my-4 rounded-lg bg-danger-soft p-4">
       <div className="flex items-center gap-2 text-[13.5px] font-semibold text-danger">
         <AlertTriangle size={16} /> Notes couldn’t be generated
       </div>
@@ -110,7 +111,7 @@ function SummarySections({
         </Section>
       )}
       <Section icon={<FileText size={15} />} title="Overview">
-        <p className="text-[13.5px] leading-relaxed text-text" data-testid="overview">
+        <p className="text-[14px] leading-[1.7] text-text" data-testid="overview">
           {summary.overview}
         </p>
       </Section>
@@ -124,8 +125,8 @@ function SummarySections({
                   disabled={topic.start_ms === null}
                   onClick={() => topic.start_ms !== null && onSeek(topic.start_ms)}
                   className={cn(
-                    "flex w-full gap-3 rounded-lg px-2 py-2 text-left transition-colors",
-                    index === activeTopic ? "bg-primary-soft" : "hover:bg-surface-muted",
+                    "-mx-2 flex w-[calc(100%+1rem)] gap-3 rounded-md px-2 py-1.5 text-left transition-colors",
+                    index === activeTopic ? "bg-primary-soft/60" : "hover:bg-surface-muted",
                   )}
                 >
                   {topic.start_ms !== null && (
@@ -196,35 +197,38 @@ export const NotesPanel = memo(function NotesPanel({
   const status = meeting.processing_status;
   return (
     <div className="h-full overflow-y-auto">
-      <div className="flex h-14 items-center gap-2 border-b border-border px-5">
-        <Sparkles size={16} className="text-primary" />
-        <h2 className="text-[14px] font-semibold">AI meeting notes</h2>
-        <span className="ml-auto">
+      <div className="mx-auto w-full max-w-[860px] px-5 pb-10 pt-6 sm:px-8 lg:px-12">
+        <MeetingTitle meeting={meeting} />
+        <div className="flex items-center gap-2 border-b border-border pb-2.5">
+          <Sparkles size={15} className="text-primary" />
+          <h2 className="text-[13.5px] font-medium text-primary">AI meeting notes</h2>
           <StatusChip status={status} />
-        </span>
-        <PanelExpandButton panel="notes" expanded={expanded} onToggle={onToggleExpand} />
-      </div>
-
-      {status === "pending" || status === "processing" ? (
-        <GeneratingNotes />
-      ) : status === "failed" ? (
-        <FailedNotes meeting={meeting} />
-      ) : status === "not_requested" ? (
-        <p className="px-5 py-5 text-[13px] text-muted">
-          Notes are generated from a transcript. This meeting doesn’t have one yet — you can still
-          track action items below.
-        </p>
-      ) : summaryLoading ? (
-        <div className="space-y-2.5 px-5 py-6">
-          <Skeleton className="h-3 w-10/12" />
-          <Skeleton className="h-3 w-9/12" />
+          <span className="ml-auto">
+            <PanelExpandButton panel="notes" expanded={expanded} onToggle={onToggleExpand} />
+          </span>
         </div>
-      ) : summary ? (
-        <SummarySections summary={summary} activeTopic={activeTopic} onSeek={onSeek} />
-      ) : null}
 
-      <ActionItemsSection meeting={meeting} onSeek={onSeek} />
-      <TalkTime meeting={meeting} />
+        {status === "pending" || status === "processing" ? (
+          <GeneratingNotes />
+        ) : status === "failed" ? (
+          <FailedNotes meeting={meeting} />
+        ) : status === "not_requested" ? (
+          <p className="py-5 text-[13px] text-muted">
+            Notes are generated from a transcript. This meeting doesn’t have one yet — you can still
+            track action items below.
+          </p>
+        ) : summaryLoading ? (
+          <div className="space-y-2.5 py-6">
+            <Skeleton className="h-3 w-10/12" />
+            <Skeleton className="h-3 w-9/12" />
+          </div>
+        ) : summary ? (
+          <SummarySections summary={summary} activeTopic={activeTopic} onSeek={onSeek} />
+        ) : null}
+
+        <ActionItemsSection meeting={meeting} onSeek={onSeek} />
+        <TalkTime meeting={meeting} />
+      </div>
     </div>
   );
 });
