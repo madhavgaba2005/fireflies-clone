@@ -13,7 +13,8 @@ locally run `docker compose up -d` plus `npm run dev` (README "Local Setup").
 1. Point out the layout:
    - The sidebar (Meetings active, "Soon" badges on integrations, team and analytics).
    - The top bar (global search, *Add to live meeting*, *New meeting*, account menu).
-   - Meetings grouped by day, each showing title, time, duration, open action items, AI keyword tags and avatars.
+   - The meetings table, grouped by week with a count, and Date / Time / Duration columns; each row shows the title,
+     participants, open action items, AI keyword tags and avatars.
 2. Type `sprint` in **Search by title**. The list narrows, and the URL updates (refresh to show it persists).
 3. **Any time → Last 30 days**, then **Participants → Priya Sharma**. Filters combine. Click **Clear filters**.
 4. Click **Newest first** to show sort by recency.
@@ -71,8 +72,8 @@ locally run `docker compose up -d` plus `npm run dev` (README "Local Setup").
 - Mention the test suites:
   - 183 + 39 backend tests (97 % / 99 % coverage).
   - 3 tests against a real Kafka broker (incl. duplicate delivery applied once).
-  - 75 Vitest tests.
-  - 42 Playwright tests against the real services.
+  - 76 Vitest tests.
+  - 45 Playwright tests against the real services.
 - Repo tour: `backend/meeting-service/app/{routers,services,repositories,events}`, `backend/ai-service`,
   `frontend/{app,components,hooks,lib}`, `docs/adr/`.
 

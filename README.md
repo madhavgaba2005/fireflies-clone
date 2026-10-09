@@ -31,8 +31,9 @@ generated asynchronously by a separate AI Processing Service via Kafka.
   [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md).
 
 ## Features
-**Meetings library** — day-grouped list with title, time, duration, participants, open action items and keyword
-tags · debounced title search (also from the top bar) · date presets and custom range · participant filter ·
+**Meetings library** — a Fireflies-style meetings table: weekly groups ("Oct 4 – Today · 3 meetings") with aligned
+Meeting / Date / Time / Duration columns, participants, open action items and keyword tags, a details popover, and
+multi-select with bulk delete · debounced title search (also from the top bar) · date presets and custom range · participant filter ·
 newest/oldest sort · tag filter · filters live in the URL, so links and refreshes keep them.
 
 **Meeting workspace** (Fireflies' "Notepad") — notes on the left, transcript on the right, player docked below:
@@ -242,8 +243,8 @@ seed an empty database automatically.
 | Meeting Service — pytest | API, schema constraints, migrations, parser, seed, outbox relay, consumer, idempotent results | 183 passed · 97 % coverage |
 | Meeting Service — `pytest -m kafka` | Real broker: round trip, full pipeline through the AI service container, duplicate delivery applied once | 3 passed |
 | AI service — pytest | Mock provider heuristics, retries/failures, Kafka loop, HTTP endpoint auth | 39 passed · 99 % coverage |
-| Frontend — Vitest | Active-segment search, playback clock, transcript search, filters, formatting, export, theme | 75 passed |
-| Frontend — Playwright | Every must-have workflow plus bonuses in a real browser against the real stack | 42 passed |
+| Frontend — Vitest | Active-segment search, playback clock, transcript search, filters, formatting, export, theme | 76 passed |
+| Frontend — Playwright | Every must-have workflow plus bonuses in a real browser against the real stack | 45 passed |
 
 ```bash
 # Backend: unit + integration (each service's virtual environment active)
@@ -361,5 +362,5 @@ Captured from the running application (seeded data).
 | ![Filters](docs/screenshots/library-filters.png) | ![Mobile](docs/screenshots/mobile.png) |
 | **Dark mode — library** | **Dark mode — transcript expanded, searching** |
 | ![Dark library](docs/screenshots/dark-library.png) | ![Dark workspace](docs/screenshots/dark-workspace.png) |
-| **Settings → Appearance (System / Light / Dark)** | |
-| ![Appearance settings](docs/screenshots/settings-appearance.png) | |
+| **Settings → Appearance (System / Light / Dark)** | **Library at tablet width (1024 px)** |
+| ![Appearance settings](docs/screenshots/settings-appearance.png) | ![Library at 1024 px](docs/screenshots/library-1024.png) |

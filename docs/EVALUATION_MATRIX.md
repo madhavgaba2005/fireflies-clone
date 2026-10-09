@@ -16,7 +16,7 @@ Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = 
 
 | Evidence | Where | Req IDs | Status |
 |----------|-------|---------|--------|
-| Library lists meetings with title, date, duration, participants, grouped by day | `/meetings` — `fe/components/meetings/` | R1.1 | ✅ |
+| Library: a meetings table with title, participants, date, time and duration in aligned columns, grouped by week | `/meetings` — `fe/components/meetings/` | R1.1 | ✅ |
 | Title search, date presets + custom range, participant filter, sort, keyword tags — combinable and URL-synced | `/meetings?q=…&participant=…&date=7d` | R1.2–R1.5 | ✅ |
 | Transcript with speaker, avatar and timestamp per line | `/meetings/{id}` right panel | R2.1 | ✅ |
 | Player: play/pause, ±15 s, seek bar with speaker timeline, speed 0.75–2× | bottom player bar | R2.2 | ✅ |
@@ -27,7 +27,7 @@ Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = 
 | Create (upload .txt/.vtt/.json, paste, form), edit, delete | dialogs | R4.1–R4.5 | ✅ |
 | Add / edit / complete / uncomplete / delete action items | action items section | R4.6–R4.8 | ✅ |
 | Everything survives a refresh and a server restart | any | R4.9 | ✅ |
-| **Proof:** 42 Playwright tests drive all of the above against the real stack | `fe/tests/e2e/` | all | ✅ |
+| **Proof:** 45 Playwright tests drive all of the above against the real stack | `fe/tests/e2e/` | all | ✅ |
 
 ## 2. UI/UX
 
@@ -106,7 +106,7 @@ Paths: `ms/` = `backend/meeting-service`, `ai/` = `backend/ai-service`, `fe/` = 
 | `SummaryProvider` interface (mock today; LLM = one class) and one `MeetingProcessor` shared by Kafka and HTTP | `ai/app/providers`, `ai/app/processors` | ✅ |
 | Transcript parser module per format (txt / vtt / json) behind one function | `ms/app/services/transcript_parser.py` | ✅ |
 | `PlaybackClock` interface: simulated clock now, a media-element clock later — sync code unchanged | `fe/lib/playback.ts` | ✅ |
-| Pure, unit-tested logic outside JSX: active segment, search, filters, formatting | `fe/lib/*.ts` (75 Vitest tests) | ✅ |
+| Pure, unit-tested logic outside JSX: active segment, search, filters, formatting | `fe/lib/*.ts` (76 Vitest tests) | ✅ |
 | Reusable components: `Modal`, `Menu`, `Avatar(Stack)`, `StatusChip`, `EmptyState/ErrorState`, `ParticipantsInput`, `ActionItemEditor` (add + edit) | `fe/components/ui`, … | ✅ |
 | Server state in one place (TanStack Query hooks, targeted invalidation) | `fe/hooks/queries.ts` | ✅ |
 

@@ -48,7 +48,7 @@ author actions in §6. Until they're done, the PDF's deliverables are not met.
 
 ### Functionality
 - **Evidence:**
-  - 42 Playwright tests drive every MUST workflow against both real services and a production frontend build.
+  - 45 Playwright tests drive every MUST workflow against both real services and a production frontend build.
   - 183 + 39 backend tests, and 3 tests against a real Kafka broker.
   - The production stack was verified locally.
 - **Strengths:**
@@ -65,7 +65,7 @@ author actions in §6. Until they're done, the PDF's deliverables are not met.
     ready).
 
 ### UI/UX
-- **Evidence:** Fireflies-style sidebar, top bar and day-grouped library. Notepad workspace with notes and
+- **Evidence:** Fireflies-style shell (icon rail, contextual Meetings sidebar, compact toolbar) and a weekly-grouped meetings table with aligned columns. Notepad workspace with notes and
   transcript panels (each expandable), speaker colours, a docked player with a speaker timeline. Toasts; loading,
   empty and error states; responsive layout; System / Light / Dark. Screenshots are in the README.
 - **Strengths:** Information hierarchy and interaction patterns follow the Fireflies Notepad closely. Two recorded
@@ -135,8 +135,8 @@ author actions in §6. Until they're done, the PDF's deliverables are not met.
 | ai-service: ruff, format, mypy, pytest | Clean; **39 passed**; coverage **98.84 %** |
 | Event contract schemas | Identical in both services |
 | Frontend: lint, format, typecheck, production build | Clean |
-| Vitest | **75 passed** |
-| Playwright (both services + production build) | **42 passed** |
+| Vitest | **76 passed** |
+| Playwright (both services + production build) | **45 passed** |
 | CI workflow | Valid YAML, 4 jobs; commands verified locally; **not yet run on GitHub** |
 | Production stack (`deploy/`) through Caddy | Healthy; Kafka summary in about 2 s; CRUD; full-restart persistence; in-flight request survives a broker restart; no console errors |
 

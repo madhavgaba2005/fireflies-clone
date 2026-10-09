@@ -10,7 +10,7 @@ E2E tests run against the real stack (both FastAPI services + production fronten
 
 | Req | Requirement | Unit | Integration (API / DB) | E2E (browser) |
 |-----|-------------|------|------------------------|---------------|
-| R1.1 | List with title, date, duration, participants | — | ✓ `ms/integration/test_meetings_api.py::test_list_returns_required_fields_newest_first` | ✓ `library.spec` "lists meetings with title, date, duration and participants" |
+| R1.1 | List with title, date, duration, participants | ✓ `fe/lib/format.test.ts` (week grouping, date column) | ✓ `ms/integration/test_meetings_api.py::test_list_returns_required_fields_newest_first` | ✓ `library.spec` "lists meetings with title, date, duration and participants" |
 | R1.2 | Search by title | ✓ `fe/lib/format.test.ts` (URL round-trip) | ✓ `test_search_by_title_is_case_insensitive`, `test_search_treats_like_wildcards_literally` | ✓ "search by title narrows the list and survives a reload", "top-bar search…" |
 | R1.3 | Filter by date | ✓ `format.test.ts` "turns presets into inclusive day ranges" | ✓ `test_filter_by_date_range_is_inclusive`, `test_inverted_date_range_is_rejected` | ✓ "filter by date range" |
 | R1.4 | Filter by participant | — | ✓ `test_filter_by_participant_any_of`, `test_filters_combine` | ✓ "filter by participant" |
@@ -60,6 +60,9 @@ E2E tests run against the real stack (both FastAPI services + production fronten
 | Invalid payloads | ✓ `test_invalid_create_payloads_are_422` (9 cases), action-item `test_invalid_payloads` (5 cases) |
 | Stale UI after mutation | ✓ cache invalidation per mutation (`hooks/queries.ts`); every E2E CRUD test reloads |
 | Phone-width layout | ✓ E2E `responsive.spec` (no horizontal scroll, drawer, tabs) |
+| Table columns align with their headings; week groups show a count | ✓ E2E `library.spec` "meetings are grouped by week…" |
+| Row details popover; tag from details filters | ✓ E2E `library.spec` "row details show participants and tags…" |
+| Multi-select and bulk delete (persisted) | ✓ E2E `library.spec` "select meetings and delete them together" |
 | Expanded panel keeps sync working | ✓ E2E "notes or transcript can be expanded…" (click-to-seek while expanded) |
 
 ## Bonus features

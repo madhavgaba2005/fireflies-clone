@@ -43,8 +43,8 @@ cd frontend && npm run build && npm run test:e2e      # Playwright (needs `npx p
 | meeting-service unit + integration | 183 passed | 97 % (97.45 %) |
 | meeting-service `-m kafka` (real broker + AI container) | 3 passed (round trip, pipeline, duplicate delivery) | — |
 | ai-service unit + integration | 39 passed | 99 % (98.84 %) |
-| frontend Vitest | 75 passed | — |
-| frontend Playwright (real stack, production build) | 42 passed | — |
+| frontend Vitest | 76 passed | — |
+| frontend Playwright (real stack, production build) | 45 passed | — |
 
 Both backend suites were also run **in a clean `python:3.11-slim` Linux container** with exactly the CI job's
 commands (ruff, ruff format, mypy, pytest with the 90 % gate), and passed. This is the same OS and Python version as

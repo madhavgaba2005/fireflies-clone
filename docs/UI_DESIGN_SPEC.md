@@ -29,7 +29,7 @@
 │ Meetings││ ─────────────────────────────────────────────────────────────────── │
 │ Uploads ││ ▢ Q3 Roadmap Planning      Sep 30, 10:00 · 45 min   (PS)(AM)(+2)  ⋯ │
 │ …       ││ ▢ Acme renewal call        Sep 29, 15:30 · 32 min   (JL)(PS)      ⋯ │
-│ Settings││ grouped by day: "Today", "Yesterday", "Sep 28"…                    │
+│ Settings││ grouped by week: "Oct 4 – Today · 3 meetings"…                    │
 └─────────┘└─────────────────────────────────────────────────────────────────────┘
 ```
 **Workspace (`/meetings/[id]`)**
