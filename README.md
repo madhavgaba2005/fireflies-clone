@@ -31,6 +31,7 @@ full CRUD, all looking and feeling like Fireflies.
   transcript sit side by side, with a docked player that keeps the two in sync.
 - **Meeting Service** (FastAPI + SQLite): the system of record. All REST traffic goes here.
 - **AI Processing Service** (FastAPI): a stateless worker that turns a transcript into notes.
+- **Deployed:** all of it runs on Fly.io, Kafka included, at https://lumen-mg.fly.dev.
 - **How they connect:** creating or editing a transcript writes the meeting *and* an event to a transactional outbox
   in one commit. The event travels through Kafka to the AI service, and the result comes back the same way and is
   applied idempotently. CRUD never goes through Kafka.
@@ -131,7 +132,9 @@ frontend/
   components/             layout · meetings · workspace · transcript · audio · summary · action-items · settings · ui
   hooks/ · lib/           TanStack Query hooks; API client, playback clock, transcript sync and search, filters, theme
   tests/e2e/              Playwright specs (run against the real services)
-deploy/                   production stack: Caddy + frontend + both services + Kafka (docker-compose.prod.yml)
+deploy/
+  fly/                    live Fly.io deployment: one config per app (Kafka, AI service, Meeting Service, frontend)
+  docker-compose.prod.yml single-VM alternative: Caddy + frontend + both services + Kafka
 docs/                     architecture, schema, API, events, testing, ADRs, guides, audits
 docker-compose.yml        local Kafka + both backend services
 .github/workflows/ci.yml  CI pipeline
@@ -223,7 +226,9 @@ Seven meetings at a fictional company, Northwind: a product sync, sprint review,
 review, hiring debrief, marketing strategy and Q1 planning.
 - Each has 3–5 participants drawn from 11 people, a full timestamped transcript, keywords, an overview, a chaptered
   outline and action items.
-- Dates are relative to today, so the date filters always have results.
+- Dates are set relative to the day the database is seeded, so a fresh local database always has meetings in
+  "Last 7 days". The live demo was seeded on 2026-10-09, so its meetings age with the calendar; use *Any time* or
+  *Custom range* there.
 
 ```bash
 cd backend/meeting-service
@@ -282,7 +287,8 @@ Examples and error codes: [docs/API.md](docs/API.md). Live OpenAPI: `/docs`.
 
 ## Testing
 
-**Latest complete local run (2026-10-09), all passing:**
+**All passing:** in the latest full local run (2026-10-09), and on GitHub Actions for every push to `main`
+([runs](https://github.com/madhavgaba2005/fireflies-clone/actions/workflows/ci.yml)):
 
 | Suite | Covers | Result |
 |-------|--------|--------|
@@ -387,7 +393,8 @@ Northwind, which makes route-planning software. They include a product sync, a s
 call, a design review, a hiring debrief, a marketing strategy session and a Q1 planning kickoff, shared across 11 recurring people.
 - I wrote each one as a full, realistic conversation with timestamps, plus notes and action items, so every screen
   has something real to show.
-- Their dates are set relative to the day the database was seeded, which keeps the date filters meaningful.
+- Their dates are set relative to the day the database was seeded. On the live demo (seeded 2026-10-09) they
+  slowly move into the past, so the "Last 7 days" filter may show fewer meetings over time.
 
 **Nobody is actually recording anything.** Real speech-to-text and meeting bots are out of scope. A transcript gets
 into the app in one of three ways: it's seeded, you upload a `.txt` / `.vtt` / `.json` file, or you paste it in
