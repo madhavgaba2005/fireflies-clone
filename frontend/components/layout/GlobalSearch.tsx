@@ -70,7 +70,7 @@ export function GlobalSearch() {
   const find = encodeURIComponent(query);
 
   return (
-    <div ref={container} className="relative max-w-md flex-1">
+    <div ref={container} className="relative min-w-0 flex-1 md:max-w-[320px]">
       <form onSubmit={submit} role="search">
         <Search
           size={15}
@@ -90,7 +90,7 @@ export function GlobalSearch() {
           aria-autocomplete="list"
           aria-expanded={showPanel}
           aria-controls="global-search-results"
-          className="h-9 w-full rounded-lg border border-border bg-surface-muted pl-9 pr-8 text-[13px] outline-none transition focus:border-primary focus:bg-surface focus:ring-2 focus:ring-primary-ring"
+          className="h-[34px] w-full rounded-lg border border-border bg-surface-muted pl-9 pr-8 text-[13px] outline-none transition focus:border-primary focus:bg-surface focus:ring-2 focus:ring-primary-ring"
         />
         {isFetching && (
           <Loader2

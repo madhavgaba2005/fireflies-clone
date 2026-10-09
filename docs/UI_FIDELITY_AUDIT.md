@@ -19,7 +19,7 @@ How closely the UI follows the Fireflies meeting workspace, checked against scre
 | Area | Fireflies pattern | Here |
 |------|-------------------|------|
 | Navigation | Left sidebar with an active item in the brand colour; a top bar with global search, a live-meeting call-to-action, "New" and an avatar | Same structure. Out-of-scope items are marked "Soon" and open Coming-soon dialogs |
-| Library | Meetings grouped by day; rows with title, time, duration and participant avatars; overflow menu | Day groups, a time · duration · open-tasks line, AI keyword chips, an avatar stack and a ⋯ menu (edit, delete) |
+| Library | Icon rail + contextual Meetings sidebar; compact toolbar; a table with MEETING / DATE / TIME / DURATION columns, week groups with a count, divider-only rows, ⋯ and ⓘ at the far right | Day groups, a time · duration · open-tasks line, AI keyword chips, an avatar stack and a ⋯ menu (edit, delete) |
 | Workspace | Notepad: AI notes on one side, transcript on the other, docked player | Notes on the left (keywords → overview → outline → action items by assignee → talk time), transcript on the right, docked player with a speaker timeline and speed control |
 | Transcript | Coloured speaker avatars, name with timestamp, click to play from a line, find-in-transcript | Same, plus an active-line highlight, auto-follow with a "Back to current" button, and a match counter with ↑/↓ |
 | Feedback | Toasts for actions; clear processing state | Toasts for every mutation and failure; "Generating notes…", "Notes ready" and "Failed + Retry" chips |
@@ -45,6 +45,37 @@ How closely the UI follows the Fireflies meeting workspace, checked against scre
 | 8 | The "System" theme card's hint wrapped onto a third line | Shorter hint ("Follow device") |
 | 9 | Dark mode: checked keyword chips, outline timestamps, status chips, highlights and the expanded notes for contrast | No changes needed. Text tokens meet WCAG AA against their surfaces |
 | 10 | States: empty library ("No meetings match your filters" + Clear filters), not-found meeting, loading skeletons, failed notes with Retry | Reviewed. Each already had a clear next action; no changes |
+
+## Library redesign (against a Fireflies Meetings screenshot)
+
+The baseline looked like a different product: one wide sidebar, a large page header, a rounded card, grey
+uppercase day bands and fields positioned with flex spacing. The redesign was compared side by side at 1440, 1024
+and 390 px.
+
+**Pass A: shell, navigation, toolbar, grid and proportions**
+
+| # | Change |
+|---|--------|
+| A1 | The single sidebar is replaced by a 48 px **icon rail** (logo, Meetings, Uploads, Analytics, Integrations, Team; Settings at the bottom, with tooltips) and a 220 px **contextual Meetings sidebar** on the library. It has All meetings, Shared with me (Soon), and Channels with an empty state and "+ Channel" (Soon). There is no "My meetings": the demo user attends no seeded meeting, so that view would always be empty, which would be false functionality |
+| A2 | A 56 px toolbar on one line: the page label (the library's `h1`), global search (≤ 320 px), Invite (Soon), **New meeting**, Add to live meeting, Notifications (Soon) and the avatar menu. The large in-content page header is gone |
+| A3 | A full-width table on one CSS grid template (`tableGrid.ts`) shared by the header and every row. MEETING / DATE / TIME / DURATION headings line up with their cells to within 2 px (E2E-checked) |
+| A4 | Rows are 72 px tall with divider lines instead of a rounded card. The details cell has the checkbox, one participant avatar, the title, and a second line with participants, open action items, status and up to two tag chips |
+| A5 | Date groups are by **week** (Sunday start, as in the reference): "Oct 4 – Today · 3 meetings" |
+
+**Pass B: date contrast, type, spacing, controls and responsive states**
+
+| # | Change |
+|---|--------|
+| B1 | Group headings use dark 15 px / 500 text (`.type-group-heading`), with the count on the same line in muted blue-gray (`.type-group-count`). The grey uppercase band is gone |
+| B2 | New tokens in both themes: `--meta` (blue-gray metadata, AA contrast), `--row-hover` and `--rail`. Type classes: `.type-col-heading`, `.type-row-title`, `.type-meta` |
+| B3 | The "+N" avatar badge was removed: it duplicated the "+N" in the names line and cluttered the avatar |
+| B4 | The duplicate "Uploads" entry was removed from the contextual sidebar (the rail has it, as in the reference). An E2E test caught the ambiguity |
+| B5 | 1024 px: the contextual sidebar stays, the date/time/duration columns narrow (116 / 92 / 76 px), filters fit on one line, and the toolbar label is narrower |
+| B6 | 390 px: the rails become a drawer (primary items plus the Meetings section). Rows collapse to avatar, title, participants and "date · time · duration". Filter controls scroll sideways instead of stacking. No horizontal page overflow (E2E) |
+| B7 | Row actions: ⋯ (Open, Edit details, Delete) and ⓘ details (participants, clickable tags, action items). Checkboxes appear on hover or focus and stay visible once something is selected; selecting rows enables a real bulk delete |
+
+Kept unchanged: search, date and participant filters, sorting, tags, detail navigation, edit and delete, the API and
+database, dark mode.
 
 ## Known differences (accepted)
 

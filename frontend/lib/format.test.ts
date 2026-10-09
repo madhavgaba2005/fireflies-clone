@@ -10,7 +10,14 @@ import {
   parseFilters,
   toMeetingQuery,
 } from "./filters";
-import { dayLabel, formatDuration, formatTimestamp, groupByDay, initials } from "./format";
+import {
+  formatDuration,
+  formatShortDate,
+  formatTimestamp,
+  groupByWeek,
+  initials,
+  weekLabel,
+} from "./format";
 import { meetingSearchParams } from "./endpoints";
 
 describe("formatTimestamp", () => {
@@ -38,26 +45,38 @@ describe("formatDuration", () => {
   });
 });
 
-describe("day grouping", () => {
-  const now = new Date(2026, 9, 9, 12, 0);
+describe("week grouping", () => {
+  const now = new Date(2026, 9, 9, 12, 0); // Friday, Oct 9 2026 → week starts Sunday, Oct 4
+  const day = (month: number, date: number) =>
+    new Date(2026, month, date).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
-  it("labels today and yesterday by local calendar day", () => {
-    expect(dayLabel(new Date(2026, 9, 9, 0, 5).toISOString(), now)).toBe("Today");
-    expect(dayLabel(new Date(2026, 9, 8, 23, 59).toISOString(), now)).toBe("Yesterday");
-    expect(dayLabel(new Date(2026, 9, 5, 10).toISOString(), now)).not.toMatch(/Today|Yesterday/);
+  it("labels the current week up to today and older weeks with a full range", () => {
+    expect(weekLabel(new Date(2026, 9, 4, 0, 5).toISOString(), now)).toBe(`${day(9, 4)} – Today`);
+    expect(weekLabel(new Date(2026, 9, 3, 23, 59).toISOString(), now)).toBe(
+      `${day(8, 27)} – ${day(9, 3)}, 2026`,
+    );
   });
 
-  it("groups consecutive items of the same day, keeping order", () => {
+  it("groups consecutive items of the same week, keeping order", () => {
     const items = [
       new Date(2026, 9, 9, 11).toISOString(),
-      new Date(2026, 9, 9, 9).toISOString(),
-      new Date(2026, 9, 8, 15).toISOString(),
+      new Date(2026, 9, 5, 9).toISOString(),
+      new Date(2026, 9, 3, 15).toISOString(),
+      new Date(2026, 8, 22, 15).toISOString(),
     ];
-    const groups = groupByDay(items, (d) => d, now);
-    expect(groups.map((g) => [g.label, g.items.length])).toEqual([
-      ["Today", 2],
-      ["Yesterday", 1],
-    ]);
+    const groups = groupByWeek(items, (d) => d, now);
+    expect(groups.map((g) => g.items.length)).toEqual([2, 1, 1]);
+    expect(groups[0].label).toMatch(/Today$/);
+  });
+
+  it("formats the library date column as weekday, month and day", () => {
+    expect(formatShortDate(new Date(2026, 9, 7, 15, 30).toISOString())).toBe(
+      new Date(2026, 9, 7).toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      }),
+    );
   });
 });
 

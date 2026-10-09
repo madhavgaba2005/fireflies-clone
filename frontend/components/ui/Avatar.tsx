@@ -4,11 +4,16 @@ import { initials } from "@/lib/format";
 interface AvatarProps {
   id: number;
   name: string;
-  size?: "xs" | "sm" | "md";
+  size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }
 
-const sizes = { xs: "h-5 w-5 text-[9px]", sm: "h-7 w-7 text-[11px]", md: "h-8 w-8 text-xs" };
+const sizes = {
+  xs: "h-5 w-5 text-[9px]",
+  sm: "h-7 w-7 text-[11px]",
+  md: "h-8 w-8 text-xs",
+  lg: "h-9 w-9 text-[13px]",
+};
 
 export function Avatar({ id, name, size = "sm", className }: AvatarProps) {
   return (

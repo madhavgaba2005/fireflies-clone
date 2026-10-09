@@ -386,8 +386,8 @@ The design records behind them are in the [ADRs](adr/) and [DEVELOPMENT_GUIDE.md
 - **Numbers (latest run):**
   - 183 meeting-service tests (97 % line + branch coverage) and 39 AI-service tests (99 %).
   - 3 real-Kafka tests.
-  - 75 Vitest tests.
-  - 42 Playwright tests.
+  - 76 Vitest tests.
+  - 45 Playwright tests.
 - **Trade-off:** E2E runs the services in HTTP mode, so the browser suite needs no broker; the separate `kafka` job
   covers the broker. Tests never weaken a check to pass. When a test failed, either the code or a wrong assumption in
   the test was fixed, and both cases are recorded in PROGRESS.md.

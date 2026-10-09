@@ -32,7 +32,7 @@ reviewer that never gets tired, and green checks on PRs are visible evidence for
 | backend × 2 | ruff, format, mypy clean; 183 + 39 tests; 97.45 % / 98.84 % coverage (gate 90 %) |
 | event-contract | both schema files identical |
 | kafka | 3 passed against the compose broker and AI container |
-| frontend | lint, format, typecheck, build clean; 75 Vitest + 42 Playwright tests passed |
+| frontend | lint, format, typecheck, build clean; 76 Vitest + 45 Playwright tests passed |
 | workflow file | parsed as valid YAML (4 jobs) |
 
 ## Branch protection (to set once the repository is public)
