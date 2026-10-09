@@ -130,3 +130,10 @@ details popover, bulk delete, responsive drawer and compact phone rows.
 **Testing:** 76 Vitest + 45 Playwright tests (new: column alignment, week headings, details, bulk delete); screenshots
 at 1440 / 1024 / 390 px.
 Closes #26
+
+## #28 feat: Fireflies-style meeting workspace, favicon and Light default — `feature/28-meeting-workspace`
+**What:** meeting toolbar with breadcrumb and purple Share; notes-first 73/27 layout; de-boxed notes, transcript and
+settings; `app/icon.svg`; Light as the default theme with saved System / Light / Dark.
+**Testing:** 76 Vitest + 45 Playwright tests; screenshots at 1440 / 1024 / 390 px on several meetings; a fresh
+context renders light on a dark OS; Dark persists after a refresh; the favicon link is served as SVG.
+Closes #28
