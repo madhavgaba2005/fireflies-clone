@@ -191,3 +191,20 @@ repository is also pending.
 | Production stack checklist | Passed locally |
 
 **Still with the author:** publishing the repository and choosing a host.
+
+## Pre-publication audit (#25)
+- **README:** checked against the repository.
+  - Fixed: the `inline-test` advice (that mode processes nothing; Option C now documents the working `http`
+    fallback), false LLM provider settings, the missing `/api/search` endpoint, and a stale Phase note and versions.
+  - Added: prerequisites with versions, PowerShell notes, URL and health table, safe seed and reset instructions,
+    Playwright prerequisites, measured coverage, an explicit "CI not yet run on GitHub", and troubleshooting.
+- **Verified from a fresh clone** in an isolated directory (http mode, alternate ports):
+  - venv + deps + `.env` from the examples.
+  - Seeding works, and the re-run skips.
+  - Health, ready and `/docs` respond.
+  - A new meeting completes.
+  - `npm install` works, `/` → 307 → `/meetings`, and the library loads.
+- **Root route:** already redirects to `/meetings`. There is no login page and no landing page (unchanged).
+- **History:** removed the `Co-Authored-By: Claude` trailers from the 48 local commits that had them.
+  - Authors, committers, dates, file trees (17/17 branches identical) and merge topology are unchanged.
+  - Backup: `refs/backup/pre-coauthor-cleanup` and a bundle file outside the repository.
