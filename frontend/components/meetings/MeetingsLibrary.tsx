@@ -31,7 +31,14 @@ function LoadingRows() {
   return (
     <div aria-label="Loading meetings">
       {Array.from({ length: 6 }, (_, i) => (
-        <div key={i} className={cn(TABLE_GRID, TABLE_PAD, "min-h-[72px] border-b border-border")}>
+        <div
+          key={i}
+          className={cn(
+            TABLE_GRID,
+            TABLE_PAD,
+            "min-h-[72px] border-b border-border md:min-h-[84px]",
+          )}
+        >
           <div className="flex items-center gap-3">
             <span className="hidden w-4 sm:block" />
             <Skeleton className="h-9 w-9 rounded-full" />
@@ -207,7 +214,9 @@ export function MeetingsLibrary() {
       ) : (
         groups.map((group) => (
           <section key={group.label} aria-label={group.label}>
-            <h2 className={cn(TABLE_PAD, "flex gap-3 border-b border-border pb-3 pt-7")}>
+            <h2
+              className={cn(TABLE_PAD, "flex items-end gap-3 border-b border-border pb-2.5 pt-3.5")}
+            >
               {/* Same spacer as the row checkbox: the heading lines up with the avatars. */}
               <span aria-hidden className="hidden w-4 shrink-0 sm:block" />
               <span>

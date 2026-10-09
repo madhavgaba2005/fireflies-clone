@@ -151,7 +151,8 @@ export function MeetingRow({
       className={cn(
         TABLE_GRID,
         TABLE_PAD,
-        "group relative min-h-[72px] border-b border-border py-3 transition-colors",
+        // Phones size to content; tablet and up use a fixed comfortable height (Fireflies-like density).
+        "group relative min-h-[72px] border-b border-border py-3 transition-colors md:min-h-[84px]",
         "hover:bg-row-hover has-[a:focus-visible]:bg-row-hover",
         "has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-primary",
         selected && "bg-primary-soft/50",
@@ -178,11 +179,12 @@ export function MeetingRow({
           >
             {meeting.title}
           </Link>
-          <div className="type-meta mt-0.5 flex min-w-0 items-center gap-2">
+          <div className="type-meta mt-1 flex min-w-0 items-center gap-2">
             <span className="truncate">{participantSummary(meeting)}</span>
+            {/* Tablet: the count yields its space to names (it is also in the details popover). */}
             {meeting.action_item_count > 0 && (
               <span
-                className="hidden shrink-0 items-center gap-1 sm:inline-flex"
+                className="hidden shrink-0 items-center gap-1 sm:inline-flex md:hidden xl:inline-flex"
                 title={`${meeting.open_action_item_count} open of ${meeting.action_item_count} action items`}
               >
                 <span aria-hidden className="text-border">
