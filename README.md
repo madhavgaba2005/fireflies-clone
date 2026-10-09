@@ -18,12 +18,17 @@ generated asynchronously by a separate AI Processing Service via Kafka.
 
 ## Demo
 - Live app: _(not deployed yet — the hosting choice needs the author's approval; see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md))_
-- Locally: `http://localhost:3000` · API docs (Swagger) at `http://localhost:8000/docs`
+- Locally: `http://localhost:3000` after [Local Setup](#local-setup). There is no sign-in step: `/` redirects to the
+  meetings library, and you are the default demo user, Alex Morgan (authentication is out of scope per the
+  assignment).
+- API docs (Swagger): `http://localhost:8000/docs`
 - Demo walkthrough: [docs/FINAL_DEMO_SCRIPT.md](docs/FINAL_DEMO_SCRIPT.md)
 
 ## GitHub
 - Repository: _(not published yet — publishing requires the author's authorization)_
-- Workflow: issue → feature branch → PR → CI → merge. See [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md).
+- Workflow: issue → feature branch → logical commits → PR-style `--no-ff` merge into `main`. Until the repository is
+  published, PR descriptions are kept in [docs/PULL_REQUESTS.md](docs/PULL_REQUESTS.md). See
+  [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md).
 
 ## Features
 **Meetings library** — day-grouped list with title, time, duration, participants, open action items and keyword
@@ -48,7 +53,7 @@ separate AI service via Kafka and the page updates itself ("Generating notes…"
 failures show the reason and a Retry button).
 
 **Fireflies experience** — sidebar + top bar navigation, dialogs, popovers, toasts for every action, loading /
-empty / error states everywhere, settings placeholders (Profile, Notifications, Integrations, Team) and "Coming soon"
+empty / error states everywhere, settings (Profile, Appearance, and placeholder Notifications, Integrations and Team tabs) and "Coming soon"
 dialogs for the live meeting bot, integrations, analytics and team sharing. Works down to phone width.
 
 **Bonus** (only after every must-have is done): see [docs/BONUS_FEATURES.md](docs/BONUS_FEATURES.md).
@@ -56,8 +61,8 @@ dialogs for the live meeting bot, integrations, analytics and team sharing. Work
 ## Tech Stack
 | Layer | Choice |
 |-------|--------|
-| Frontend | Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS v4 · Radix UI · TanStack Query · lucide-react · sonner (UI libraries are added in Phase 7 with their first use) |
-| Meeting Service | Python 3.11 · FastAPI · SQLAlchemy 2.0 · Alembic · Pydantic v2 · aiokafka |
+| Frontend | Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS v4 · Radix UI · TanStack Query · lucide-react · sonner |
+| Meeting Service | Python 3.11 · FastAPI · SQLAlchemy 2.1 · Alembic · Pydantic v2 · aiokafka |
 | AI Processing Service | Python 3.11 · FastAPI (health + HTTP-mode endpoint) · aiokafka · pluggable `SummaryProvider` |
 | Database | SQLite (WAL, foreign keys enforced) |
 | Messaging | Apache Kafka (single-node KRaft, Docker) |
@@ -115,6 +120,7 @@ ER diagram, constraints, indexes and rationale: [docs/DATABASE_DESIGN.md](docs/D
 | GET / POST | `/api/meetings/{id}/action-items` |
 | PATCH / DELETE | `/api/action-items/{id}` |
 | GET | `/api/participants` |
+| GET | `/api/search?q=` (bonus: global search over titles and transcripts) |
 | GET | `/health`, `/health/ready` |
 
 Full contract with examples and error codes: [docs/API.md](docs/API.md).
@@ -137,32 +143,69 @@ docs/                     requirements, evaluation, architecture, schema, API, e
 ```
 
 ## Local Setup
-**Prerequisites:** Python 3.11, Node.js 22, Docker Desktop (for Kafka).
+**Prerequisites** (versions used and tested):
 
-**Option A — backend in Docker, frontend native (closest to the real architecture)**
+| Tool | Version | Needed for |
+|------|---------|------------|
+| Git | any recent | cloning |
+| Python | 3.11 | both backend services, backend tests, Playwright's backend servers |
+| Node.js | 22 or newer (`engines: >=22`) | frontend |
+| Docker Desktop (Compose v2) | any recent | Kafka (Options A and B), real-Kafka tests, the production stack |
+
+The commands below use bash (Git Bash on Windows). In PowerShell, activate a virtual environment with
+`.venv\Scripts\Activate.ps1` and copy files with `copy`. SQLite needs no installation: the Meeting Service creates and
+migrates its database file (`backend/meeting-service/data/meetings.db`) on first start.
+
+**Option A: backend in Docker, frontend native (closest to the real architecture)**
 ```bash
-docker compose up -d --build            # Kafka (KRaft) + meeting-service :8000 + ai-service :8001
+git clone <repo-url> fireflies-clone && cd fireflies-clone
+docker compose up -d --build --wait     # Kafka (KRaft) + meeting-service :8000 (seeds itself) + ai-service :8001
 cd frontend && npm install && cp .env.example .env.local && npm run dev   # http://localhost:3000
 ```
 
-**Option B — everything native (fast iteration)**
+**Option B: everything native, with Kafka in Docker**
 ```bash
-docker compose up -d kafka              # or set PROCESSING_MODE=inline-test in the Meeting Service .env to skip Kafka
+docker compose up -d --wait kafka       # broker on localhost:9092
 
+# Terminal 1: Meeting Service
 cd backend/meeting-service
 python -m venv .venv && source .venv/Scripts/activate      # macOS/Linux: source .venv/bin/activate
 pip install -r requirements-dev.txt && cp .env.example .env
+python -m app.seed                                          # migrate + load the 7 demo meetings
 uvicorn app.main:create_app --factory --reload --port 8000  # http://localhost:8000/docs
 
-cd ../ai-service                          # second terminal
+# Terminal 2: AI Processing Service
+cd backend/ai-service
 python -m venv .venv && source .venv/Scripts/activate
 pip install -r requirements-dev.txt && cp .env.example .env
 uvicorn app.main:create_app --factory --reload --port 8001
 
-cd ../../frontend                         # third terminal
-npm install && cp .env.example .env.local && npm run dev
+# Terminal 3: frontend
+cd frontend
+npm install && cp .env.example .env.local && npm run dev    # http://localhost:3000
 ```
-Health checks: `GET :8000/health`, `GET :8000/health/ready` (database), `GET :8001/health`.
+
+**Option C: no Docker at all (HTTP fallback, no Kafka).** Do Option B without the `docker compose` line, after
+setting these in the two `.env` files. Use the same token value in both; any long random string works locally.
+```bash
+# backend/meeting-service/.env
+PROCESSING_MODE=http
+INTERNAL_API_TOKEN=change-me-to-a-long-random-string
+# backend/ai-service/.env
+PROCESSING_MODE=http
+INTERNAL_API_TOKEN=change-me-to-a-long-random-string
+```
+`inline-test` mode is for automated tests only: it processes nothing, so new meetings would stay "pending".
+
+**URLs once running**
+
+| What | URL |
+|------|-----|
+| App (redirects to the library) | http://localhost:3000 → http://localhost:3000/meetings |
+| Meeting Service API docs | http://localhost:8000/docs |
+| Meeting Service health | http://localhost:8000/health (liveness) · http://localhost:8000/health/ready (database) |
+| AI Service health | http://localhost:8001/health |
+| Kafka (Options A and B) | `localhost:9092` |
 
 ## Environment Variables
 Each deployable reads its own environment (12-factor); every variable is documented in its `.env.example`.
@@ -171,10 +214,12 @@ Real `.env` files are git-ignored.
 | File | Key variables |
 |------|---------------|
 | [backend/meeting-service/.env.example](backend/meeting-service/.env.example) | `DATABASE_URL`, `CORS_ORIGINS`, `PROCESSING_MODE` (`kafka` \| `http` \| `inline-test`), `KAFKA_*`, `AI_SERVICE_URL`, `INTERNAL_API_TOKEN` |
-| [backend/ai-service/.env.example](backend/ai-service/.env.example) | `PROCESSING_MODE` (`kafka` \| `http`), `KAFKA_*`, `INTERNAL_API_TOKEN`, `SUMMARY_PROVIDER` (`mock` \| `llm`), `LLM_API_KEY` |
+| [backend/ai-service/.env.example](backend/ai-service/.env.example) | `PROCESSING_MODE` (`kafka` \| `http`), `KAFKA_*`, `INTERNAL_API_TOKEN`, `SUMMARY_PROVIDER` (only `mock` ships), `MAX_RETRIES`, `RETRY_BACKOFF_SECONDS` |
 | [frontend/.env.example](frontend/.env.example) | `NEXT_PUBLIC_API_URL` |
 
-`PROCESSING_MODE=http` and `SUMMARY_PROVIDER=llm` refuse to start without their secret — misconfiguration fails fast.
+`PROCESSING_MODE=http` refuses to start without `INTERNAL_API_TOKEN`, so misconfiguration fails fast. The Meeting
+Service also reads `SEED_ON_STARTUP` (default `false`; Docker Compose sets it to `true`). No API keys or other
+secrets are needed to run the project.
 
 ## Seed Data
 Seven meetings at a fictional company (Northwind, makers of a route-planning product): product sync, sprint review,
@@ -182,9 +227,14 @@ client discovery call, design review, hiring debrief, marketing strategy and Q1 
 drawn from 11 recurring people, a full timestamped transcript, an overview, keywords, a chaptered outline and action
 items. Dates are relative to today so the date filters always have something to show.
 ```bash
-cd backend/meeting-service && python -m app.seed          # skips if data exists; --reset wipes and reseeds
+cd backend/meeting-service
+python -m app.seed            # migrates, then seeds only if the database has no meetings (safe to re-run)
+python -m app.seed --reset    # DELETES ALL meetings in the configured DATABASE_URL, then reseeds
+docker compose exec meeting-service python -m app.seed --reset   # the same, for the Docker database (Option A)
 ```
-Docker / deployments can set `SEED_ON_STARTUP=true` to seed an empty database automatically.
+`--reset` only touches the database in `DATABASE_URL` (default `data/meetings.db`). The Playwright tests use their own
+file (`data/e2e.db`), so running them never resets your data. Docker deployments can set `SEED_ON_STARTUP=true` to
+seed an empty database automatically.
 
 ## Testing
 | Suite | What it covers | Result (latest local run) |
@@ -196,22 +246,34 @@ Docker / deployments can set `SEED_ON_STARTUP=true` to seed an empty database au
 | Frontend — Playwright | Every must-have workflow plus bonuses in a real browser against the real stack | 42 passed |
 
 ```bash
-cd backend/meeting-service && pytest --cov            # + `pytest -m kafka` (needs: docker compose up -d --wait kafka ai-service)
+# Backend: unit + integration (each service's virtual environment active)
+cd backend/meeting-service && pytest --cov
 cd backend/ai-service      && pytest --cov
-cd frontend && npm test                               # Vitest
-cd frontend && npx playwright install chromium && npm run test:e2e   # starts both services + a production build
+
+# Real Kafka: needs the broker and the AI service container
+docker compose up -d --build --wait kafka ai-service
+cd backend/meeting-service && pytest -m kafka -v
+
+# Frontend unit tests
+cd frontend && npm test
+
+# Playwright: needs each service's .venv from Option B (or set E2E_PYTHON to a Python with both services'
+# requirements). It starts the AI service on :8101, the Meeting Service on :8100 (its own data/e2e.db,
+# reseeded each run) and a production frontend build on :3100.
+cd frontend && npx playwright install chromium && npm run test:e2e
 ```
 Requirement → test mapping: [docs/TEST_COVERAGE_MATRIX.md](docs/TEST_COVERAGE_MATRIX.md). Strategy: [docs/TESTING.md](docs/TESTING.md).
 
 ## Coverage
-Copied from generated reports (`pytest --cov`, line + branch): **Meeting Service 97 %**, **AI service 99 %**.
+Measured with `pytest --cov` (line + branch) on the latest run: **Meeting Service 97.45 %**, **AI service 98.84 %**.
 CI fails below 90 %. Frontend logic is covered by Vitest; user workflows by Playwright (no line-coverage target —
 requirement coverage is the goal, see the matrix).
 
 ## CI/CD
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on pull requests and pushes to `main`: backend
 lint/format/strict types/tests + 90 % coverage gate (both services), event-contract check, a real-Kafka job, and frontend
-lint/format/types/unit/build/E2E smoke. See [docs/CI_CD.md](docs/CI_CD.md).
+lint/format/types/unit/build/Playwright. Every job's commands pass locally, but **the workflow has not run on GitHub
+yet**: that happens on the first push. See [docs/CI_CD.md](docs/CI_CD.md).
 
 ## Deployment
 A production stack is ready in [`deploy/`](deploy): Caddy (automatic HTTPS, one origin), the Next.js standalone
@@ -224,7 +286,18 @@ docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d --
 ```
 
 Options, steps, backups and the post-deploy checklist are in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). The host is
-not chosen yet; that is the author's decision.
+not chosen yet; that is the author's decision, and **nothing is deployed**.
+
+## Troubleshooting
+| Symptom | Cause and fix |
+|---------|---------------|
+| Notes stay "Generating notes…" | The AI service or Kafka isn't running, or the modes don't match. Check `http://localhost:8001/health` and `docker compose ps`; both services must use the same `PROCESSING_MODE` (and the same token in `http` mode). Requests wait safely in the outbox and are processed once the broker is back |
+| Meeting Service exits on start: `INTERNAL_API_TOKEN` | `http` mode needs the token set in both `.env` files (Option C) |
+| Library shows "Couldn't load meetings" | The Meeting Service isn't reachable at `NEXT_PUBLIC_API_URL` (default `http://localhost:8000`), or the frontend's origin isn't in `CORS_ORIGINS`. Restart `npm run dev` after editing `.env.local` |
+| `port is already allocated` from Docker | Another process uses 9092, 8000 or 8001. Stop it, or stop the native services before Option A |
+| The library is empty | Run `python -m app.seed` (native) or set `SEED_ON_STARTUP=true` (Docker) |
+| Playwright can't start the backend | Create both `.venv`s (Option B), or set `E2E_PYTHON`. Ports 3100, 8100 and 8101 must be free |
+| Kafka tests hang or fail | Start the broker and the AI container first: `docker compose up -d --build --wait kafka ai-service` |
 
 ## Assumptions
 - Single default logged-in user; no authentication (explicitly allowed by the assignment).
@@ -233,12 +306,13 @@ not chosen yet; that is the author's decision.
   (an info icon in the player says so); a real recording would plug in behind the same `PlaybackClock` interface.
 - Library date filters use UTC calendar days; displayed times use the browser's time zone.
 - The product is named **Lumen** with an original logo: the UI follows Fireflies' layout and patterns without using its brand.
-- AI notes come from a deterministic mock provider by default; an LLM provider is optional and off unless configured.
+- AI notes come from a deterministic mock provider; no LLM provider ships (ADR-007 shows where one would plug in).
 - Ambiguous assignment wording and how we interpreted it: [docs/REQUIREMENTS_MATRIX.md §13](docs/REQUIREMENTS_MATRIX.md#13-interpretations-of-ambiguous-wording-decided-documented-revisitable).
 
 ## Out of Scope
 Live meeting bot · real speech-to-text · Zoom/Meet/calendar/CRM integrations · team sharing · real authentication —
-each shown as a "Coming soon" placeholder.
+each shown as a "Coming soon" placeholder. There is deliberately no login page or marketing landing page: the app
+opens straight into the library as the default demo user.
 
 ## Bonus Features
 Built only after every MUST-have was verified; details and tests in [docs/BONUS_FEATURES.md](docs/BONUS_FEATURES.md).
