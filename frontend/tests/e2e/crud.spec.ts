@@ -115,10 +115,15 @@ test.describe("Meeting management", () => {
   test("delete from the workspace returns to the library", async ({ page }) => {
     const id = await createMeetingViaApi(page, { title: "E2E delete from workspace" });
     await page.goto(`/meetings/${id}`);
+    const failed: string[] = [];
+    page.on("response", (r) => r.status() >= 400 && failed.push(`${r.status()} ${r.url()}`));
     await page.getByRole("button", { name: "Meeting actions" }).click();
     await page.getByRole("menuitem", { name: "Delete meeting" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
     await expect(page).toHaveURL(/\/meetings$/);
+    await expect(page.getByTestId("meeting-row").first()).toBeVisible();
+    // Leaving the deleted meeting's page must not refetch it (no 404s in the console).
+    expect(failed).toEqual([]);
     await page.goto(`/meetings/${id}`);
     await expect(page.getByText("Meeting not found")).toBeVisible();
   });
