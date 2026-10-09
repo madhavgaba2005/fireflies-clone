@@ -19,32 +19,36 @@
 | Download at bottom centre; options for timestamps & speaker labels | Export modal with the same two toggles (bonus B2) |
 | AskFred assistant panel | "Ask AI" button → Coming soon (bonus B5 if time) |
 
-## 2. Page regions
+## 2. Page regions (as implemented)
 
 **Library (`/meetings`)**
 ```
-┌ Sidebar ┐┌ TopBar: [🔍 Search meetings  /]           [+ New meeting] [avatar ▾] ┐
-│ logo    ││ Meetings                                                            │
-│ Home    ││ [All meetings] [Uploads]   Filters: [Date ▾] [Participants ▾] [Sort ▾]│
-│ Meetings││ ─────────────────────────────────────────────────────────────────── │
-│ Uploads ││ ▢ Q3 Roadmap Planning      Sep 30, 10:00 · 45 min   (PS)(AM)(+2)  ⋯ │
-│ …       ││ ▢ Acme renewal call        Sep 29, 15:30 · 32 min   (JL)(PS)      ⋯ │
-│ Settings││ grouped by week: "Oct 4 – Today · 3 meetings"…                    │
-└─────────┘└─────────────────────────────────────────────────────────────────────┘
+┌rail┐┌ Meetings sidebar ┐┌ Toolbar: Meetings  [🔍 Search meetings and transcripts]  [Invite][+ New meeting] 🔔 (AM) ┐
+│ ✦  ││ Northwind        ││ [Search by title] [Any time ▾] [Participants ▾] [Newest first]            7 meetings   │
+│ ▣  ││ ▸ All meetings   ││ ☐ MEETING                                DATE          TIME       DURATION            │
+│ ⇪  ││   Shared with me ││ Oct 4 – Today · 3 meetings                                                           │
+│ ▤  ││ Channels      +  ││ (PS) Weekly Product Sync                 📅 Thu, Oct 8  🕒 3:30 PM  5 min      ⋯ ⓘ   │
+│ ⚙  ││  # empty state   ││      Priya Sharma, Arjun Mehta +2 · 4 open of 6 · tags                                │
+└────┘└──────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
 ```
 **Workspace (`/meetings/[id]`)**
 ```
-┌ Header: ← Meetings / Title  · date · duration · participants avatars   [Share][⋯] ┐
-├ Notes panel (≈42%) ─────────────────┬ Transcript panel ──────────────────────────┤
-│ ✨ AI summary  [General ▾] [Copy]    │ [🔍 Find in transcript   3 of 12 ↑ ↓] [Speakers ▾]│
-│ Keywords: chip chip chip            │ (PS) Priya Sharma  00:12                    │
-│ Overview paragraph                  │      Morning everyone, let's start with…    │
-│ Outline  00:00 Q3 priorities  ▸     │ (AM) Arjun Mehta   00:41   ← active (tinted)│
-│ Action items  ☐ Send deck — Arjun   │      …                                      │
-├─────────────────────────────────────┴────────────────────────────────────────────┤
-│ Player bar: ⏪15 ▶ 15⏩  02:13 ━━━━━━●──────────── 45:10   1x ▾   speaker timeline │
-└──────────────────────────────────────────────────────────────────────────────────┘
+┌rail┐┌ Toolbar: ← All meetings › Weekly Product Sync                     [Share] 🔗 ⋯ 🔔 (AM) ┐
+│    │├ Notes (≈73 %, centred reading column) ────────────┬ Transcript (320–460 px) ────────────┤
+│    ││ Weekly Product Sync                                │ Transcript                       ⤢  │
+│    ││ (PS)(AM)(ER)(SC) 4 participants · date · 5 min     │ [🔍 Find in transcript   1/5 ↑ ↓]   │
+│    ││ ✨ AI meeting notes  ✓ Notes ready              ⤢  │ (PS) Priya Sharma  00:00            │
+│    ││ 🏷 Keywords   chip chip chip                        │   Morning everyone…  ← active tint  │
+│    ││ 📄 Overview   paragraph                             │ (AM) Arjun Mehta   00:14            │
+│    ││ ☰ Outline    00:14 Release 2.4 status …            │   …                                 │
+│    ││ ☑ Action items  ☐ Fix bulk import — Arjun           │                                     │
+│    │├────────────────────────────────────────────────────┴─────────────────────────────────────┤
+│    ││ Player: ⟲15 ▶ ⟳15  01:02 / 04:38 ━━━━●──── speaker timeline   1× ⓘ                       │
+└────┘└──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
+Phones: a drawer replaces the rail and sidebar, library rows collapse to two lines, and the workspace uses
+Notes / Transcript tabs. Current renders: [README screenshots](../README.md#screenshots); changes:
+[UI_FIDELITY_AUDIT.md](UI_FIDELITY_AUDIT.md).
 
 ## 3. Design tokens (original values, Fireflies-like *feel*)
 
@@ -63,20 +67,19 @@
 * **Elevation:** borders over shadows; shadow only on modals/menus.
 * **Icons:** lucide-react, 16 px in dense UI.
 
-## 4. Component hierarchy
+## 4. Component hierarchy (as implemented)
 ```
 AppShell
- ├─ Sidebar (NavItem)
- ├─ TopBar (GlobalSearch, NewMeetingButton, UserMenu)
+ ├─ IconRail (navigation.tsx entries) · MeetingsSidebar (library only) · NavDrawer (phones)
+ ├─ TopBar (GlobalSearch, Invite, New meeting, UserControls: NotificationsButton, UserMenu)   ← not on meeting pages
  └─ page
-     ├─ MeetingsPage → MeetingFilters (SearchInput, DateRangeFilter, ParticipantFilter, SortToggle)
-     │                 MeetingList → MeetingDayGroup → MeetingRow (AvatarStack, DurationBadge, RowMenu)
-     │                 CreateMeetingModal (tabs: Upload | Paste | Form), EditMeetingModal, ConfirmDialog
-     └─ MeetingPage → MeetingHeader
-                      MeetingWorkspace
-                       ├─ SummaryPanel → Keywords, Overview, Topics, ActionItems (ActionItemRow, ActionItemComposer)
-                       └─ TranscriptPanel → TranscriptSearch, SpeakerFilter, TranscriptLine*
-                      AudioPlayer (SeekBar, SpeedMenu)  ← state from usePlaybackClock(PlaybackClock)
+     ├─ MeetingsLibrary → MeetingFilters (title search, date, participants, sort)
+     │                    week groups → MeetingRow (details popover, row menu) · BulkDeleteDialog
+     │                    CreateMeetingModal (Upload | Paste | Manual entry), EditMeetingModal, DeleteMeetingDialog
+     └─ MeetingWorkspace → MeetingToolbar (breadcrumb, MeetingActions: Share, copy link, ⋯)
+                           NotesPanel (MeetingTitle, Keywords, Overview, Outline, ActionItemsSection, TalkTime)
+                           TranscriptPanel (search, TranscriptLine*) · PlayerBar ← usePlaybackClock(PlaybackClock)
+                           ExportDialog
 ui/: Button, IconButton, Input, Modal, DropdownMenu, Tabs, Avatar, AvatarStack, Badge, Skeleton, EmptyState, ErrorState, ComingSoon
 ```
 
