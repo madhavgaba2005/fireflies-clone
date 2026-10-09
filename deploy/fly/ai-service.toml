@@ -1,0 +1,15 @@
+# AI Processing Service: private (no public ports), consumes meeting.events from Kafka.
+# Deploy from the repo root:  flyctl deploy backend/ai-service --config ../../deploy/fly/ai-service.toml --ha=false
+app = "lumen-ai-mg"
+primary_region = "sin"
+
+[env]
+  ENVIRONMENT = "production"
+  PROCESSING_MODE = "kafka"
+  KAFKA_BOOTSTRAP_SERVERS = "lumen-kafka-mg.internal:9092"
+  SUMMARY_PROVIDER = "mock"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "512mb"

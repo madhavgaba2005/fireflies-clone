@@ -131,8 +131,8 @@ Code existing is **not** enough.
 | D5 | README: **database schema** | DELIV | `README.md#database-schema` + [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | — | — | ✅ README section: Database Schema + DATABASE_DESIGN.md |
 | D6 | README: **API overview** | DELIV | `README.md#api-overview` + [API.md](API.md) + `/docs` | — | — | ✅ README section: API Overview + API.md + `/docs` |
 | D7 | README: **assumptions made** | DELIV | `README.md#assumptions` | — | — | ✅ README section: Assumptions |
-| D8 | **Hosted, working demo link** | DELIV | `deploy/docker-compose.prod.yml` (Caddy + real Kafka) — verified locally incl. restart persistence; [DEPLOYMENT.md](DEPLOYMENT.md) | Post-deploy checklist (DEPLOYMENT §5) | Link opens populated app; CRUD persists | ⏳ ready; host choice needs the author |
-| D9 | Submit repo link + deployed link | DELIV | Checklist in [FINAL_EVALUATION_REPORT.md](../FINAL_EVALUATION_REPORT.md) | — | — | ⏳ after D1 + D8 |
+| D8 | **Hosted, working demo link** | DELIV | Fly.io: four apps with real Kafka ([DEPLOYMENT §0](DEPLOYMENT.md)) | Live 22-check walkthrough; restart persistence | Link opens populated app; CRUD persists | ✅ [https://lumen-mg.fly.dev](https://lumen-mg.fly.dev) |
+| D9 | Submit repo link + deployed link | DELIV | Checklist in [FINAL_EVALUATION_REPORT.md](../FINAL_EVALUATION_REPORT.md) | — | — | ⏳ both links ready; submitting them is the author's step |
 
 ## 10. Evaluation Criteria (exact PDF wording — no numeric weights are given, none are invented)
 

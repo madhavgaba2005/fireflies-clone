@@ -13,10 +13,10 @@ Audit date: 2026-10-09 (final submission pass; documentation and release-readine
 | Mocked / placeholder sections | 5 / 5 present ("Coming soon" dialogs; default logged-in user) |
 | Bonus (optional) | **4 / 6 complete:** global search, tags, export TXT + Markdown, dark mode (System / Light / Dark). Comments and the "Ask" chat are deliberately deferred |
 | Important notes | UI study ✅ · seed data ✅ · own schema ✅ · README sections ✅ · original work ✅ |
-| **Deliverables** | ⏳ **Public repository and hosted link not yet created**; both need the author's authorization (§6). Everything they need is ready and verified locally |
+| **Deliverables** | ✅ Public repository, CI green on GitHub, and a hosted demo at https://lumen-mg.fly.dev (Fly.io, real Kafka) |
 
-**Readiness: NEAR READY.** The code, tests and docs are submission-ready. The submission itself still needs the two
-author actions in §6. Until they're done, the PDF's deliverables are not met.
+**Readiness: READY.** Code, tests, documentation, the public repository and the hosted demo (https://lumen-mg.fly.dev) are all in
+place. What remains is submitting the two links.
 
 ## 2. Requirements, line by line
 
@@ -42,7 +42,7 @@ author actions in §6. Until they're done, the PDF's deliverables are not met.
 | README: setup, stack, architecture, schema, API, assumptions | ✅ | All sections present |
 | Stack: Next.js (TS), FastAPI, SQLite | ✅ | Next.js 16 / React 19 / TS strict; FastAPI × 2; SQLite |
 | Public GitHub repo with `frontend/` and `backend/` | ✅ | [github.com/madhavgaba2005/fireflies-clone](https://github.com/madhavgaba2005/fireflies-clone) |
-| Hosted, working link | ⏳ | `deploy/` verified locally; the host choice needs the author |
+| Hosted, working link | ✅ | [https://lumen-mg.fly.dev](https://lumen-mg.fly.dev): 22/22 live requirement checks, restart persistence verified |
 
 ## 3. Criteria, strictly
 
@@ -58,9 +58,8 @@ author actions in §6. Until they're done, the PDF's deliverables are not met.
   - No real audio: playback is simulated.
   - The AI is heuristic, not an LLM, so summaries are plainer than Fireflies'.
 - **Likely lost marks:** Small, if the evaluator expected a playable sample file or LLM-quality summaries.
-  **Large** if there is no hosted link at submission time.
+  The hosted demo is live, so the earlier deliverable risk is gone.
 - **Fixes:**
-  - Deploy (§6). That is the only fix that matters here.
   - Optional: add a short royalty-free audio file and an `AudioElementClock` (the `PlaybackClock` interface is
     ready).
 
@@ -148,7 +147,7 @@ author actions in §6. Until they're done, the PDF's deliverables are not met.
 
 | Severity | Issue | Resolution |
 |----------|-------|------------|
-| HIGH | Public repository and hosted link missing | **Needs the author** (§6) |
+| HIGH | Public repository and hosted link missing | **Resolved:** repository public; hosted at https://lumen-mg.fly.dev |
 | MEDIUM | Production Kafka had no volume, so a broker restart could drop an in-flight request | **Fixed** (`kafka-data` volume); verified with a broker restart mid-request |
 | MEDIUM | Panels could not be expanded (UI checklist) | **Fixed**; E2E |
 | MEDIUM | The theme lacked a "System" option and a settings entry | **Fixed:** Settings → Appearance; E2E covers live OS changes |
@@ -164,13 +163,7 @@ No CRITICAL issues are open.
 
 ## 6. Remaining manual steps (the author)
 
-1. ~~Publish the repository~~ **Done:** [github.com/madhavgaba2005/fireflies-clone](https://github.com/madhavgaba2005/fireflies-clone). CI runs on every push
-   ([Actions](https://github.com/madhavgaba2005/fireflies-clone/actions/workflows/ci.yml)).
-2. Deploy, following [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) §3. On a free VM with Docker:
-   ```bash
-   git clone https://github.com/madhavgaba2005/fireflies-clone.git && cd fireflies-clone
-   cp deploy/.env.example deploy/.env   # set SITE_ADDRESS (domain or :80) and PUBLIC_URL
-   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d --build --wait
-   ```
-3. Run the post-deploy checklist (DEPLOYMENT §5) against the live URL.
-4. Add the live link to the README and the repository's About section, then submit both links.
+1. ~~Publish the repository~~ **Done:** [github.com/madhavgaba2005/fireflies-clone](https://github.com/madhavgaba2005/fireflies-clone)
+   (CI green on GitHub).
+2. ~~Deploy~~ **Done:** https://lumen-mg.fly.dev on Fly.io ([DEPLOYMENT §0](docs/DEPLOYMENT.md)).
+3. Submit both links.
