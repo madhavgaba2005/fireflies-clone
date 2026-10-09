@@ -208,3 +208,15 @@ repository is also pending.
 - **History:** removed the `Co-Authored-By: Claude` trailers from the 48 local commits that had them.
   - Authors, committers, dates, file trees (17/17 branches identical) and merge topology are unchanged.
   - Backup: `refs/backup/pre-coauthor-cleanup` and a bundle file outside the repository.
+
+## Library redesign (#26)
+- Rebuilt the Meetings page to follow a Fireflies Meetings screenshot:
+  - two-level navigation (icon rail + contextual Meetings sidebar) and a one-line toolbar;
+  - a table on one grid template, grouped by week with counts;
+  - blue-gray metadata tokens for both themes;
+  - a details popover and bulk delete.
+- Two refinement passes at 1440, 1024 and 390 px, recorded in [UI_FIDELITY_AUDIT.md](UI_FIDELITY_AUDIT.md).
+- A stale dev server, caused by production builds sharing `.next`, was serving old CSS. It was restarted before
+  the screenshots were judged.
+- Tests: 76 Vitest and 45 Playwright, all passing, including new tests for column alignment, week headings, the
+  details popover and bulk delete. Lint, format, typecheck and production build are clean. The backend is unchanged.

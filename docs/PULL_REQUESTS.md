@@ -117,3 +117,16 @@ Closes #23
 ## #24 docs: strict final evaluation report — `docs/24-final-report`
 **What:** FINAL_EVALUATION_REPORT rewritten per criterion (evidence, strengths, weaknesses, likely lost marks, fixes).
 Closes #24
+
+## #25 docs: README and setup audit — `docs/25-readme-audit`
+**What:** README checked against the repository and corrected (no-Kafka setup, LLM claims, search endpoint);
+prerequisites, URLs, safe seeding, Playwright prerequisites, measured coverage, CI status, troubleshooting.
+**Testing:** setup verified from a fresh clone (venvs, seed, health, http-mode processing, `/` → `/meetings`).
+Closes #25
+
+## #26 feat: Fireflies-style meetings library — `feature/26-library-redesign`
+**What:** icon rail + contextual Meetings sidebar, one-line toolbar, aligned weekly meetings table, metadata tokens,
+details popover, bulk delete, responsive drawer and compact phone rows.
+**Testing:** 76 Vitest + 45 Playwright tests (new: column alignment, week headings, details, bulk delete); screenshots
+at 1440 / 1024 / 390 px.
+Closes #26
