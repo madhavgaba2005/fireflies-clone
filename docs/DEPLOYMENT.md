@@ -1,11 +1,57 @@
 # Deployment
 
-> **Status: ready to deploy, not yet deployed.** The production stack below has been built and run locally, and it
-> passed the checklist in §5. Two things are still pending:
-> - **The hosting provider is the owner's decision.** Nothing has been purchased, and no public repository or URL
->   exists yet.
-> - **Persistence and summary processing on the real host** will be claimed only after the checklist has been run
->   there.
+> **Status: deployed on Fly.io.** Frontend https://lumen-mg.fly.dev · API https://lumen-api-mg.fly.dev. The post-deploy checklist (§5) passed
+> against the live site on 2026-10-09. The single-VM compose stack (§3) remains a documented, verified alternative.
+
+## 0. Live deployment: Fly.io
+
+Four apps in region `sin`, connected over Fly's private IPv6 network (`<app>.internal`):
+
+| App | Config | What runs | Exposure | Machine |
+|-----|--------|-----------|----------|---------|
+| `lumen-kafka-mg` | [`deploy/fly/kafka.toml`](../deploy/fly/kafka.toml) | Kafka 3.9 KRaft, log on volume `kafka_data` (1 GB) | private: `lumen-kafka-mg.internal:9092` | shared 1 CPU / 1 GB |
+| `lumen-ai-mg` | [`deploy/fly/ai-service.toml`](../deploy/fly/ai-service.toml) | AI service, Kafka consumer | private | shared 1 CPU / 512 MB |
+| `lumen-api-mg` | [`deploy/fly/meeting-service.toml`](../deploy/fly/meeting-service.toml) | Meeting Service; SQLite on volume `meeting_data` (1 GB); health check `/health/ready` | public HTTPS | shared 1 CPU / 512 MB, always on |
+| `lumen-mg` | [`deploy/fly/frontend.toml`](../deploy/fly/frontend.toml) | Next.js standalone, built with `NEXT_PUBLIC_API_URL=https://lumen-api-mg.fly.dev` | public HTTPS | shared 1 CPU / 512 MB, always on |
+
+**Fly-specific details:**
+- **Volumes mount owned by root.** `backend/meeting-service/Dockerfile.fly` starts as root, hands `/data` to
+  `appuser`, then runs the server as `appuser` via `runuser`.
+- **Kafka** runs as root inside its private microVM (`deploy/fly/kafka.Dockerfile`).
+  - It listens on `[::]` and advertises `lumen-kafka-mg.internal:9092`.
+  - Its log dir is a subdirectory of the volume, avoiding `lost+found`.
+  - A fixed `CLUSTER_ID` keeps the storage valid across restarts.
+- **Always-on machines.** The Meeting Service runs the outbox relay and the result consumer, so it must not
+  auto-stop. The frontend stays on to avoid cold starts.
+- **CORS:** `CORS_ORIGINS=https://lumen-mg.fly.dev`.
+
+**Deploy or redeploy** from the repo root, in this order:
+```bash
+flyctl deploy deploy/fly --config kafka.toml --ha=false
+flyctl deploy backend/ai-service --config ../../deploy/fly/ai-service.toml --ha=false
+flyctl deploy backend/meeting-service --config ../../deploy/fly/meeting-service.toml --dockerfile Dockerfile.fly --ha=false
+flyctl deploy frontend --config ../deploy/fly/frontend.toml --ha=false
+```
+**First-time setup** (already done for this deployment):
+```bash
+flyctl apps create <app>
+flyctl volumes create kafka_data   --app lumen-kafka-mg --region sin --size 1
+flyctl volumes create meeting_data --app lumen-api-mg   --region sin --size 1
+```
+
+**Verified live (2026-10-09):**
+- All 22 requirement checks pass in Chromium against https://lumen-mg.fly.dev, with no console errors.
+- A new meeting completes through outbox → Kafka → AI → Kafka in about 1 s.
+- After `flyctl machine restart` of both the API and the Kafka machines, an earlier meeting was still there, and a
+  new meeting was processed through Kafka.
+- The Lumen favicon is served.
+
+**Cost:** four small always-on machines plus 2 GB of volumes, billed to the owner's Fly account.
+
+**Operations:**
+- `flyctl logs --app <app>` and `flyctl status --app <app>`.
+- Back up the database with `flyctl ssh console --app lumen-api-mg`, then `sqlite3`-copy `/data/meetings.db`.
+- Volumes also have Fly's scheduled snapshots (5-day retention).
 
 ## 1. Requirements the hosted demo must meet
 

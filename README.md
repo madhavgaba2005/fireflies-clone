@@ -11,7 +11,7 @@ Kafka.
 > Kafka broker and browser end-to-end).
 > - **CI:** runs on GitHub Actions for every push and pull request. Current results are on the
 >   [Actions page](https://github.com/madhavgaba2005/fireflies-clone/actions/workflows/ci.yml) and in the badge above.
-> - **Hosted demo: not deployed yet** (see [Deployment](#deployment)).
+> - **Live demo:** **https://lumen-mg.fly.dev** (API docs: https://lumen-api-mg.fly.dev/docs), on Fly.io with real Kafka (see [Deployment](#deployment)).
 > - **Self-assessment:** the strict version is in [FINAL_EVALUATION_REPORT.md](FINAL_EVALUATION_REPORT.md).
 
 **Contents:** [Overview](#overview) · [Screenshots](#screenshots) · [Features](#features) · [Tech stack](#tech-stack) ·
@@ -329,7 +329,27 @@ Results for every run are on the [Actions page](https://github.com/madhavgaba200
 
 ## Deployment
 
-**Status: ready, not deployed. There is no live URL yet.**
+**Live on Fly.io:** **https://lumen-mg.fly.dev**. API: https://lumen-api-mg.fly.dev (Swagger at [`/docs`](https://lumen-api-mg.fly.dev/docs)).
+
+The full architecture runs as four Fly apps in Singapore, connected over Fly's private network:
+
+| Fly app | Role | Exposure |
+|---------|------|----------|
+| `lumen-mg` | Next.js frontend (standalone) | public, https://lumen-mg.fly.dev |
+| `lumen-api-mg` | Meeting Service, with SQLite on a Fly volume | public, https://lumen-api-mg.fly.dev |
+| `lumen-ai-mg` | AI Processing Service | private |
+| `lumen-kafka-mg` | Kafka (KRaft), with a Fly volume | private |
+
+The Fly configuration is in [`deploy/fly/`](deploy/fly). Each file's header has its exact `flyctl deploy` command.
+
+Verified live:
+- All 22 requirement checks pass in a real browser, with no console errors.
+- New meetings are summarised through Kafka in about 1 s.
+- Data survives restarting both the API and Kafka machines.
+
+Details: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+**Alternative: any single VM with Docker.**
 
 [`deploy/docker-compose.prod.yml`](deploy/docker-compose.prod.yml) runs the whole real architecture on one free VM:
 Caddy (automatic HTTPS, one origin), the Next.js standalone image, both services, Kafka, and volumes for SQLite and
@@ -340,13 +360,7 @@ cp deploy/.env.example deploy/.env   # set SITE_ADDRESS (domain or :80) and PUBL
 docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d --build --wait
 ```
 
-Verified locally on `:8088`:
-- New meetings are summarised through Kafka in about 2 s.
-- Create, edit and delete work.
-- Data survives a full restart.
-- A request still completes after a broker restart mid-request.
-
-Host options, backups and the post-deploy checklist are in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+This variant was verified locally on `:8088`, including restart persistence.
 
 ## Troubleshooting
 

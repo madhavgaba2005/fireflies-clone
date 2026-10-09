@@ -1,6 +1,7 @@
 # Meeting Service (system of record) with SQLite on a Fly volume. Public API: https://lumen-api-mg.fly.dev
 # Deploy from the repo root:
-#   flyctl deploy backend/meeting-service --config deploy/fly/meeting-service.toml --dockerfile backend/meeting-service/Dockerfile.fly
+#   flyctl deploy backend/meeting-service --config ../../deploy/fly/meeting-service.toml \
+#     --dockerfile Dockerfile.fly --ha=false
 app = "lumen-api-mg"
 primary_region = "sin"
 

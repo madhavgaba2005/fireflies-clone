@@ -1,5 +1,5 @@
 # Frontend (Next.js standalone). Public: https://lumen-mg.fly.dev
-# Deploy from the repo root:  flyctl deploy frontend --config deploy/fly/frontend.toml
+# Deploy from the repo root:  flyctl deploy frontend --config ../deploy/fly/frontend.toml --ha=false
 app = "lumen-mg"
 primary_region = "sin"
 

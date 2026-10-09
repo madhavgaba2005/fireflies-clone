@@ -1,5 +1,5 @@
 # Kafka (KRaft, single node) on the Fly private network: lumen-kafka-mg.internal:9092.
-# Deploy from the repo root:  flyctl deploy --config deploy/fly/kafka.toml
+# Deploy from the repo root:  flyctl deploy deploy/fly --config kafka.toml --ha=false
 app = "lumen-kafka-mg"
 primary_region = "sin"
 
